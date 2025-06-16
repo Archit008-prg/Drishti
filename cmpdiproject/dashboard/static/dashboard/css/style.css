@@ -1,0 +1,183 @@
+ :root {
+  --primary: #4e73df;
+  --primary-dark: #2e59d9;
+  --success: #1cc88a;
+  --success-dark: #17a673;
+  --info: #36b9cc;
+  --info-dark: #2c9faf;
+  --warning: #f6c23e;
+  --warning-dark: #dda20a;
+  --danger: #e74a3b;
+  --danger-dark: #be2617;
+  --dark: #212529;
+  --gray-dark: #5a5c69;
+  --gray: #858796;
+  --gray-light: #d1d3e2;
+  --light: #f8f9fc;
+}
+
+
+.sidebar {
+  height: 100vh;
+  background: rgba(33, 37, 41, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.sidebar:hover {
+  background: rgba(33, 37, 41, 0.95);
+}
+
+.nav-link {
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 0.5rem;
+  margin: 0.35rem 0;
+  padding: 0.75rem 1rem;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nav-link:hover {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: translateX(5px);
+}
+
+.nav-link.active {
+  color: white;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  box-shadow: 0 4px 20px -5px rgba(78, 115, 223, 0.4);
+}
+
+.nav-link i {
+  font-size: 1.1rem;
+}
+
+/* Cards - Neumorphic Design */
+.card {
+  border-radius: 0.75rem;
+  border: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  background: white;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  background: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+  padding: 1.25rem 1.5rem;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Border Accents with Gradient */
+.border-left-primary {
+  border-left: 4px solid;
+  border-image: linear-gradient(to bottom, var(--primary), var(--primary-dark)) 1;
+}
+
+.border-left-success {
+  border-left: 4px solid;
+  border-image: linear-gradient(to bottom, var(--success), var(--success-dark)) 1;
+}
+
+.border-left-info {
+  border-left: 4px solid;
+  border-image: linear-gradient(to bottom, var(--info), var(--info-dark)) 1;
+}
+
+.border-left-warning {
+  border-left: 4px solid;
+  border-image: linear-gradient(to bottom, var(--warning), var(--warning-dark)) 1;
+}
+
+/* Modern Table Styling */
+.table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table thead th {
+  background: var(--light);
+  border-top: 1px solid var(--gray-light);
+  border-bottom: 2px solid var(--gray-light);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  color: var(--gray-dark);
+}
+
+.table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(78, 115, 223, 0.03);
+}
+
+/* Badges */
+.badge {
+  padding: 0.35em 0.65em;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  border-radius: 50rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 70px;
+    overflow: hidden;
+  }
+  
+  .sidebar:hover {
+    width: 250px;
+  }
+  
+  .nav-link span {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .sidebar:hover .nav-link span {
+    opacity: 1;
+  }
+}
+
+.badge.bg-upnext {
+    background-color: #9c27b0;  /* Purple */
+    color: white;
+}
+
+/* If using gradient borders */
+.border-left-upnext {
+    border-left: 4px solid;
+    border-image: linear-gradient(to bottom, #9c27b0, #7b1fa2) 1;
+}
+

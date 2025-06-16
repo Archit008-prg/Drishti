@@ -1,0 +1,122 @@
+<div class="container-fluid p-3">
+    <h2 class="mb-3">Project Details</h2>
+    
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Basic Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th class="w-25">Project Code</th>
+                            <td>{{ project.project_code }}</td>
+                        </tr>
+                        <tr>
+                            <th>Title</th>
+                            <td>{{ project.title }}</td>
+                        </tr>
+                        <tr>
+                            <th>Principal Agency</th>
+                            <td>{{ project.principal_agency }}</td>
+                        </tr>
+                        <tr>
+                            <th>Project Type</th>
+                            <td>{{ project.get_project_type_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Budget</th>
+                            <td>{{ project.get_budget_display }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Timeline</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th class="w-25">Start Date</th>
+                            <td>{{ project.start_date|date:"d/m/Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Scheduled Completion</th>
+                            <td>{{ project.scheduled_completion|date:"d/m/Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Actual Completion</th>
+                            <td>{% if project.actual_completion %}{{ project.actual_completion|date:"d/m/Y" }}{% else %}N/A{% endif %}</td>
+                        </tr>
+                        <tr>
+                            <th>Status</th>
+                            <td>
+                                <span class="badge 
+                                    {% if project.status == 'ongoing' %}bg-primary
+                                    {% elif project.status == 'completed' %}bg-success
+                                    {% else %}bg-warning{% endif %}">
+                                    {{ project.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3 g-3">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Personnel</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th class="w-25">Project Investigator</th>
+                            <td>{{ project.project_investigator|default:"N/A" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Project Coordinator</th>
+                            <td>{{ project.project_coordinator|default:"N/A" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Implementing Agencies</h5>
+                </div>
+                <div class="card-body">
+                    {% if project.implementing_agencies %}
+                        <p>{{ project.implementing_agencies }}</p>
+                    {% else %}
+                        <p class="text-muted">Not specified</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mt-3">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Project Description</h5>
+        </div>
+        <div class="card-body">
+            {% if project.description %}
+                <div class="project-description">{{ project.description|linebreaks }}</div>
+            {% else %}
+                <p class="text-muted">No description available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
