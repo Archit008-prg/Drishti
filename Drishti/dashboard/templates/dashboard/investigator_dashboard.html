@@ -1,0 +1,183 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4">Investigator Dashboard</h1>
+    
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">My Projects</h6>
+            <div>
+                <input type="text" class="form-control" id="projectSearch" placeholder="Search projects...">
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="projectTable">
+                    <thead>
+                        <tr>
+                            <th>Project Code</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Completion Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for project in projects %}
+                        <tr>
+                            <td>{{ project.project_code }}</td>
+                            <td>{{ project.title }}</td>
+                            <td>
+                                <span class="badge" style="
+                                    {% if project.status == 'ongoing' %}background-color: #01cfff; color: white;
+                                    {% elif project.status == 'completed' %}background-color: #2cc88a; color: white;
+                                    {% elif project.status == 'pending' %}background-color: #ff0000; color: white;
+                                    {% elif project.status == 'up_next' %}background-color: #f6c23e; color: black;
+                                    {% else %}background-color: #6c757d; color: white;
+                                    {% endif %}">
+                                    {{ project.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ project.scheduled_completion|date:"d/m/Y" }}</td>
+                            <td>
+                                {% if project.status != 'completed' %}
+                                <button class="btn btn-sm btn-primary submit-report-btn" 
+                                        data-project-id="{{ project.id }}"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#reportModal">
+                                    <i class="bi bi-upload"></i> Submit Report
+                                </button>
+                                {% endif %}
+                                <button class="btn btn-sm btn-info view-project-btn" 
+                                        data-project-id="{{ project.id }}">
+                                    <i class="bi bi-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No projects assigned yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Submission Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportModalLabel">Submit Project Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="reportForm" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <input type="hidden" name="project_id" id="projectIdInput">
+                    <div class="mb-3">
+                        <label for="reportFile" class="form-label">Report File</label>
+                        <input type="file" class="form-control" id="reportFile" name="report_file" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reportNotes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="reportNotes" name="notes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Project Details Modal -->
+<div class="modal fade" id="projectModal" tabindex="-1" aria-labelledby="projectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="projectModalLabel">Project Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="projectDetailContent">
+                <!-- Content loaded via AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Set project ID when report button is clicked
+    $('.submit-report-btn').click(function() {
+        $('#projectIdInput').val($(this).data('project-id'));
+    });
+
+    // View project details
+    $('.view-project-btn').click(function() {
+        const projectId = $(this).data('project-id');
+        $.ajax({
+            url: `/project/${projectId}/detail/`,
+            type: 'GET',
+            success: function(data) {
+                $('#projectDetailContent').html(data);
+                $('#projectModal').modal('show');
+            },
+            error: function() {
+                $('#projectDetailContent').html(
+                    '<div class="alert alert-danger">Failed to load project details.</div>'
+                );
+                $('#projectModal').modal('show');
+            }
+        });
+    });
+
+    // Project search functionality
+    $('#projectSearch').keyup(function() {
+        const searchText = $(this).val().toLowerCase();
+        $('#projectTable tbody tr').each(function() {
+            const rowText = $(this).text().toLowerCase();
+            $(this).toggle(rowText.indexOf(searchText) > -1);
+        });
+    });
+
+    // Report form submission
+    $('#reportForm').submit(function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: '{% url "submit_report" %}',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    alert('Report submitted successfully!');
+                    $('#reportModal').modal('hide');
+                    location.reload(); // Refresh to show updated status
+                } else {
+                    alert('Error: ' + response.error);
+                }
+            },
+            error: function() {
+                alert('Error submitting report. Please try again.');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

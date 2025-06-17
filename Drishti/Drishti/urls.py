@@ -17,8 +17,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from dashboard import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('dashboard.urls')),
+    path('investigator/login/', views.investigator_login, name='investigator_login'),
+    path('investigator/signup/', views.investigator_signup, name='investigator_signup'),
+    path('investigator/dashboard/', views.investigator_dashboard, name='investigator_dashboard'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,6 +1,6 @@
 {% extends 'dashboard/base.html' %}
 
-{% block title %}Admin Control Panel{% endblock %}
+{% block title %}Admin View{% endblock %}
 
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css" rel="stylesheet">
@@ -20,21 +20,34 @@
         margin-bottom: 30px;
     }
     .filter-btn:hover {
-        background-color:rgb(3, 47, 114) !important; /* Navy blue */
+        background-color: rgb(3, 47, 114) !important;
         color: white !important;
     }
     .filter-btn.active {
-        background-color:rgb(5, 54, 103) !important; /* Navy blue */
+        background-color: rgb(5, 54, 103) !important;
         color: white !important;
+    }
+    .message-btn {
+        background-color: #052b67;
+        color: #f8f9fa;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        margin-left: 10px;
+    }
+    .message-btn:hover {
+        background-color: #041f4d;
+        color: white;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-    <h1 class="h2">Admin Control Panel</h1>
-    
+<h1 class="h2">Admin View</h1>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
     <!-- Status Filter Buttons -->
-    <div class="status-filter btn-group mb-4" role="group">
+    <div class="status-filter btn-group" role="group">
         <button type="button" class="btn btn-outline-primary filter-btn" data-status="all">All ({{ total_projects }})</button>
         <button type="button" class="btn btn-outline-primary filter-btn" data-status="ongoing">Ongoing ({{ ongoing }})</button>
         <button type="button" class="btn btn-outline-primary filter-btn" data-status="completed">Completed ({{ completed }})</button>
@@ -42,105 +55,110 @@
         <button type="button" class="btn btn-outline-primary filter-btn" data-status="up_next">Up Next ({{ up_next }})</button>
     </div>
     
-    <!-- Charts Row -->
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Project Status Distribution</h6>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="statusChart"></canvas>
-                    </div>
-                </div>
+    <!-- Message Button -->
+    <button class="message-btn">
+        <i class="bi bi-envelope"></i> Messages
+    </button>
+</div>
+
+<!-- Charts Row -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Project Status Distribution</h6>
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Agency Distribution</h6>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="agencyChart"></canvas>
-                    </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Project List -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Project List</h6>
-            <div>
-                <input type="text" class="form-control" id="projectSearch" placeholder="Search projects...">
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Agency Distribution</h6>
             </div>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover" id="projectTable" width="100%" cellspacing="0">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>Project Code</th>
-                            <th>Principal Agency</th>
-                            <th>Start Date</th>
-                            <th>Scheduled Completion</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for project in projects %}
-                        <tr class="clickable-row" data-id="{{ project.id }}" data-status="{{ project.status }}">
-                            <td>{{ project.project_code }}</td>
-                            <td>{{ project.principal_agency }}</td>
-                            <td>{{ project.start_date|date:"d/m/Y" }}</td>
-                            <td>{{ project.scheduled_completion|date:"d/m/Y" }}</td>
-                            <td>
-                                <span class="badge"
-                                    style="
-                                        {% if project.status == 'ongoing' %}background-color: #01cfff; color: white;
-                                        {% elif project.status == 'completed' %}background-color: #2cc88a; color: white;
-                                        {% elif project.status == 'pending' %}background-color: #ff0000; color: white;
-                                        {% elif project.status == 'up_next' %}background-color: #f6c23e; color: black;
-                                        {% else %}background-color: #6c757d; color: white;
-                                        {% endif %}">
-                                    {{ project.get_status_display }}
-                                </span>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-primary view-btn" data-id="{{ project.id }}">
-                                    <i class="bi bi-eye"></i> View
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Project Detail Modal -->
-    <div class="modal fade" id="projectModal" tabindex="-1" aria-labelledby="projectModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="projectModalLabel">Project Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="projectDetailContent">
-                    <!-- Content will be loaded via AJAX -->
-                    
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="agencyChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Project List -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">Project List</h6>
+        <div>
+            <input type="text" class="form-control" id="projectSearch" placeholder="Search projects...">
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="projectTable" width="100%" cellspacing="0">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Project Code</th>
+                        <th>Principal Agency</th>
+                        <th>Start Date</th>
+                        <th>Scheduled Completion</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                    <tr class="clickable-row" data-id="{{ project.id }}" data-status="{{ project.status }}">
+                        <td>{{ project.project_code }}</td>
+                        <td>{{ project.principal_agency }}</td>
+                        <td>{{ project.start_date|date:"d/m/Y" }}</td>
+                        <td>{{ project.scheduled_completion|date:"d/m/Y" }}</td>
+                        <td>
+                            <span class="badge"
+                                style="
+                                    {% if project.status == 'ongoing' %}background-color: #01cfff; color: white;
+                                    {% elif project.status == 'completed' %}background-color: #2cc88a; color: white;
+                                    {% elif project.status == 'pending' %}background-color: #ff0000; color: white;
+                                    {% elif project.status == 'up_next' %}background-color: #f6c23e; color: black;
+                                    {% else %}background-color: #6c757d; color: white;
+                                    {% endif %}">
+                                {{ project.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary view-btn" data-id="{{ project.id }}">
+                                <i class="bi bi-eye"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Project Detail Modal -->
+<div class="modal fade" id="projectModal" tabindex="-1" aria-labelledby="projectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="projectModalLabel">Project Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="projectDetailContent">
+                <!-- Content will be loaded via AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -269,25 +287,25 @@ $(document).ready(function() {
     });
 
     function loadProjectDetails(projectId) {
-    $.ajax({
-        url: `/project/${projectId}/detail/`,  // Make sure this matches your URL pattern
-        type: 'GET',
-        beforeSend: function(xhr) {
-            xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-        },
-        success: function(data) {
-            $('#projectDetailContent').html(data);
-            $('#projectModal').modal('show');
-        },
-        error: function(xhr, status, error) {
-            console.error("Error:", status, error);
-            $('#projectDetailContent').html(
-                '<div class="alert alert-danger">Failed to load project details. Please try again.</div>'
-            );
-            $('#projectModal').modal('show');
-        }
-    });
-}
+        $.ajax({
+            url: `/project/${projectId}/detail/`,
+            type: 'GET',
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+            },
+            success: function(data) {
+                $('#projectDetailContent').html(data);
+                $('#projectModal').modal('show');
+            },
+            error: function(xhr, status, error) {
+                console.error("Error:", status, error);
+                $('#projectDetailContent').html(
+                    '<div class="alert alert-danger">Failed to load project details. Please try again.</div>'
+                );
+                $('#projectModal').modal('show');
+            }
+        });
+    }
 });
 </script>
 {% endblock %}
