@@ -2,8 +2,109 @@
 
 {% block content %}
 <div class="container-fluid">
-    <h1 class="h3 mb-4">Investigator Dashboard</h1>
-    
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Investigator Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <!-- User Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-1"></i>
+                            {{ request.user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form id="logoutForm" method="post" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Notifications -->
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" href="#" id="notificationDropdown" 
+                           role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-bell-fill"></i>
+                            {% if unread_notifications %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{ unread_notifications|length }}
+                            </span>
+                            {% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="notificationDropdown" 
+                            style="min-width: 350px;">
+                            <li class="dropdown-header bg-light py-2">
+                                <strong>Notifications</strong>
+                            </li>
+                            {% if unread_notifications %}
+                                {% for notification in unread_notifications %}
+                                <li class="px-3 py-2 border-bottom">
+                                    <div class="d-flex">
+                                        <div class="flex-shrink-0 me-2">
+                                            <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                                        </div>
+                                        <div>
+                                            <p class="mb-1">{{ notification.message }}</p>
+                                            <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                                            {% if notification.report %}
+                                            <div class="mt-1">
+                                                {% if notification.notification_type == 'report_rejected' or notification.notification_type == 'resubmit_requested' %}
+                                                <a href="{% url 'resubmit_report' notification.report.id %}" 
+                                                   class="btn btn-sm btn-warning">
+                                                    <i class="bi bi-arrow-repeat"></i> Resubmit
+                                                </a>
+                                                {% endif %}
+                                                <a href="{% url 'view_report' notification.report.id %}" 
+                                                   class="btn btn-sm btn-primary">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                                <li class="text-center py-2 bg-light">
+                                    <a href="#" class="text-primary">View all notifications</a>
+                                </li>
+                            {% else %}
+                                <li class="px-3 py-3 text-center">
+                                    <p class="mb-0">No new notifications</p>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Welcome Banner -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="alert alert-info d-flex align-items-center">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <div>
+                    Welcome back, <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>! 
+                    You have {% if projects %} {{ projects|length }} active project{{ projects|pluralize }}{% else %}no active projects{% endif %}.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projects Card -->
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold text-primary">My Projects</h6>
@@ -14,18 +115,19 @@
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered" id="projectTable">
-                    <thead>
+                    <thead class="table-light">
                         <tr>
                             <th>Project Code</th>
                             <th>Title</th>
                             <th>Status</th>
                             <th>Completion Date</th>
+                            <th>Report Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for project in projects %}
-                        <tr>
+                        <tr class="{% if project.report_resubmit_requested %}table-warning{% endif %}">
                             <td>{{ project.project_code }}</td>
                             <td>{{ project.title }}</td>
                             <td>
@@ -39,25 +141,86 @@
                                     {{ project.get_status_display }}
                                 </span>
                             </td>
-                            <td>{{ project.scheduled_completion|date:"d/m/Y" }}</td>
+                            <td>{{ project.completion_date|date:"Y-m-d"|default:"-" }}</td>
                             <td>
-                                {% if project.status != 'completed' %}
-                                <button class="btn btn-sm btn-primary submit-report-btn" 
-                                        data-project-id="{{ project.id }}"
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#reportModal">
-                                    <i class="bi bi-upload"></i> Submit Report
-                                </button>
-                                {% endif %}
-                                <button class="btn btn-sm btn-info view-project-btn" 
-                                        data-project-id="{{ project.id }}">
-                                    <i class="bi bi-eye"></i> View
-                                </button>
+                                {% with report=project.report_set.first %}
+                                    {% if report %}
+                                        {% if report.status == 'approved' %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Approved
+                                            </span>
+                                        {% elif report.status == 'submitted' %}
+                                            <span class="badge bg-info">
+                                                <i class="bi bi-hourglass"></i> Under Review
+                                            </span>
+                                        {% elif report.status == 'rejected' %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle"></i> Rejected
+                                            </span>
+                                            {% if report.rejection_reason %}
+                                            <div class="small text-muted mt-1">
+                                                <i class="bi bi-exclamation-circle"></i> {{ report.rejection_reason|truncatechars:30 }}
+                                            </div>
+                                            {% endif %}
+                                        {% elif report.status == 'resubmit_requested' %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-arrow-repeat"></i> Resubmit Required
+                                            </span>
+                                            {% if report.resubmission_reason %}
+                                            <div class="small text-muted mt-1">
+                                                <i class="bi bi-exclamation-circle"></i> {{ report.resubmission_reason|truncatechars:30 }}
+                                            </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% else %}
+                                        {% if project.status == 'completed' %}
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-exclamation-triangle"></i> Not Submitted
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-dash-circle"></i> Not Required Yet
+                                            </span>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    {% with report=project.report_set.first %}
+                                        {% if project.status == 'completed' or report %}
+                                            {% if not report or report.status in 'rejected,resubmit_requested' %}
+                                                <button class="btn btn-warning submit-report-btn" 
+                                                        data-project-id="{{ project.id }}"
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#reportModal">
+                                                    <i class="bi bi-arrow-repeat"></i> {% if report %}Resubmit{% else %}Submit{% endif %}
+                                                </button>
+                                            {% endif %}
+                                            
+                                            {% if report %}
+                                                <a href="{% url 'view_report' report.id %}" class="btn btn-info">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                            {% else %}
+                                                <button class="btn btn-info view-project-btn" 
+                                                        data-project-id="{{ project.id }}">
+                                                    <i class="bi bi-eye"></i> View
+                                                </button>
+                                            {% endif %}
+                                        {% else %}
+                                            <button class="btn btn-info view-project-btn" 
+                                                    data-project-id="{{ project.id }}">
+                                                <i class="bi bi-eye"></i> View
+                                            </button>
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center">No projects assigned yet</td>
+                            <td colspan="6" class="text-center">No projects assigned yet</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -71,26 +234,46 @@
 <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="reportModalLabel">Submit Project Report</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="reportForm" method="post" enctype="multipart/form-data">
+            <form id="reportForm" method="post" enctype="multipart/form-data" data-url-template="{% url 'submit_report' project_id=0 %}">
                 <div class="modal-body">
                     {% csrf_token %}
                     <input type="hidden" name="project_id" id="projectIdInput">
                     <div class="mb-3">
-                        <label for="reportFile" class="form-label">Report File</label>
-                        <input type="file" class="form-control" id="reportFile" name="report_file" required>
+                        <label for="reportFile" class="form-label">Report File (PDF only)</label>
+                        <input type="file" class="form-control" id="reportFile" name="report_file" accept=".pdf" required>
+                        <div class="form-text">Maximum file size: 10MB</div>
                     </div>
                     <div class="mb-3">
                         <label for="reportNotes" class="form-label">Notes</label>
                         <textarea class="form-control" id="reportNotes" name="notes" rows="3"></textarea>
                     </div>
+                    {% with report=project.report_set.first %}
+                        {% if report and report.status in 'rejected,resubmit_requested' %}
+                            <div class="alert alert-warning">
+                                <h6><i class="bi bi-exclamation-triangle"></i> Previous Feedback:</h6>
+                                <p class="mb-0">
+                                    {% if report.status == 'rejected' and report.rejection_reason %}
+                                        {{ report.rejection_reason }}
+                                    {% elif report.status == 'resubmit_requested' and report.resubmission_reason %}
+                                        {{ report.resubmission_reason }}
+                                    {% else %}
+                                        Please review and resubmit your report.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        {% endif %}
+                    {% endwith %}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Submit Report</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span id="submitButtonText">Submit Report</span>
+                        <span id="submitSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -101,9 +284,9 @@
 <div class="modal fade" id="projectModal" tabindex="-1" aria-labelledby="projectModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-info text-white">
                 <h5 class="modal-title" id="projectModalLabel">Project Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="projectDetailContent">
                 <!-- Content loaded via AJAX -->
@@ -122,24 +305,50 @@
 $(document).ready(function() {
     // Set project ID when report button is clicked
     $('.submit-report-btn').click(function() {
-        $('#projectIdInput').val($(this).data('project-id'));
+        const projectId = $(this).data('project-id');
+        $('#projectIdInput').val(projectId);
+        
+        // Update form action with the correct project_id
+        const urlTemplate = $('#reportForm').data('url-template');
+        const actionUrl = urlTemplate.replace('0', projectId);
+        $('#reportForm').attr('action', actionUrl);
+        
+        // Update modal title based on action
+        const isResubmit = $(this).text().includes('Resubmit');
+        $('#reportModalLabel').text(isResubmit ? 'Resubmit Project Report' : 'Submit Project Report');
+        $('#submitButtonText').text(isResubmit ? 'Resubmit Report' : 'Submit Report');
+        
+        // Clear form when opening modal
+        $('#reportFile').val('');
+        $('#reportNotes').val('');
     });
 
     // View project details
     $('.view-project-btn').click(function() {
         const projectId = $(this).data('project-id');
+        $('#projectDetailContent').html(`
+            <div class="text-center my-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading project details...</p>
+            </div>
+        `);
+        $('#projectModal').modal('show');
+        
         $.ajax({
             url: `/project/${projectId}/detail/`,
             type: 'GET',
             success: function(data) {
                 $('#projectDetailContent').html(data);
-                $('#projectModal').modal('show');
             },
             error: function() {
-                $('#projectDetailContent').html(
-                    '<div class="alert alert-danger">Failed to load project details.</div>'
-                );
-                $('#projectModal').modal('show');
+                $('#projectDetailContent').html(`
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Failed to load project details. Please try again.
+                    </div>
+                `);
             }
         });
     });
@@ -156,28 +365,104 @@ $(document).ready(function() {
     // Report form submission
     $('#reportForm').submit(function(e) {
         e.preventDefault();
+        const submitBtn = $(this).find('button[type="submit"]');
+        submitBtn.prop('disabled', true);
+        $('#submitSpinner').removeClass('d-none');
+        
         const formData = new FormData(this);
+        const isResubmit = $('#submitButtonText').text().includes('Resubmit');
         
         $.ajax({
-            url: '{% url "submit_report" %}',
+            url: $(this).attr('action'),
             type: 'POST',
             data: formData,
             processData: false,
             contentType: false,
             success: function(response) {
                 if (response.success) {
-                    alert('Report submitted successfully!');
+                    // Show success message
+                    const message = isResubmit ? 
+                        'Report resubmitted successfully!' : 
+                        'Report submitted successfully!';
+                    
+                    // Create temporary alert
+                    const alertHtml = `
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <strong>Success!</strong> ${message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    `;
+                    $('.container-fluid').prepend(alertHtml);
+                    
+                    // Close modal and refresh after delay
                     $('#reportModal').modal('hide');
-                    location.reload(); // Refresh to show updated status
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
                 } else {
-                    alert('Error: ' + response.error);
+                    let errorMessage = 'Error: ' + (response.error || 'Unknown error occurred');
+                    if (response.errors) {
+                        errorMessage += '\n' + Object.values(response.errors).join('\n');
+                    }
+                    alert(errorMessage);
                 }
             },
-            error: function() {
-                alert('Error submitting report. Please try again.');
+            error: function(xhr) {
+                let errorMsg = 'Error submitting report. Please try again.';
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.error) {
+                        errorMsg = response.error;
+                    } else if (response.errors) {
+                        errorMsg = Object.values(response.errors).join('\n');
+                    }
+                } catch (e) {
+                    console.error('Error parsing response:', e);
+                }
+                alert(errorMsg);
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false);
+                $('#submitSpinner').addClass('d-none');
             }
         });
     });
+
+    // File size validation
+    $('#reportFile').change(function() {
+        const file = this.files[0];
+        if (file) {
+            if (file.size > 10 * 1024 * 1024) { // 10MB
+                alert('File size exceeds 10MB limit. Please choose a smaller file.');
+                $(this).val('');
+            } else if (!file.name.toLowerCase().endsWith('.pdf')) {
+                alert('Only PDF files are allowed.');
+                $(this).val('');
+            }
+        }
+    });
+
+    // Logout form submission
+    $('#logoutForm').submit(function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function() {
+                window.location.href = "{% url 'login' %}";
+            },
+            error: function() {
+                window.location.href = "{% url 'login' %}";
+            }
+        });
+    });
+
+    // Auto-refresh page every 5 minutes to check for status updates
+    setInterval(function() {
+        location.reload();
+    }, 300000); // 5 minutes
 });
 </script>
 {% endblock %}

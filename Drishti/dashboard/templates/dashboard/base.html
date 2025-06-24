@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{%load static%}
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,15 +7,36 @@
     <title>{% block title %}Drishti{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .sidebar {
+            height: 100vh;
+            position: fixed;
+        }
+        .sidebar-content {
+            display: flex;
+            flex-direction: column;
+            height: calc(100% - 20px);
+        }
+        .sidebar-nav {
+            flex-grow: 1;
+        }
+        .user-dropdown {
+            padding: 10px 0;
+            margin-top: auto;
+        }
+        main {
+            margin-left: 16.666667%; /* Match sidebar width */
+        }
+    </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
-                <div class="position-sticky pt-3">
-                    <ul class="nav flex-column">
+            <div class="col-md-3 col-lg-2 d-md-block bg-dark sidebar">
+                <div class="position-sticky pt-3 sidebar-content">
+                    <ul class="nav flex-column sidebar-nav">
                         <li class="nav-item">
                             <a class="nav-link text-white {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" href="{% url 'admin_dashboard' %}">
                                 <i class="bi bi-speedometer2 me-2"></i>Admin Dashboard
@@ -42,11 +63,36 @@
                             </a>
                         </li>
                     </ul>
+                    
+                    <!-- User dropdown at bottom with proper spacing -->
+                    <div class="user-dropdown">
+                        <div class="dropdown">
+                            <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle ps-2" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle me-2"></i>
+                                <strong>{{ request.user.username }}</strong>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser">
+                                <li><a class="dropdown-item" href="#">Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">Sign out</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
             
             <!-- Main content -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <!-- Investigator Notifications (only shown in investigator views) -->
+                {% if request.resolver_match.url_name == 'investigator_dashboard' and unread_notifications_count > 0 %}
+                <div class="alert alert-warning alert-dismissible fade show mb-4">
+                    <h4><i class="bi bi-bell-fill me-2"></i>Notifications</h4>
+                    <p>You have {{ unread_notifications_count }} unread notification(s)</p>
+                    <a href="{% url 'investigator_notifications' %}" class="btn btn-sm btn-warning">View Notifications</a>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+                
                 {% block content %}{% endblock %}
             </main>
         </div>

@@ -14,18 +14,33 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+# drishti/urls.py (project-level)
 from django.contrib import admin
 from django.urls import path, include
-from dashboard import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth.views import LogoutView, LoginView
+from django.views.generic.base import RedirectView
+from dashboard import views
 
 urlpatterns = [
+    # Admin
     path('admin/', admin.site.urls),
+    
+    # Authentication
+    path('login/', LoginView.as_view(template_name='dashboard/investigator_login.html'), name='login'),
+    path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
+    
+    # Dashboard app
     path('', include('dashboard.urls')),
+    
+    # Investigator specific views
     path('investigator/login/', views.investigator_login, name='investigator_login'),
     path('investigator/signup/', views.investigator_signup, name='investigator_signup'),
     path('investigator/dashboard/', views.investigator_dashboard, name='investigator_dashboard'),
+    
+    # Redirect root to dashboard
+    path('', RedirectView.as_view(url='investigator/dashboard/')),
 ]
 
 if settings.DEBUG:

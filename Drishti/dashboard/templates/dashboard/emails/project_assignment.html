@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Project Assignment</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4a6fdc; /* Drishti brand blue */
+            padding: 20px;
+            text-align: center;
+            color: white;
+            border-radius: 4px 4px 0 0;
+        }
+        .logo {
+            max-width: 150px;
+            height: auto;
+        }
+        .content {
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .project-title {
+            color: #2c3e50;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+        .project-detail {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eeeeee;
+        }
+        .button {
+            background-color: #4a6fdc;
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            display: inline-block;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #777777;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <!-- Replace with your actual logo URL -->
+        <img src="https://yourdomain.com/static/images/drishti-logo-white.png" alt="Drishti Logo" class="logo">
+        <h2>New Project Assignment</h2>
+    </div>
+    
+    <div class="content">
+        <p>Dear {{ investigator.get_full_name }},</p>
+        
+        <p>You have been assigned to a new research project in <strong>Drishti Research Portal</strong>:</p>
+        
+        <div class="project-title">{{ project.title }} ({{ project.project_code }})</div>
+        
+        <div class="project-detail">
+            <strong>Project Type:</strong> {{ project.get_project_type_display }}<br>
+            <strong>Principal Agency:</strong> {{ project.principal_agency }}<br>
+            <strong>Start Date:</strong> {{ project.start_date|date:"F j, Y" }}<br>
+            <strong>Scheduled Completion:</strong> {{ project.scheduled_completion|date:"Fj, Y" }}<br>
+            <strong>Budget:</strong> {{ project.get_budget_display }}
+        </div>
+
+        <h3>Project Description:</h3>
+        <p>{{ project.description|linebreaksbr }}</p>
+
+        <p>
+            <a href="{{ project_url }}" class="button">View Project Details</a>
+        </p>
+
+        <p>If you have any questions, please contact:<br>
+        <a href="mailto:{{ admin_contact }}">{{ admin_contact }}</a></p>
+    </div>
+    
+    <div class="footer">
+        <p>Best regards,<br>
+        <strong>Drishti Research Administration Team</strong></p>
+        
+        <p>This is an automated notification. Please do not reply to this email.</p>
+    </div>
+</body>
+</html>

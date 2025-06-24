@@ -1,0 +1,106 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">
+                    <i class="bi bi-file-earmark-text"></i> Report Details
+                </h3>
+                <span class="badge bg-{% if report.status == 'approved' %}success
+                                      {% elif report.status == 'rejected' %}danger
+                                      {% else %}warning{% endif %}">
+                    {{ report.get_status_display }}
+                </span>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>Project Information</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>Project:</strong> {{ report.project.title }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Project Code:</strong> {{ report.project.project_code }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Submitted On:</strong> {{ report.submitted_at|date:"F j, Y H:i" }}
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5>Report Actions</h5>
+                    <div class="d-grid gap-2">
+                        {% if report.report_file %}
+                            <a href="{{ report.report_file.url }}" 
+                               class="btn btn-primary" 
+                               download>
+                                <i class="bi bi-download"></i> Download Report
+                            </a>
+                            <a href="{{ report.report_file.url }}" 
+                               target="_blank" 
+                               class="btn btn-secondary">
+                                <i class="bi bi-eye"></i> View Report (PDF)
+                            </a>
+                        {% endif %}
+                        
+                        {% if report.status == 'resubmit_requested' %}
+                            <a href="{% url 'resubmit_report' report.id %}" 
+                               class="btn btn-warning">
+                                <i class="bi bi-arrow-repeat"></i> Resubmit Report
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            {% if report.notes %}
+            <div class="mb-3">
+                <h5>Investigator Notes</h5>
+                <div class="card">
+                    <div class="card-body">
+                        {{ report.notes|linebreaks }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if report.admin_comment %}
+            <div class="mb-3">
+                <h5>Admin Feedback</h5>
+                <div class="card border-{% if report.status == 'approved' %}success
+                                      {% elif report.status == 'rejected' %}danger
+                                      {% else %}warning{% endif %}">
+                    <div class="card-body">
+                        {{ report.admin_comment|linebreaks }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="mt-4">
+                <a href="{% url 'investigator_notifications' %}" 
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Notifications
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-header {
+        padding: 1rem 1.5rem;
+    }
+    .list-group-item {
+        padding: 0.75rem 1.25rem;
+    }
+</style>
+{% endblock %}

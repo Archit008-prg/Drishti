@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'dashboard',
+    # 'dashboard',
+    'dashboard.apps.DashboardConfig',
 ]
 
 
@@ -53,8 +54,17 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-LOGIN_REDIRECT_URL = '/admin/'  # Will redirect to filtered view
-LOGOUT_REDIRECT_URL = '/admin/'
+# Authentication Settings
+LOGIN_URL = 'login'
+LOGOUT_REDIRECT_URL = 'login'
+LOGIN_REDIRECT_URL = 'investigator_dashboard'
+
+# Session Settings
+SESSION_COOKIE_AGE = 3600  # 1 hour timeout (good default)
+SESSION_SAVE_EVERY_REQUEST = True  # Good for security
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Session persists after browser closes
+SESSION_COOKIE_SECURE = True if not DEBUG else False  # HTTPS in production
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access
 
 # Add these settings at the bottom of your settings.py
 
@@ -73,6 +83,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'dashboard.context_processors.notifications_count'
             ],
         },
     },
@@ -133,3 +144,52 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'dashboard/static')]
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# settings.py
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.sendgrid.net'  # From your screenshot
+EMAIL_PORT = 587                     # TLS port (from screenshot)
+EMAIL_USE_TLS = True                 # Required for port 587
+EMAIL_HOST_USER = 'apikey'  # Your SMTP login
+EMAIL_HOST_PASSWORD = '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'  # Covered in *****
+DEFAULT_FROM_EMAIL = 'Drishti App <appdrishty@gmail.com>'  # Customize this
+
+# Application Settings
+BASE_URL = 'http://localhost:8000'  # Change to your actual domain
+ADMIN_EMAIL = 'appdrishty@gmail.com'
+
+
+
+# from django.core.mail import send_mail
+# from datetime import datetime
+
+# # Email content
+# subject = "Test Email from Django (Plain Text)"
+# message = """
+# Hello,
+
+# This is a test email sent from Django via Brevo SMTP.
+
+# - Time sent: {time}
+# - From: {sender}
+# - To: {recipient}
+
+# If you receive this, your email setup is working!
+
+# Best regards,
+# Drishti App Team
+# """.format(
+#     time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+#     sender="admdrishti2025@gmail.com",  # Recommended: Use your domain email
+#     recipient="pragyesharchit8@gmail.com"  # Actual recipient email
+# )
+
+# # Send email
+# send_mail(
+#     subject=subject,
+#     message=message,
+#     from_email="admdrishti2025@gmail.com",  # Should match authenticated domain in Brevo
+#     recipient_list=["pragyesharchit8@gmail.com"],
+#     fail_silently=False,
+# )

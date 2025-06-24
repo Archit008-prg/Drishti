@@ -1,0 +1,23 @@
+Dear {{ investigator.get_full_name }},
+
+You have been assigned to a new research project:
+
+Project Code: {{ project.project_code }}
+Title: {{ project.title }}
+Type: {{ project.get_project_type_display }}
+Principal Agency: {{ project.principal_agency }}
+Start Date: {{ project.start_date|date:"F j, Y" }}
+Scheduled Completion: {{ project.scheduled_completion|date:"F j, Y" }}
+Budget: {{ project.get_budget_display }}
+
+Project Description:
+{{ project.description }}
+
+Please log in to the portal to view complete details:
+{{ project_url }}
+
+If you have any questions, please contact:
+{{ admin_contact }}
+
+Best regards,
+Research Administration Team
