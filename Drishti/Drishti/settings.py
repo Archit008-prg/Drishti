@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -148,48 +149,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # settings.py
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.sendgrid.net'  # From your screenshot
-EMAIL_PORT = 587                     # TLS port (from screenshot)
-EMAIL_USE_TLS = True                 # Required for port 587
-EMAIL_HOST_USER = 'apikey'  # Your SMTP login
-EMAIL_HOST_PASSWORD = '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'  # Covered in *****
-DEFAULT_FROM_EMAIL = 'Drishti App <appdrishty@gmail.com>'  # Customize this
+EMAIL_HOST = 'smtp.sendgrid.net'  
+EMAIL_PORT = 587                    
+EMAIL_USE_TLS = True                
+EMAIL_HOST_USER = 'apikey'  
+EMAIL_HOST_PASSWORD = ''  
+DEFAULT_FROM_EMAIL = 'Drishti App <appdrishty@gmail.com>'  
 
 # Application Settings
-BASE_URL = 'http://localhost:8000'  # Change to your actual domain
+BASE_URL = 'http://localhost:8000'  
 ADMIN_EMAIL = 'appdrishty@gmail.com'
 
-
-
-# from django.core.mail import send_mail
-# from datetime import datetime
-
-# # Email content
-# subject = "Test Email from Django (Plain Text)"
-# message = """
-# Hello,
-
-# This is a test email sent from Django via Brevo SMTP.
-
-# - Time sent: {time}
-# - From: {sender}
-# - To: {recipient}
-
-# If you receive this, your email setup is working!
-
-# Best regards,
-# Drishti App Team
-# """.format(
-#     time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-#     sender="admdrishti2025@gmail.com",  # Recommended: Use your domain email
-#     recipient="pragyesharchit8@gmail.com"  # Actual recipient email
-# )
-
-# # Send email
-# send_mail(
-#     subject=subject,
-#     message=message,
-#     from_email="admdrishti2025@gmail.com",  # Should match authenticated domain in Brevo
-#     recipient_list=["pragyesharchit8@gmail.com"],
-#     fail_silently=False,
-# )

@@ -188,7 +188,7 @@
                             <td>
                                 <div class="btn-group btn-group-sm">
                                     {% with report=project.report_set.first %}
-                                        {% if project.status == 'completed' or report %}
+                                        {% if project.status == 'completed' %}
                                             {% if not report or report.status in 'rejected,resubmit_requested' %}
                                                 <button class="btn btn-warning submit-report-btn" 
                                                         data-project-id="{{ project.id }}"
@@ -387,7 +387,7 @@ $(document).ready(function() {
                     
                     // Create temporary alert
                     const alertHtml = `
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <div class="alert alert-success alert-dismissible fade show" role="alert" id="tempAlert">
                             <i class="bi bi-check-circle-fill me-2"></i>
                             <strong>Success!</strong> ${message}
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -395,11 +395,18 @@ $(document).ready(function() {
                     `;
                     $('.container-fluid').prepend(alertHtml);
                     
-                    // Close modal and refresh after delay
+                    // Close modal
                     $('#reportModal').modal('hide');
+                    
+                    // Remove the alert after 2 seconds
                     setTimeout(() => {
-                        location.reload();
-                    }, 1500);
+                        $('#tempAlert').alert('close');
+                    }, 2000);
+                    
+                    // Refresh the page to update status after 2 seconds
+                    setTimeout(() => {
+                        location.reload(true);
+                    }, 2000);
                 } else {
                     let errorMessage = 'Error: ' + (response.error || 'Unknown error occurred');
                     if (response.errors) {

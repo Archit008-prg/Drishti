@@ -132,7 +132,6 @@ def investigator_notifications(request):
 @transaction.atomic
 def submit_report(request, project_id):
     project = get_object_or_404(Project, id=project_id, assigned_investigator=request.user)
-
     
     if request.method == 'POST':
         form = ReportForm(request.POST, request.FILES)
@@ -156,15 +155,29 @@ def submit_report(request, project_id):
                 notification_type='report_submitted'
             )
             
-            messages.success(request, "Report submitted successfully!")
-            return redirect('investigator_dashboard')
-    else:
-        form = ReportForm()
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Report submitted successfully!'
+                })
+            else:
+                messages.success(request, "Report submitted successfully!")
+                return redirect('investigator_dashboard')
+        else:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'errors': form.errors.get_json_data()
+                }, status=400)
     
-    return render(request, 'dashboard/submit_report.html', {
-        'form': form,
-        'project': project
-    })
+    # Handle non-AJAX GET requests
+    if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+        form = ReportForm()
+        return render(request, 'dashboard/submit_report.html', {
+            'form': form,
+            'project': project
+        })
+    return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
     
 
 

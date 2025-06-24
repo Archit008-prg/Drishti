@@ -88,16 +88,7 @@ class Project(models.Model):
         help_text="Admin can request investigator to resubmit report"
     )
 
-    # @property
-    # def latest_report(self):
-    #     return self.report_set.order_by('-created_at').first()
-    
-    # @property
-    # def report_status(self):
-    #     report = self.latest_report
-    #     if report:
-    #         return report.status
-    #     return None
+
 
     def can_submit_report(self):
         """Check if report can be submitted for this project"""
