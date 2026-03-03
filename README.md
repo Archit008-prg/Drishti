@@ -1,12 +1,12 @@
 # Drishti: A Real-Time Project Monitoring System
 
-**A Django-based centralized monitoring platform for CMPDI projects, enabling streamlined communication, intelligent tracking, and timely decision-making throughout the project lifecycle.**
+**A Django-based centralized monitoring platform for monitoring projects, enabling streamlined communication, intelligent tracking, and timely decision-making throughout the project lifecycle.**
 
 ---
 
 ## 🚀 Overview
 
-**Drishti** is a full-stack web application developed to facilitate **real-time monitoring and management of projects** undertaken by CMPDI (Central Mine Planning and Design Institute). It bridges the gap between project administrators and investigators, ensuring that progress is tracked effectively, submissions are evaluated intelligently, and delays are mitigated early on.
+**Drishti** is a full-stack web application developed to facilitate **real-time monitoring and management of projects**. It bridges the gap between project administrators and investigators, ensuring that progress is tracked effectively, submissions are evaluated intelligently, and delays are mitigated early on.
 
 Whether it's assigning new projects, tracking deliverables, or validating final submissions using AI — **Drishti** aims to be a single source of truth and collaboration for all stakeholders involved in the lifecycle of a project.
 
@@ -74,8 +74,7 @@ pip install -r req.txt
 python manage.py makemigrations
 python manage.py migrate
 
-# Create a superuser for admin access
-python manage.py createsuperuser
+# Create a superuser for admin access: python manage.py createsuperuser
 
 # Run the development server
 python manage.py runserver
