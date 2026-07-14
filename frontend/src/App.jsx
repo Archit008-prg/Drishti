@@ -812,8 +812,9 @@ function App() {
             position: 'sticky',
             top: 0,
             zIndex: 90,
-            background: 'radial-gradient(circle at 85% 0%, rgba(255, 255, 255, 0.055) 0%, transparent 55%), transparent',
-            borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)',
+            background: 'radial-gradient(ellipse 55% 140% at 100% 0%, rgba(155, 77, 255, 0.52) 0%, rgba(130, 50, 220, 0.22) 38%, transparent 65%)',
+            borderBottom: '0.5px solid rgba(155, 77, 255, 0.12)',
+            backdropFilter: 'blur(2px)',
           }}
         >
           <div>

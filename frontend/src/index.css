@@ -12,8 +12,8 @@
   --panel-glass: rgba(14, 19, 39, 0.65);
   --panel-glass-hover: rgba(22, 28, 54, 0.85);
   --border-glass: rgba(255, 255, 255, 0.08);
-  --border-glass-focus: rgba(168, 85, 247, 0.45);
-  --accent-purple: #a855f7;
+  --border-glass-focus: rgba(155, 77, 255, 0.45);
+  --accent-purple: #9b4dff;
   --accent-blue: #3b82f6;
   --accent-mint: #10b981;
   --accent-yellow: #eab308;
@@ -23,7 +23,7 @@
 }
 
 body {
-  background: #0d0d12 radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.18) 0%, rgba(13, 13, 18, 0) 65%) !important;
+  background: #0b0b12 radial-gradient(ellipse at 100% 0%, rgba(155, 77, 255, 0.14) 0%, rgba(11, 11, 18, 0) 60%) !important;
   color: #ffffff;
   font-family: 'Inter', 'Outfit', sans-serif !important;
   overflow-x: hidden;
@@ -34,12 +34,12 @@ body {
 .ambient-glow-1 {
   position: fixed;
   top: -10%;
-  left: -5%;
-  width: 600px;
-  height: 600px;
+  right: -5%;
+  width: 700px;
+  height: 700px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
-  filter: blur(100px);
+  background: radial-gradient(circle, rgba(155, 77, 255, 0.14) 0%, rgba(0, 0, 0, 0) 70%);
+  filter: blur(120px);
   pointer-events: none;
   z-index: -1;
 }
