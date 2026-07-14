@@ -17,7 +17,7 @@
 }
 
 body {
-  background-color: var(--bg-dark);
+  background: #0d0d12 radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.18) 0%, rgba(13, 13, 18, 0) 65%) !important;
   color: var(--text-primary);
   font-family: 'Outfit', sans-serif;
   overflow-x: hidden;
@@ -433,54 +433,24 @@ body {
 }
 /* Feature Cards Spotlights */
 .card-spotlight-blue {
-  position: relative;
-  overflow: hidden;
-}
-.card-spotlight-blue::before {
-  content: '';
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.28) 0%, rgba(0,0,0,0) 70%);
-  filter: blur(25px);
-  pointer-events: none;
+  background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.28) 0%, rgba(13, 13, 18, 0.8) 75%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 10px 40px rgba(59, 130, 246, 0.08) !important;
+  backdrop-filter: blur(25px) !important;
 }
 
 .card-spotlight-purple {
-  position: relative;
-  overflow: hidden;
-}
-.card-spotlight-purple::before {
-  content: '';
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.28) 0%, rgba(0,0,0,0) 70%);
-  filter: blur(25px);
-  pointer-events: none;
+  background: radial-gradient(circle at top right, rgba(168, 85, 247, 0.28) 0%, rgba(13, 13, 18, 0.8) 75%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 10px 40px rgba(168, 85, 247, 0.08) !important;
+  backdrop-filter: blur(25px) !important;
 }
 
 .card-spotlight-mint {
-  position: relative;
-  overflow: hidden;
-}
-.card-spotlight-mint::before {
-  content: '';
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.28) 0%, rgba(0,0,0,0) 70%);
-  filter: blur(25px);
-  pointer-events: none;
+  background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.28) 0%, rgba(13, 13, 18, 0.8) 75%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 10px 40px rgba(16, 185, 129, 0.08) !important;
+  backdrop-filter: blur(25px) !important;
 }
 
 .icon-container-translucent {
