@@ -679,7 +679,10 @@ function App() {
 
   // 4. MAIN APPLICATION DASHBOARDS (AFTER AUTH)
   return (
-    <div className="d-flex position-relative min-vh-100">
+    <div 
+      className="d-flex position-relative min-vh-100 bg-[#0B0C10]" 
+      style={{ backgroundImage: 'radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.12) 0%, transparent 70%)' }}
+    >
       {/* Background Ambient Glows */}
       <div className="ambient-glow-1"></div>
       <div className="ambient-glow-2"></div>
@@ -1019,8 +1022,9 @@ function App() {
                   <div className="row mb-4">
                     {/* Left: 3 Feature Cards stacked vertically */}
                     <div className="col-lg-4 d-flex flex-column gap-3 mb-4 mb-lg-0">
-                      <div className="card card-glass card-spotlight-blue p-3 flex-fill">
-                        <div className="d-flex align-items-start gap-3">
+                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden">
+                        <div className="position-absolute top-0 start-0 w-100 h-100" style={{ background: 'radial-gradient(120% 120% at 100% 0%, rgba(59, 130, 246, 0.25) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                        <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
                           <div className="icon-container-translucent flex-shrink-0">
                             <i className="bi bi-star-fill" style={{ color: 'var(--accent-blue)' }}></i>
                           </div>
@@ -1033,8 +1037,9 @@ function App() {
                         </div>
                       </div>
 
-                      <div className="card card-glass card-spotlight-purple p-3 flex-fill">
-                        <div className="d-flex align-items-start gap-3">
+                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden">
+                        <div className="position-absolute top-0 start-0 w-100 h-100" style={{ background: 'radial-gradient(120% 120% at 100% 0%, rgba(139, 92, 246, 0.25) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                        <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
                           <div className="icon-container-translucent flex-shrink-0">
                             <i className="bi bi-pencil-fill" style={{ color: 'var(--accent-purple)' }}></i>
                           </div>
@@ -1047,8 +1052,9 @@ function App() {
                         </div>
                       </div>
 
-                      <div className="card card-glass card-spotlight-mint p-3 flex-fill">
-                        <div className="d-flex align-items-start gap-3">
+                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden">
+                        <div className="position-absolute top-0 start-0 w-100 h-100" style={{ background: 'radial-gradient(120% 120% at 100% 0%, rgba(16, 185, 129, 0.25) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                        <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
                           <div className="icon-container-translucent flex-shrink-0">
                             <i className="bi bi-stars" style={{ color: 'var(--accent-mint)' }}></i>
                           </div>
@@ -1882,8 +1888,9 @@ function App() {
                   <div className="row mb-4">
                     {/* Left: 3 Feature Cards stacked vertically */}
                     <div className="col-lg-4 d-flex flex-column gap-3 mb-4 mb-lg-0">
-                      <div className="card card-glass card-spotlight-blue p-3 flex-fill">
-                        <div className="d-flex align-items-start gap-3">
+                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden">
+                        <div className="position-absolute top-0 start-0 w-100 h-100" style={{ background: 'radial-gradient(120% 120% at 100% 0%, rgba(59, 130, 246, 0.25) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                        <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
                           <div className="icon-container-translucent flex-shrink-0">
                             <i className="bi bi-star-fill" style={{ color: 'var(--accent-blue)' }}></i>
                           </div>
@@ -1896,8 +1903,9 @@ function App() {
                         </div>
                       </div>
 
-                      <div className="card card-glass card-spotlight-purple p-3 flex-fill">
-                        <div className="d-flex align-items-start gap-3">
+                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden">
+                        <div className="position-absolute top-0 start-0 w-100 h-100" style={{ background: 'radial-gradient(120% 120% at 100% 0%, rgba(139, 92, 246, 0.25) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                        <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
                           <div className="icon-container-translucent flex-shrink-0">
                             <i className="bi bi-pencil-fill" style={{ color: 'var(--accent-purple)' }}></i>
                           </div>
@@ -1910,8 +1918,9 @@ function App() {
                         </div>
                       </div>
 
-                      <div className="card card-glass card-spotlight-mint p-3 flex-fill">
-                        <div className="d-flex align-items-start gap-3">
+                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden">
+                        <div className="position-absolute top-0 start-0 w-100 h-100" style={{ background: 'radial-gradient(120% 120% at 100% 0%, rgba(16, 185, 129, 0.25) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                        <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
                           <div className="icon-container-translucent flex-shrink-0">
                             <i className="bi bi-stars" style={{ color: 'var(--accent-mint)' }}></i>
                           </div>
