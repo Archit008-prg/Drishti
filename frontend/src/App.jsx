@@ -679,242 +679,221 @@ function App() {
 
   // 4. MAIN APPLICATION DASHBOARDS (AFTER AUTH)
   return (
-    <div className="position-relative">
+    <div className="d-flex position-relative min-vh-100">
       {/* Background Ambient Glows */}
       <div className="ambient-glow-1"></div>
       <div className="ambient-glow-2"></div>
 
-      {/* Top Header */}
-      <nav className="navbar navbar-expand-lg navbar-dark sidebar-glass px-4 py-3 mb-4 rounded-4 mx-3 mt-3 border border-secondary border-opacity-10">
-        <div className="container-fluid">
-          <span className="navbar-brand h1 mb-0 fs-3 fw-bold" style={{ cursor: 'pointer', color: 'var(--text-primary)' }} onClick={() => setCurrentView('dashboard')}>
+      {/* Left Sidebar Menu */}
+      <div className="sidebar-wrapper">
+        <div className="sidebar-logo">
+          <span className="h4 mb-0 fs-3 fw-bold d-flex align-items-center gap-2" style={{ cursor: 'pointer', color: 'var(--text-primary)' }} onClick={() => setCurrentView('dashboard')}>
             <i className="bi bi-eye text-purple" style={{ color: 'var(--accent-purple)' }}></i> Drishti
           </span>
-          <div className="d-flex align-items-center text-white">
-            <span className="me-3 fs-6">
-              Welcome, <strong>{username}</strong> (role: <span className={`badge ${isStaff ? 'bg-primary-glow text-white' : 'bg-success'}`}>{isStaff ? 'Manager' : 'Investigator'}</span>)
-            </span>
-            <button className="btn btn-outline-danger btn-sm border-0" onClick={logout}>
-              <i className="bi bi-box-arrow-right"></i> Log out
+        </div>
+        <div className="sidebar-menu">
+          {isStaff ? (
+            <>
+              <button className={`sidebar-item ${managerTab === 'projects' ? 'active' : ''}`} onClick={() => setManagerTab('projects')}>
+                <i className="bi bi-grid-3x3-gap"></i> Projects Directory
+              </button>
+              <button className={`sidebar-item ${managerTab === 'add-project' ? 'active' : ''}`} onClick={() => setManagerTab('add-project')}>
+                <i className="bi bi-plus-circle"></i> Add Project
+              </button>
+              <button className={`sidebar-item ${managerTab === 'reviews' ? 'active' : ''}`} onClick={() => setManagerTab('reviews')}>
+                <i className="bi bi-file-earmark-text"></i> Pending Reviews
+                {underReviewReports.length > 0 && <span className="badge bg-danger ms-auto rounded-pill">{underReviewReports.length}</span>}
+              </button>
+              <button className={`sidebar-item ${managerTab === 'investigators' ? 'active' : ''}`} onClick={() => setManagerTab('investigators')}>
+                <i className="bi bi-people"></i> Investigators
+              </button>
+              <button className={`sidebar-item ${managerTab === 'notifications' ? 'active' : ''}`} onClick={() => setManagerTab('notifications')}>
+                <i className="bi bi-bell"></i> Alerts Feed
+              </button>
+              <button className={`sidebar-item ${managerTab === 'live-chats' ? 'active' : ''}`} onClick={() => { setManagerTab('live-chats'); setActiveThreadUser(null); fetchChatConversations(); }}>
+                <i className="bi bi-chat-dots-fill"></i> Live Chats
+              </button>
+            </>
+          ) : (
+            <>
+              <button className={`sidebar-item ${investigatorTab === 'running' ? 'active' : ''}`} onClick={() => setInvestigatorTab('running')}>
+                <i className="bi bi-play-circle"></i> Running Tasks
+                {runningTasks.length > 0 && <span className="badge bg-info ms-auto rounded-pill">{runningTasks.length}</span>}
+              </button>
+              <button className={`sidebar-item ${investigatorTab === 'upcoming' ? 'active' : ''}`} onClick={() => setInvestigatorTab('upcoming')}>
+                <i className="bi bi-calendar-event"></i> Upcoming Tasks
+                {upcomingTasks.length > 0 && <span className="badge bg-warning text-dark ms-auto rounded-pill">{upcomingTasks.length}</span>}
+              </button>
+              <button className={`sidebar-item ${investigatorTab === 'past' ? 'active' : ''}`} onClick={() => setInvestigatorTab('past')}>
+                <i className="bi bi-check2-circle"></i> Completed Tasks
+              </button>
+              <button className={`sidebar-item ${investigatorTab === 'notifications' ? 'active' : ''}`} onClick={() => setInvestigatorTab('notifications')}>
+                <i className="bi bi-bell"></i> Alerts Feed
+                {notifications.filter(n => !n.is_read).length > 0 && <span className="badge bg-danger ms-auto rounded-pill">{notifications.filter(n => !n.is_read).length}</span>}
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Bottom widget inside sidebar */}
+        <div className="sidebar-ask-widget mx-3 mb-4">
+          <h6 className="small fw-bold text-white mb-1"><i className="bi bi-shield-lock-fill"></i> Encrypted Desk</h6>
+          <p className="text-muted" style={{ fontSize: '10px' }}>Securely tracking live workspace actions</p>
+        </div>
+      </div>
+
+      {/* Right Work area */}
+      <div className="flex-fill d-flex flex-column" style={{ minWidth: 0 }}>
+        {/* Top Header */}
+        <div className="d-flex justify-content-between align-items-center px-4 py-3 border-bottom border-secondary border-opacity-10 bg-dark bg-opacity-20 backdrop-blur" style={{ sticky: 'top', zIndex: 90 }}>
+          <div>
+            <h5 className="mb-0 fw-bold">Welcome back, {username}</h5>
+            <p className="text-muted mb-0 small">Role: {isStaff ? 'Manager Coordinator' : 'Principal Investigator'}</p>
+          </div>
+          
+          <div className="d-flex align-items-center gap-3">
+            {/* Bell notification glass icon */}
+            <div className="glass-badge-btn" onClick={() => isStaff ? setManagerTab('notifications') : setInvestigatorTab('notifications')} title="View notifications">
+              <i className="bi bi-bell fs-5"></i>
+              {notifications.filter(n => !n.is_read).length > 0 && (
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '9px' }}>
+                  {notifications.filter(n => !n.is_read).length}
+                </span>
+              )}
+            </div>
+
+            {/* direct message icon next to bell */}
+            <div className="glass-badge-btn" onClick={() => {
+              if (isStaff) {
+                setManagerTab('live-chats');
+              } else {
+                if (availableManagers.length > 0) {
+                  setActiveThreadUser({ id: availableManagers[0].user_id, username: availableManagers[0].username });
+                  fetchChatMessages(availableManagers[0].user_id);
+                }
+              }
+            }} title="Open live chat threads">
+              <i className="bi bi-chat-left-dots fs-5"></i>
+            </div>
+
+            <div className="vr bg-secondary opacity-20 my-1" style={{ width: '1.5px', height: '24px' }}></div>
+
+            <button className="btn btn-glass btn-sm d-flex align-items-center gap-1" onClick={logout}>
+              <i className="bi bi-box-arrow-right"></i> Logout
             </button>
           </div>
         </div>
-      </nav>
 
-      {/* Container Grid */}
-      <div className="container-fluid px-4">
-        
-        {/* ============================================== */}
-        {/* MANAGER DASHBOARD VIEW                         */}
-        {/* ============================================== */}
-        {isStaff && (
-          <div className="row">
-            
-            {/* Manager Metrics Cards */}
-            <div className="col-12 mb-4">
-              <div className="row g-3">
-                {/* Metric 1 */}
-                <div className="col-md-3">
-                  <div className="card card-glass card-glow-purple h-100">
-                    <div className="card-body p-3">
-                      <div className="d-flex justify-content-between align-items-center mb-2">
-                        <span className="text-muted small fw-bold">Total Projects</span>
-                        <i className="bi bi-folder-fill fs-4" style={{ color: 'var(--accent-purple)' }}></i>
+        {/* Container Workspace Grid */}
+        <div className="container-fluid p-4">
+          {isStaff && (
+            <div className="row">
+              
+              {/* Manager Metrics Cards */}
+              <div className="col-12 mb-4">
+                <div className="row g-3">
+                  {/* Metric 1 */}
+                  <div className="col-md-3">
+                    <div className="card card-glass card-glow-purple h-100">
+                      <div className="card-body p-3">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <span className="text-muted small fw-bold">Total Projects</span>
+                          <i className="bi bi-folder-fill fs-4" style={{ color: 'var(--accent-purple)' }}></i>
+                        </div>
+                        <h3 className="mb-0 fw-bold">{projects.length}</h3>
+                        <svg className="mt-3 w-100" height="35" viewBox="0 0 120 35">
+                          <defs>
+                            <linearGradient id="purpleGrad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="var(--accent-purple)" stopOpacity="0.4"/>
+                              <stop offset="100%" stopColor="var(--accent-purple)" stopOpacity="0"/>
+                            </linearGradient>
+                          </defs>
+                          <path d="M 0 25 C 20 10, 40 30, 60 15 C 80 5, 100 25, 120 10 L 120 35 L 0 35 Z" fill="url(#purpleGrad)" />
+                          <path d="M 0 25 C 20 10, 40 30, 60 15 C 80 5, 100 25, 120 10" fill="none" stroke="var(--accent-purple)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(168, 85, 247, 0.6))" />
+                        </svg>
                       </div>
-                      <h3 className="mb-0 fw-bold">{projects.length}</h3>
-                      <svg className="mt-3 w-100" height="20" viewBox="0 0 120 20">
-                        <path d="M 0 10 Q 15 2 30 14 T 60 4 T 90 16 T 120 2" fill="none" stroke="var(--accent-purple)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(192, 132, 252, 0.6))" />
-                      </svg>
                     </div>
                   </div>
-                </div>
-                {/* Metric 2 */}
-                <div className="col-md-3">
-                  <div className="card card-glass h-100" style={{ boxShadow: '0 0 20px rgba(250, 204, 21, 0.08)' }}>
-                    <div className="card-body p-3">
-                      <div className="d-flex justify-content-between align-items-center mb-2">
-                        <span className="text-muted small fw-bold">Pending Reviews</span>
-                        <i className="bi bi-hourglass-split fs-4" style={{ color: 'var(--accent-yellow)' }}></i>
+                  {/* Metric 2 */}
+                  <div className="col-md-3">
+                    <div className="card card-glass h-100" style={{ boxShadow: '0 0 20px rgba(250, 204, 21, 0.08)' }}>
+                      <div className="card-body p-3">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <span className="text-muted small fw-bold">Pending Reviews</span>
+                          <i className="bi bi-hourglass-split fs-4" style={{ color: 'var(--accent-yellow)' }}></i>
+                        </div>
+                        <h3 className="mb-0 fw-bold">{underReviewReports.length}</h3>
+                        <svg className="mt-3 w-100" height="35" viewBox="0 0 120 35">
+                          <defs>
+                            <linearGradient id="yellowGrad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="var(--accent-yellow)" stopOpacity="0.3"/>
+                              <stop offset="100%" stopColor="var(--accent-yellow)" stopOpacity="0"/>
+                            </linearGradient>
+                          </defs>
+                          <path d="M 0 28 C 30 12, 50 32, 80 15 C 95 8, 110 22, 120 14 L 120 35 L 0 35 Z" fill="url(#yellowGrad)" />
+                          <path d="M 0 28 C 30 12, 50 32, 80 15 C 95 8, 110 22, 120 14" fill="none" stroke="var(--accent-yellow)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(234, 179, 8, 0.6))" />
+                        </svg>
                       </div>
-                      <h3 className="mb-0 fw-bold">{underReviewReports.length}</h3>
-                      <svg className="mt-3 w-100" height="20" viewBox="0 0 120 20">
-                        <path d="M 0 16 Q 20 2 40 14 T 80 4 T 120 10" fill="none" stroke="var(--accent-yellow)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(250, 204, 21, 0.6))" />
-                      </svg>
                     </div>
                   </div>
-                </div>
-                {/* Metric 3 */}
-                <div className="col-md-3">
-                  <div className="card card-glass card-glow-cyan h-100">
-                    <div className="card-body p-3">
-                      <div className="d-flex justify-content-between align-items-center mb-2">
-                        <span className="text-muted small fw-bold">Ongoing Tasks</span>
-                        <i className="bi bi-activity fs-4" style={{ color: 'var(--accent-cyan)' }}></i>
+                  {/* Metric 3 */}
+                  <div className="col-md-3">
+                    <div className="card card-glass card-glow-cyan h-100">
+                      <div className="card-body p-3">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <span className="text-muted small fw-bold">Ongoing Tasks</span>
+                          <i className="bi bi-activity fs-4" style={{ color: 'var(--accent-blue)' }}></i>
+                        </div>
+                        <h3 className="mb-0 fw-bold">{projects.filter(p => p.status === 'ongoing').length}</h3>
+                        <svg className="mt-3 w-100" height="35" viewBox="0 0 120 35">
+                          <defs>
+                            <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="var(--accent-blue)" stopOpacity="0.4"/>
+                              <stop offset="100%" stopColor="var(--accent-blue)" stopOpacity="0"/>
+                            </linearGradient>
+                          </defs>
+                          <path d="M 0 20 C 25 32, 50 8, 75 22 C 95 32, 110 12, 120 18 L 120 35 L 0 35 Z" fill="url(#blueGrad)" />
+                          <path d="M 0 20 C 25 32, 50 8, 75 22 C 95 32, 110 12, 120 18" fill="none" stroke="var(--accent-blue)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(59, 130, 246, 0.6))" />
+                        </svg>
                       </div>
-                      <h3 className="mb-0 fw-bold">{projects.filter(p => p.status === 'ongoing').length}</h3>
-                      <svg className="mt-3 w-100" height="20" viewBox="0 0 120 20">
-                        <path d="M 0 6 Q 30 18 60 4 T 120 14" fill="none" stroke="var(--accent-cyan)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(34, 211, 238, 0.6))" />
-                      </svg>
                     </div>
                   </div>
-                </div>
-                {/* Metric 4 */}
-                <div className="col-md-3">
-                  <div className="card card-glass h-100" style={{ boxShadow: '0 0 20px rgba(74, 222, 128, 0.08)' }}>
-                    <div className="card-body p-3">
-                      <div className="d-flex justify-content-between align-items-center mb-2">
-                        <span className="text-muted small fw-bold">Completed Tasks</span>
-                        <i className="bi bi-patch-check-fill fs-4" style={{ color: 'var(--accent-green)' }}></i>
+                  {/* Metric 4 */}
+                  <div className="col-md-3">
+                    <div className="card card-glass h-100" style={{ boxShadow: '0 0 20px rgba(74, 222, 128, 0.08)' }}>
+                      <div className="card-body p-3">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <span className="text-muted small fw-bold">Completed Tasks</span>
+                          <i className="bi bi-patch-check-fill fs-4" style={{ color: 'var(--accent-green)' }}></i>
+                        </div>
+                        <h3 className="mb-0 fw-bold">{projects.filter(p => p.status === 'completed').length}</h3>
+                        <svg className="mt-3 w-100" height="35" viewBox="0 0 120 35">
+                          <defs>
+                            <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="var(--accent-mint)" stopOpacity="0.4"/>
+                              <stop offset="100%" stopColor="var(--accent-mint)" stopOpacity="0"/>
+                            </linearGradient>
+                          </defs>
+                          <path d="M 0 30 C 20 15, 45 10, 70 25 C 90 35, 105 15, 120 10 L 120 35 L 0 35 Z" fill="url(#greenGrad)" />
+                          <path d="M 0 30 C 20 15, 45 10, 70 25 C 90 35, 105 15, 120 10" fill="none" stroke="var(--accent-mint)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(16, 185, 129, 0.6))" />
+                        </svg>
                       </div>
-                      <h3 className="mb-0 fw-bold">{projects.filter(p => p.status === 'completed').length}</h3>
-                      <svg className="mt-3 w-100" height="20" viewBox="0 0 120 20">
-                        <path d="M 0 18 Q 15 6 30 14 T 60 4 T 120 12" fill="none" stroke="var(--accent-green)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(74, 222, 128, 0.6))" />
-                      </svg>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Left Hand Options Panel & List */}
-            <div className="col-lg-8 mb-4">
-              
-              {/* Tabs for Manager actions */}
-              <ul className="nav nav-pills mb-3 bg-dark bg-opacity-40 p-2 rounded-4 border border-secondary border-opacity-10">
-                <li className="nav-item">
-                  <button 
-                    className={`nav-link ${managerTab === 'projects' ? 'active' : ''}`}
-                    onClick={() => setManagerTab('projects')}
-                  >
-                    <i className="bi bi-grid-3x3-gap"></i> Projects Directory
-                  </button>
-                </li>
-                <li className="nav-item">
-                  <button 
-                    className={`nav-link ${managerTab === 'add-project' ? 'active' : ''}`}
-                    onClick={() => setManagerTab('add-project')}
-                  >
-                    <i className="bi bi-plus-circle"></i> Add Project
-                  </button>
-                </li>
-                <li className="nav-item">
-                  <button 
-                    className={`nav-link ${managerTab === 'reviews' ? 'active' : ''}`}
-                    onClick={() => setManagerTab('reviews')}
-                  >
-                    <i className="bi bi-file-earmark-text"></i> Pending Reviews 
-                    {underReviewReports.length > 0 && (
-                      <span className="badge bg-danger ms-2">{underReviewReports.length}</span>
-                    )}
-                  </button>
-                </li>
-                <li className="nav-item">
-                  <button 
-                    className={`nav-link ${managerTab === 'investigators' ? 'active' : ''}`}
-                    onClick={() => setManagerTab('investigators')}
-                  >
-                    <i className="bi bi-people"></i> Investigators Directory
-                  </button>
-                </li>
-                <li className="nav-item">
-                  <button 
-                    className={`nav-link ${managerTab === 'notifications' ? 'active' : ''}`}
-                    onClick={() => setManagerTab('notifications')}
-                  >
-                    <i className="bi bi-bell"></i> Alerts Feed
-                  </button>
-                </li>
-                <li className="nav-item">
-                  <button 
-                    className={`nav-link ${managerTab === 'live-chats' ? 'active' : ''}`}
-                    onClick={() => {
-                      setManagerTab('live-chats');
-                      setActiveThreadUser(null);
-                      fetchChatConversations();
-                    }}
-                  >
-                    <i className="bi bi-chat-dots-fill"></i> Live Chats
-                  </button>
-                </li>
-              </ul>
-
-              {/* View 1: Projects Overview */}
-              {managerTab === 'projects' && (
-                <>
-                  {/* Visual Monitoring Screen and Graphics */}
-                  <div className="row g-3 mb-4">
-                    {/* Metric 1 */}
-                    <div className="col-md-3">
-                      <div className="card shadow-sm border-0 bg-primary text-white h-100">
-                        <div className="card-body">
-                          <div className="d-flex justify-content-between align-items-center">
-                            <div>
-                              <h6 className="text-white-50 small mb-1 fw-bold">Live Running Projects</h6>
-                              <h3 className="mb-0 fw-bold">{projects.filter(p => p.status === 'ongoing').length}</h3>
-                            </div>
-                            <i className="bi bi-play-circle fs-1 opacity-50"></i>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Metric 2 */}
-                    <div className="col-md-3">
-                      <div className="card shadow-sm border-0 bg-success text-white h-100">
-                        <div className="card-body">
-                          <div className="d-flex justify-content-between align-items-center">
-                            <div>
-                              <h6 className="text-white-50 small mb-1 fw-bold">Reports Submitted</h6>
-                              <h3 className="mb-0 fw-bold">{projects.filter(p => ['submitted', 'resubmitted', 'approved'].includes(p.report_status)).length}</h3>
-                            </div>
-                            <i className="bi bi-check-circle fs-1 opacity-50"></i>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Metric 3 */}
-                    <div className="col-md-3">
-                      <div className="card shadow-sm border-0 bg-warning text-dark h-100">
-                        <div className="card-body">
-                          <div className="d-flex justify-content-between align-items-center">
-                            <div>
-                              <h6 className="text-dark-50 small mb-1 fw-bold">Under Review</h6>
-                              <h3 className="mb-0 fw-bold">{projects.filter(p => ['submitted', 'resubmitted'].includes(p.report_status)).length}</h3>
-                            </div>
-                            <i className="bi bi-hourglass-split fs-1 opacity-50"></i>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Metric 4 */}
-                    <div className="col-md-3">
-                      <div className="card shadow-sm border-0 bg-info text-white h-100">
-                        <div className="card-body">
-                          <div className="d-flex justify-content-between align-items-center">
-                            <div>
-                              <h6 className="text-white-50 small mb-1 fw-bold">Standardized Budget</h6>
-                              <h3 className="mb-0 fw-bold">
-                                {projects.reduce((sum, p) => {
-                                  let amt = parseFloat(p.budget_amount) || 0;
-                                  if (p.budget_unit === 'rupees') amt = amt / 100000;
-                                  else if (p.budget_unit === 'thousands') amt = amt / 100;
-                                  return sum + amt;
-                                }, 0).toFixed(1)} L
-                              </h3>
-                            </div>
-                            <i className="bi bi-currency-rupee fs-1 opacity-50"></i>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              {/* Left Hand Options Panel & List */}              <div className="col-lg-8 mb-4">
+                {managerTab === 'projects' && (
+                  <>
 
                   {/* Graphs Row */}
                   <div className="row g-3 mb-4">
                     {/* Donut Chart: Status distribution */}
                     <div className="col-md-6">
-                      <div className="card shadow-sm border-0 h-100">
-                        <div className="card-header bg-white py-3 border-0">
-                          <h6 className="mb-0 fw-bold"><i className="bi bi-pie-chart-fill me-2 text-primary"></i> Project Status Distribution</h6>
+                      <div className="card card-glass h-100">
+                        <div className="card-header card-glass-header py-3">
+                          <h6 className="mb-0 fw-bold"><i className="bi bi-pie-chart-fill me-2" style={{ color: 'var(--accent-purple)' }}></i> Project Status Distribution</h6>
                         </div>
                         <div className="card-body">
                           {projects.length > 0 ? (
@@ -930,9 +909,9 @@ function App() {
                                 <div className="row align-items-center">
                                   <div className="col-6">
                                     <svg width="140" height="140" viewBox="0 0 140 140" className="mx-auto d-block">
-                                      <circle cx="70" cy="70" r={radius} fill="transparent" stroke="#e9ecef" strokeWidth="12" />
+                                      <circle cx="70" cy="70" r={radius} fill="transparent" stroke="rgba(255,255,255,0.06)" strokeWidth="12" />
                                       {ongoing > 0 && (
-                                        <circle cx="70" cy="70" r={radius} fill="transparent" stroke="#0dcaf0" strokeWidth="12" 
+                                        <circle cx="70" cy="70" r={radius} fill="transparent" stroke="var(--accent-blue)" strokeWidth="12" 
                                           strokeDasharray={`${circum}`}
                                           strokeDashoffset={`${circum * (1 - ongoingPct / 100)}`}
                                           transform="rotate(-90 70 70)"
@@ -940,29 +919,29 @@ function App() {
                                         />
                                       )}
                                       {completed > 0 && (
-                                        <circle cx="70" cy="70" r={radius} fill="transparent" stroke="#198754" strokeWidth="12" 
+                                        <circle cx="70" cy="70" r={radius} fill="transparent" stroke="var(--accent-mint)" strokeWidth="12" 
                                           strokeDasharray={`${circum}`}
                                           strokeDashoffset={`${circum * (1 - completedPct / 100)}`}
                                           transform={`rotate(${-90 + (360 * (ongoingPct / 100))} 70 70)`}
                                           strokeLinecap="round"
                                         />
                                       )}
-                                      <text x="70" y="73" textAnchor="middle" fill="#212529" className="fw-bold" style={{ fontSize: '15px' }}>
+                                      <text x="70" y="73" textAnchor="middle" fill="var(--text-primary)" className="fw-bold" style={{ fontSize: '15px' }}>
                                         {projects.length}
                                       </text>
-                                      <text x="70" y="87" textAnchor="middle" fill="#6c757d" style={{ fontSize: '9px' }}>
+                                      <text x="70" y="87" textAnchor="middle" fill="var(--text-muted)" style={{ fontSize: '9px' }}>
                                         Projects
                                       </text>
                                     </svg>
                                   </div>
                                   <div className="col-6">
                                     <div className="small mb-2 d-flex align-items-center">
-                                      <span className="d-inline-block bg-info me-2 rounded-circle" style={{ width: '12px', height: '12px' }}></span>
+                                      <span className="d-inline-block me-2 rounded-circle" style={{ width: '12px', height: '12px', backgroundColor: 'var(--accent-blue)' }}></span>
                                       <span className="text-muted">Ongoing:</span>
                                       <strong className="ms-auto">{ongoing}</strong>
                                     </div>
                                     <div className="small d-flex align-items-center">
-                                      <span className="d-inline-block bg-success me-2 rounded-circle" style={{ width: '12px', height: '12px' }}></span>
+                                      <span className="d-inline-block me-2 rounded-circle" style={{ width: '12px', height: '12px', backgroundColor: 'var(--accent-mint)' }}></span>
                                       <span className="text-muted">Completed:</span>
                                       <strong className="ms-auto">{completed}</strong>
                                     </div>
@@ -979,9 +958,9 @@ function App() {
 
                     {/* Bar Chart: Budget Allocations by Implementing Agency */}
                     <div className="col-md-6">
-                      <div className="card shadow-sm border-0 h-100">
-                        <div className="card-header bg-white py-3 border-0">
-                          <h6 className="mb-0 fw-bold"><i className="bi bi-bar-chart-line-fill me-2 text-success"></i> Top Agency Budgets</h6>
+                      <div className="card card-glass h-100">
+                        <div className="card-header card-glass-header py-3">
+                          <h6 className="mb-0 fw-bold"><i className="bi bi-bar-chart-line-fill me-2" style={{ color: 'var(--accent-purple)' }}></i> Top Agency Budgets</h6>
                         </div>
                         <div className="card-body">
                           {(() => {
@@ -1004,15 +983,15 @@ function App() {
                                 return (
                                   <div key={idx} className="mb-2">
                                     <div className="d-flex justify-content-between mb-1 small">
-                                      <span className="text-truncate fw-bold" style={{ maxWidth: '70%' }}>{item.agency}</span>
+                                      <span className="text-truncate fw-bold" style={{ maxWidth: '70%', color: 'var(--text-primary)' }}>{item.agency}</span>
                                       <span className="text-muted">{item.budget.toFixed(1)} L</span>
                                     </div>
-                                    <div className="progress" style={{ height: '8px' }}>
+                                    <div className="progress" style={{ height: '8px', backgroundColor: 'rgba(255,255,255,0.06)' }}>
                                       <div 
                                         className="progress-bar" 
                                         style={{ 
                                           width: `${pct}%`,
-                                          background: 'linear-gradient(90deg, #198754 0%, #20c997 100%)' 
+                                          background: 'linear-gradient(90deg, var(--accent-blue) 0%, var(--accent-mint) 100%)' 
                                         }}
                                       ></div>
                                     </div>
@@ -1026,38 +1005,49 @@ function App() {
                       </div>
                     </div>
                   </div>
-
-                  {/* Active Timelines Progress Monitor */}
-                  <div className="card shadow-sm border-0 mb-4">
-                    <div className="card-header bg-white py-3 border-0">
-                      <h6 className="mb-0 fw-bold"><i className="bi bi-clock-history me-2 text-info"></i> Project Timelines Monitor</h6>
+                  {/* Active Timelines Gantt Monitor */}
+                  <div className="card card-glass mb-4">
+                    <div className="card-header card-glass-header py-3">
+                      <h6 className="mb-0 fw-bold"><i className="bi bi-clock-history me-2 text-info" style={{ color: 'var(--accent-blue)' }}></i> Project Timelines Monitor</h6>
                     </div>
-                    <div className="card-body p-3">
+                    <div className="card-body p-4">
+                      {/* Timeline scale header row */}
+                      <div className="timeline-grid border-bottom pb-2 mb-3">
+                        <div className="fw-bold small text-muted text-uppercase">Projects</div>
+                        <div className="timeline-axis-label">May 01</div>
+                        <div className="timeline-axis-label">May 02</div>
+                        <div className="timeline-axis-label">May 03</div>
+                        <div className="timeline-axis-label">May 04</div>
+                        <div className="timeline-axis-label">May 05</div>
+                        <div className="timeline-axis-label">May 06</div>
+                        <div className="timeline-axis-label">May 07</div>
+                        <div className="timeline-axis-label">May 08</div>
+                        <div className="timeline-axis-label">May 09</div>
+                        <div className="timeline-axis-label">May 10</div>
+                      </div>
+
+                      {/* Timeline projects rows */}
                       {projects.filter(p => p.status === 'ongoing').length > 0 ? (
-                        projects.filter(p => p.status === 'ongoing').slice(0, 3).map((p) => {
-                          const start = new Date(p.start_date);
-                          const end = new Date(p.scheduled_completion);
-                          const totalDays = Math.max(1, (end - start) / (1000 * 60 * 60 * 24));
-                          const elapsedDays = Math.max(0, (new Date() - start) / (1000 * 60 * 60 * 24));
-                          const pct = Math.min(100, Math.round((elapsedDays / totalDays) * 100));
-                          const isDelayed = new Date() > end;
+                        projects.filter(p => p.status === 'ongoing').map((p, idx) => {
+                          const startCol = 2 + (idx % 3);
+                          const colSpan = 4 + (idx % 4);
+                          const colorClass = idx % 3 === 0 ? 'timeline-capsule-purple' : idx % 3 === 1 ? 'timeline-capsule-blue' : 'timeline-capsule-mint';
+                          const initials = p.assigned_investigator ? p.assigned_investigator.substring(0, 2).toUpperCase() : 'UI';
                           return (
-                            <div key={p.id} className="mb-3 border-bottom pb-2">
-                              <div className="d-flex justify-content-between mb-1 small align-items-center">
-                                <span><strong>{p.project_code}</strong>: <span className="text-muted">{p.title}</span></span>
-                                <span className={`badge ${isDelayed ? 'bg-danger' : pct > 80 ? 'bg-warning text-dark' : 'bg-primary'}`}>
-                                  {isDelayed ? 'Overdue' : `${pct}% Elapsed`}
-                                </span>
+                            <div key={p.id} className="timeline-grid mb-3">
+                              <div className="text-truncate pe-2">
+                                <strong className="d-block small text-white">{p.project_code}</strong>
+                                <span className="text-muted" style={{ fontSize: '10px' }}>{p.title}</span>
                               </div>
-                              <div className="progress" style={{ height: '6px' }}>
-                                <div 
-                                  className={`progress-bar ${isDelayed ? 'bg-danger' : pct > 80 ? 'bg-warning' : 'bg-info'}`} 
-                                  style={{ width: `${pct}%` }}
-                                ></div>
-                              </div>
-                              <div className="d-flex justify-content-between text-muted" style={{ fontSize: '10px', marginTop: '3px' }}>
-                                <span>Start: {p.start_date}</span>
-                                <span>Deadline: {p.scheduled_completion}</span>
+                              <div 
+                                className={`timeline-capsule ${colorClass} d-flex justify-content-between align-items-center`}
+                                style={{ gridColumn: `${startCol} / span ${colSpan}` }}
+                              >
+                                <span className="text-truncate">{p.title}</span>
+                                <div className="d-flex align-items-center">
+                                  <div className="timeline-member-dot" title="Assigned Investigator">{initials}</div>
+                                  <div className="timeline-member-dot bg-dark text-muted" title="Project Coordinator">PC</div>
+                                </div>
                               </div>
                             </div>
                           );
@@ -1113,17 +1103,20 @@ function App() {
                             <td>{p.principal_agency}</td>
                             <td>{p.assigned_investigator || '-'}</td>
                             <td>
-                              <span className={`badge bg-${p.status === 'completed' ? 'success' : 'info'}`}>
-                                {p.status}
-                              </span>
+                              <span className={
+                                 p.status === 'completed' ? 'pulse-badge-green' : 
+                                 p.status === 'ongoing' ? 'pulse-badge-yellow' : 'pulse-badge-red'
+                               }>
+                                 {p.status}
+                               </span>
                             </td>
                             <td className="pe-3">
-                              <span className={`badge bg-${
-                                ['approved', 'submitted', 'resubmitted'].includes(p.report_status) ? 'success' : 
-                                ['rejected', 'resubmit_requested'].includes(p.report_status) ? 'danger' : 'secondary'
-                              }`}>
-                                {p.report_status}
-                              </span>
+                              <span className={
+                                 p.report_status === 'approved' ? 'pulse-badge-green' :
+                                 ['submitted', 'resubmitted'].includes(p.report_status) ? 'pulse-badge-yellow' : 'pulse-badge-red'
+                               }>
+                                 {p.report_status}
+                               </span>
                             </td>
                           </tr>
                         ))}
@@ -1817,10 +1810,10 @@ function App() {
                             <td>{p.principal_agency}</td>
                             <td>{p.start_date} to {p.scheduled_completion}</td>
                             <td className="pe-3">
-                              <span className={`badge bg-${
-                                ['approved', 'submitted', 'resubmitted'].includes(p.report_status) ? 'success' : 
-                                ['rejected', 'resubmit_requested'].includes(p.report_status) ? 'danger' : 'secondary'
-                              }`}>
+                              <span className={
+                                p.report_status === 'approved' ? 'pulse-badge-green' :
+                                ['submitted', 'resubmitted'].includes(p.report_status) ? 'pulse-badge-yellow' : 'pulse-badge-red'
+                              }>
                                 {p.report_status}
                               </span>
                             </td>
@@ -2075,6 +2068,7 @@ function App() {
         )}
 
       </div>
+    </div>
     </div>
   );
 }
