@@ -731,6 +731,15 @@ function App() {
                 <i className="bi bi-bell"></i> Alerts Feed
                 {notifications.filter(n => !n.is_read).length > 0 && <span className="badge bg-danger ms-auto rounded-pill">{notifications.filter(n => !n.is_read).length}</span>}
               </button>
+              <button className={`sidebar-item ${investigatorTab === 'live-chats' ? 'active' : ''}`} onClick={() => {
+                setInvestigatorTab('live-chats');
+                if (availableManagers.length > 0) {
+                  setActiveThreadUser({ id: availableManagers[0].user_id, username: availableManagers[0].username });
+                  fetchChatMessages(availableManagers[0].user_id);
+                }
+              }}>
+                <i className="bi bi-chat-dots-fill"></i> Live Chats
+              </button>
             </>
           )}
         </div>
@@ -767,6 +776,7 @@ function App() {
               if (isStaff) {
                 setManagerTab('live-chats');
               } else {
+                setInvestigatorTab('live-chats');
                 if (availableManagers.length > 0) {
                   setActiveThreadUser({ id: availableManagers[0].user_id, username: availableManagers[0].username });
                   fetchChatMessages(availableManagers[0].user_id);
@@ -1445,22 +1455,22 @@ function App() {
                   <div className="card-body p-0">
                     <div className="row g-0" style={{ minHeight: '400px' }}>
                       {/* Left: Threads list */}
-                      <div className="col-md-4 border-end" style={{ maxHeight: '500px', overflowY: 'auto' }}>
-                        <div className="bg-light p-2 text-center text-muted small border-bottom fw-bold">Active Threads</div>
+                      <div className="col-md-4 chat-thread-list" style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                        <div className="chat-active-header p-2 text-center small fw-bold">Active Threads</div>
                         <div className="list-group list-group-flush">
                           {chatThreads.map((thread) => (
                             <button
                               key={thread.user_id}
                               type="button"
-                              className={`list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center text-start ${activeThreadUser?.id === thread.user_id ? 'bg-primary text-white' : ''}`}
+                              className={`list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center text-start ${activeThreadUser?.id === thread.user_id ? 'bg-primary bg-opacity-25 text-white' : 'text-muted'}`}
                               onClick={() => {
                                 setActiveThreadUser({ id: thread.user_id, username: thread.username });
                                 fetchChatMessages(thread.user_id);
                               }}
                             >
                               <div className="text-truncate" style={{ maxWidth: '80%' }}>
-                                <strong className="d-block">{thread.username}</strong>
-                                <span className={`small ${activeThreadUser?.id === thread.user_id ? 'text-white-50' : 'text-muted'}`}>
+                                <strong className="d-block text-white">{thread.username}</strong>
+                                <span className="small text-muted text-truncate d-block">
                                   {thread.latest_message || 'Start conversation...'}
                                 </span>
                               </div>
@@ -1480,17 +1490,17 @@ function App() {
                         {activeThreadUser ? (
                           <>
                             {/* Thread header */}
-                            <div className="bg-light p-3 border-bottom d-flex justify-content-between align-items-center">
+                            <div className="chat-active-header p-3 d-flex justify-content-between align-items-center">
                               <span className="fw-bold"><i className="bi bi-person-fill"></i> {activeThreadUser.username}</span>
                               <span className="badge bg-success">Online & Encrypted</span>
                             </div>
 
                             {/* Chat history */}
-                            <div className="flex-fill p-3 bg-white" style={{ overflowY: 'auto' }}>
+                            <div className="flex-fill p-3 chat-history-pane" style={{ overflowY: 'auto' }}>
                               {chatMessages.map((msg, idx) => (
                                 <div key={idx} className={`d-flex mb-2 ${msg.sender_username === username ? 'justify-content-end' : 'justify-content-start'}`}>
                                   <div
-                                    className={`p-2 rounded small ${msg.sender_username === username ? 'bg-primary text-white' : 'bg-light text-dark border'}`}
+                                    className={`p-2 rounded small ${msg.sender_username === username ? 'chat-bubble-outgoing' : 'chat-bubble-incoming'}`}
                                     style={{ maxWidth: '75%', wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
                                   >
                                     {msg.message}
@@ -1506,7 +1516,7 @@ function App() {
                             </div>
 
                             {/* Input Form */}
-                            <form onSubmit={handleSendLiveMessage} className="p-3 border-top bg-light d-flex gap-2">
+                            <form onSubmit={handleSendLiveMessage} className="p-3 chat-input-bar d-flex gap-2">
                               <input
                                 type="text"
                                 className="form-control"
@@ -1515,15 +1525,15 @@ function App() {
                                 onChange={(e) => setNewMessage(e.target.value)}
                                 required
                               />
-                              <button type="submit" className="btn btn-primary">
+                              <button type="submit" className="btn btn-cyan-glow">
                                 <i className="bi bi-send"></i>
                               </button>
                             </form>
                           </>
                         ) : (
                           <div className="d-flex flex-column align-items-center justify-content-center flex-fill text-muted">
-                            <i className="bi bi-chat-left-dots fs-1 mb-2"></i>
-                            <span className="small">Select a registered investigator from the left list to start live messaging.</span>
+                            <i className="bi bi-chat-left-dots fs-1 mb-2 text-purple" style={{ color: 'var(--accent-purple)' }}></i>
+                            <span className="small">Select a conversation thread to view history and messages.</span>
                           </div>
                         )}
                       </div>
@@ -1690,15 +1700,22 @@ function App() {
               <div className="row g-3">
                 {/* Metric 1 */}
                 <div className="col-md-4">
-                  <div className="card card-glass card-glow-cyan h-100">
+                  <div className="card card-glass card-glow-purple h-100">
                     <div className="card-body p-3">
                       <div className="d-flex justify-content-between align-items-center mb-2">
                         <span className="text-muted small fw-bold">Running Tasks</span>
-                        <i className="bi bi-play-circle-fill fs-4" style={{ color: 'var(--accent-cyan)' }}></i>
+                        <i className="bi bi-play-circle-fill fs-4" style={{ color: 'var(--accent-purple)' }}></i>
                       </div>
                       <h3 className="mb-0 fw-bold">{runningTasks.length}</h3>
-                      <svg className="mt-3 w-100" height="20" viewBox="0 0 120 20">
-                        <path d="M 0 12 Q 15 2 30 18 T 60 8 T 90 20 T 120 4" fill="none" stroke="var(--accent-cyan)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(34, 211, 238, 0.6))" />
+                      <svg className="mt-3 w-100" height="35" viewBox="0 0 120 35">
+                        <defs>
+                          <linearGradient id="purpleGradInv" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="var(--accent-purple)" stopOpacity="0.4"/>
+                            <stop offset="100%" stopColor="var(--accent-purple)" stopOpacity="0"/>
+                          </linearGradient>
+                        </defs>
+                        <path d="M 0 25 C 20 10, 40 30, 60 15 C 80 5, 100 25, 120 10 L 120 35 L 0 35 Z" fill="url(#purpleGradInv)" />
+                        <path d="M 0 25 C 20 10, 40 30, 60 15 C 80 5, 100 25, 120 10" fill="none" stroke="var(--accent-purple)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(168, 85, 247, 0.6))" />
                       </svg>
                     </div>
                   </div>
@@ -1712,8 +1729,15 @@ function App() {
                         <i className="bi bi-calendar-event-fill fs-4" style={{ color: 'var(--accent-yellow)' }}></i>
                       </div>
                       <h3 className="mb-0 fw-bold">{upcomingTasks.length}</h3>
-                      <svg className="mt-3 w-100" height="20" viewBox="0 0 120 20">
-                        <path d="M 0 16 Q 20 2 40 14 T 80 4 T 120 10" fill="none" stroke="var(--accent-yellow)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(250, 204, 21, 0.6))" />
+                      <svg className="mt-3 w-100" height="35" viewBox="0 0 120 35">
+                        <defs>
+                          <linearGradient id="yellowGradInv" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="var(--accent-yellow)" stopOpacity="0.3"/>
+                            <stop offset="100%" stopColor="var(--accent-yellow)" stopOpacity="0"/>
+                          </linearGradient>
+                        </defs>
+                        <path d="M 0 28 C 30 12, 50 32, 80 15 C 95 8, 110 22, 120 14 L 120 35 L 0 35 Z" fill="url(#yellowGradInv)" />
+                        <path d="M 0 28 C 30 12, 50 32, 80 15 C 95 8, 110 22, 120 14" fill="none" stroke="var(--accent-yellow)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(234, 179, 8, 0.6))" />
                       </svg>
                     </div>
                   </div>
@@ -1724,11 +1748,18 @@ function App() {
                     <div className="card-body p-3">
                       <div className="d-flex justify-content-between align-items-center mb-2">
                         <span className="text-muted small fw-bold">Past / Completed Tasks</span>
-                        <i className="bi bi-check-circle-fill fs-4" style={{ color: 'var(--accent-green)' }}></i>
+                        <i className="bi bi-check-circle-fill fs-4" style={{ color: 'var(--accent-mint)' }}></i>
                       </div>
                       <h3 className="mb-0 fw-bold">{pastTasks.length}</h3>
-                      <svg className="mt-3 w-100" height="20" viewBox="0 0 120 20">
-                        <path d="M 0 18 Q 15 6 30 14 T 60 4 T 120 12" fill="none" stroke="var(--accent-green)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(74, 222, 128, 0.6))" />
+                      <svg className="mt-3 w-100" height="35" viewBox="0 0 120 35">
+                        <defs>
+                          <linearGradient id="greenGradInv" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="var(--accent-mint)" stopOpacity="0.4"/>
+                            <stop offset="100%" stopColor="var(--accent-mint)" stopOpacity="0"/>
+                          </linearGradient>
+                        </defs>
+                        <path d="M 0 30 C 20 15, 45 10, 70 25 C 90 35, 105 15, 120 10 L 120 35 L 0 35 Z" fill="url(#greenGradInv)" />
+                        <path d="M 0 30 C 20 15, 45 10, 70 25 C 90 35, 105 15, 120 10" fill="none" stroke="var(--accent-mint)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(16, 185, 129, 0.6))" />
                       </svg>
                     </div>
                   </div>
@@ -1739,56 +1770,17 @@ function App() {
             {/* Investigator Options and Task List */}
             <div className="col-lg-8 mb-4">
               
-              {/* Tabs for investigator views */}
-              <ul className="nav nav-pills mb-3 bg-dark bg-opacity-40 p-2 rounded-4 border border-secondary border-opacity-10">
-                <li className="nav-item">
-                  <button 
-                    className={`nav-link ${investigatorTab === 'running' ? 'active' : ''}`}
-                    onClick={() => setInvestigatorTab('running')}
-                  >
-                    <i className="bi bi-play-circle"></i> Running Tasks ({runningTasks.length})
-                  </button>
-                </li>
-                <li className="nav-item">
-                  <button 
-                    className={`nav-link ${investigatorTab === 'upcoming' ? 'active' : ''}`}
-                    onClick={() => setInvestigatorTab('upcoming')}
-                  >
-                    <i className="bi bi-calendar-event"></i> Upcoming Tasks ({upcomingTasks.length})
-                  </button>
-                </li>
-                <li className="nav-item">
-                  <button 
-                    className={`nav-link ${investigatorTab === 'past' ? 'active' : ''}`}
-                    onClick={() => setInvestigatorTab('past')}
-                  >
-                    <i className="bi bi-check2-circle"></i> Past Tasks ({pastTasks.length})
-                  </button>
-                </li>
-                <li className="nav-item">
-                  <button 
-                    className={`nav-link ${investigatorTab === 'notifications' ? 'active' : ''}`}
-                    onClick={() => setInvestigatorTab('notifications')}
-                  >
-                    <i className="bi bi-bell"></i> Alerts Feed 
-                    {notifications.filter(n => !n.is_read).length > 0 && (
-                      <span className="badge bg-danger ms-2">{notifications.filter(n => !n.is_read).length}</span>
-                    )}
-                  </button>
-                </li>
-              </ul>
-
               {/* Investigator Task Tables */}
-              {investigatorTab !== 'notifications' ? (
+              {['running', 'upcoming', 'past'].includes(investigatorTab) && (
                 <div className="card card-glass mb-4">
                   <div className="card-header card-glass-header py-3">
                     <h5 className="mb-0 fw-bold text-capitalize">
-                      {investigatorTab} Projects
+                      {investigatorTab === 'past' ? 'Completed' : investigatorTab} Projects
                     </h5>
                   </div>
                   <div className="card-body p-0">
                     <table className="table table-hover mb-0">
-                      <thead className="table-light">
+                      <thead>
                         <tr>
                           <th className="ps-3">Code</th>
                           <th>Title</th>
@@ -1828,8 +1820,10 @@ function App() {
                     </table>
                   </div>
                 </div>
-              ) : (
-                // Notifications view
+              )}
+
+              {/* View: Notifications tab */}
+              {investigatorTab === 'notifications' && (
                 <div className="card card-glass mb-4">
                   <div className="card-header card-glass-header py-3">
                     <h5 className="mb-0 fw-bold"><i className="bi bi-bell"></i> System Alert Log</h5>
@@ -1862,6 +1856,99 @@ function App() {
                         <li className="list-group-item text-center py-4 text-muted small">No notifications found.</li>
                       )}
                     </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* View: Investigator Live Chats Tab */}
+              {investigatorTab === 'live-chats' && (
+                <div className="card card-glass mb-4">
+                  <div className="card-header card-glass-header py-3">
+                    <h5 className="mb-0 fw-bold"><i className="bi bi-chat-dots-fill"></i> Secure Chat Center (Live)</h5>
+                  </div>
+                  <div className="card-body p-0">
+                    <div className="row g-0" style={{ minHeight: '400px' }}>
+                      {/* Left: Available Managers threads */}
+                      <div className="col-md-4 chat-thread-list" style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                        <div className="chat-active-header p-2 text-center small fw-bold">Active Managers</div>
+                        <div className="list-group list-group-flush">
+                          {availableManagers.map((m) => (
+                            <button
+                              key={m.user_id}
+                              type="button"
+                              className={`list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center text-start ${activeThreadUser?.id === m.user_id ? 'bg-primary bg-opacity-25 text-white' : 'text-muted'}`}
+                              onClick={() => {
+                                setActiveThreadUser({ id: m.user_id, username: m.username });
+                                fetchChatMessages(m.user_id);
+                              }}
+                            >
+                              <div className="text-truncate" style={{ maxWidth: '80%' }}>
+                                <strong className="d-block text-white">{m.username}</strong>
+                                <span className="small text-muted text-truncate d-block">
+                                  Coordinator Manager
+                                </span>
+                              </div>
+                            </button>
+                          ))}
+                          {availableManagers.length === 0 && (
+                            <div className="list-group-item text-center py-4 text-muted small">No active managers found.</div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Right: Message Window */}
+                      <div className="col-md-8 d-flex flex-column" style={{ height: '500px' }}>
+                        {activeThreadUser ? (
+                          <>
+                            {/* Thread header */}
+                            <div className="chat-active-header p-3 d-flex justify-content-between align-items-center">
+                              <span className="fw-bold"><i className="bi bi-person-fill"></i> {activeThreadUser.username}</span>
+                              <span className="badge bg-success">Online & Encrypted</span>
+                            </div>
+
+                            {/* Chat history */}
+                            <div className="flex-fill p-3 chat-history-pane" style={{ overflowY: 'auto' }}>
+                              {chatMessages.map((msg, idx) => (
+                                <div key={idx} className={`d-flex mb-2 ${msg.sender_username === username ? 'justify-content-end' : 'justify-content-start'}`}>
+                                  <div
+                                    className={`p-2 rounded small ${msg.sender_username === username ? 'chat-bubble-outgoing' : 'chat-bubble-incoming'}`}
+                                    style={{ maxWidth: '75%', wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
+                                  >
+                                    {msg.message}
+                                    <div className="text-end" style={{ fontSize: '9px', opacity: 0.7, marginTop: '2px' }}>
+                                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                              {chatMessages.length === 0 && (
+                                <div className="text-center py-5 text-muted small">Send a message to start chatting with {activeThreadUser.username}.</div>
+                              )}
+                            </div>
+
+                            {/* Input Form */}
+                            <form onSubmit={handleSendLiveMessage} className="p-3 chat-input-bar d-flex gap-2">
+                              <input
+                                type="text"
+                                className="form-control"
+                                placeholder={`Type your message to ${activeThreadUser.username}...`}
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                                required
+                              />
+                              <button type="submit" className="btn btn-cyan-glow">
+                                <i className="bi bi-send"></i>
+                              </button>
+                            </form>
+                          </>
+                        ) : (
+                          <div className="d-flex flex-column align-items-center justify-content-center flex-fill text-muted">
+                            <i className="bi bi-chat-left-dots fs-1 mb-2 text-purple" style={{ color: 'var(--accent-purple)' }}></i>
+                            <span className="small">Select a coordinator manager from the left list to start live chat.</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1979,86 +2066,11 @@ function App() {
                         </div>
                       </div>
                     )}
-
-                    {/* Live Chat with Manager */}
-                    <div className="card card-glass mt-3">
-                      <div className="card-header card-glass-header py-2 d-flex align-items-center">
-                        <i className="bi bi-chat-dots-fill me-2 text-purple" style={{ color: 'var(--accent-purple)' }}></i>
-                        <span className="small fw-bold">Chat with Manager (Live)</span>
-                      </div>
-                      <div className="card-body p-2">
-                        {availableManagers.length > 0 && (
-                          <div className="mb-2">
-                            <label className="form-label small mb-1 fw-bold">Select Coordinator Manager:</label>
-                            <select 
-                              className="form-select form-select-sm"
-                              value={activeThreadUser?.id || ''}
-                              onChange={(e) => {
-                                const selectedId = parseInt(e.target.value);
-                                const selected = availableManagers.find(m => m.user_id === selectedId);
-                                if (selected) {
-                                  setActiveThreadUser({ id: selected.user_id, username: selected.username });
-                                  fetchChatMessages(selected.user_id);
-                                }
-                              }}
-                            >
-                              {availableManagers.map(m => (
-                                <option key={m.user_id} value={m.user_id}>{m.username} ({m.email || 'no email'})</option>
-                              ))}
-                            </select>
-                          </div>
-                        )}
-
-                        {activeThreadUser ? (
-                          <>
-                            {/* Message History */}
-                            <div className="chat-history mb-2 border rounded bg-white p-2" style={{ height: '220px', overflowY: 'auto' }}>
-                              {chatMessages.map((msg, idx) => (
-                                <div key={idx} className={`d-flex mb-2 ${msg.sender_username === username ? 'justify-content-end' : 'justify-content-start'}`}>
-                                  <div 
-                                    className={`p-2 rounded small ${msg.sender_username === username ? 'bg-primary text-white' : 'bg-light text-dark border'}`}
-                                    style={{ maxWidth: '85%', wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
-                                  >
-                                    {msg.message}
-                                    <div className="text-end" style={{ fontSize: '8px', opacity: 0.7, marginTop: '2px' }}>
-                                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                              {chatMessages.length === 0 && (
-                                <div className="text-center py-4 text-muted small">No message history. Type below to text the Manager.</div>
-                              )}
-                            </div>
-                            
-                            {/* Chat Form */}
-                            <form onSubmit={handleSendLiveMessage} className="d-flex gap-1">
-                              <input 
-                                type="text"
-                                className="form-control form-control-sm"
-                                placeholder={`Message ${activeThreadUser.username}...`}
-                                value={newMessage}
-                                onChange={(e) => setNewMessage(e.target.value)}
-                                required
-                              />
-                              <button type="submit" className="btn btn-cyan-glow btn-sm">
-                                <i className="bi bi-send"></i>
-                              </button>
-                            </form>
-                          </>
-                        ) : (
-                          <div className="text-center py-3 text-muted small">
-                            No manager available to chat.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
                   </div>
                 </div>
               ) : (
-                <div className="card shadow-sm text-center py-5 text-muted bg-light">
-                  <i className="bi bi-card-checklist fs-2 mb-2 d-block"></i>
+                <div className="card card-glass text-center py-5 text-muted">
+                  <i className="bi bi-card-checklist fs-2 mb-2 d-block text-purple" style={{ color: 'var(--accent-purple)' }}></i>
                   Select any task from the category list to review metadata details or submit compliance reports.
                 </div>
               )}

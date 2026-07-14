@@ -388,3 +388,48 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   padding: 10px 0;
 }
+
+/* Force transparency on list groups */
+.list-group-item {
+  background-color: transparent !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Dark glass chat window styles */
+.chat-thread-list {
+  background: rgba(14, 19, 39, 0.45) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.chat-active-header {
+  background: rgba(22, 28, 54, 0.6) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.chat-history-pane {
+  background: rgba(8, 10, 21, 0.5) !important;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.chat-bubble-outgoing {
+  background: linear-gradient(135deg, var(--accent-purple) 0%, #7c3aed 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+}
+
+.chat-bubble-incoming {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.chat-input-bar {
+  background: rgba(14, 19, 39, 0.6) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+
