@@ -1015,6 +1015,111 @@ function App() {
                       </div>
                     </div>
                   </div>
+                  {/* Aivora-style Feature Cards row */}
+                  <div className="row g-3 mb-4">
+                    <div className="col-md-4">
+                      <div className="card card-glass card-spotlight-blue h-100 p-3">
+                        <div className="d-flex align-items-start gap-3">
+                          <div className="icon-container-translucent flex-shrink-0">
+                            <i className="bi bi-star-fill" style={{ color: 'var(--accent-blue)' }}></i>
+                          </div>
+                          <div>
+                            <h6 className="fw-bold text-white mb-1">Plan created</h6>
+                            <p className="text-muted mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                              Website redesign project with 5 tasks, owners, and two milestone deadlines.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="card card-glass card-spotlight-purple h-100 p-3">
+                        <div className="d-flex align-items-start gap-3">
+                          <div className="icon-container-translucent flex-shrink-0">
+                            <i className="bi bi-pencil-fill" style={{ color: 'var(--accent-purple)' }}></i>
+                          </div>
+                          <div>
+                            <h6 className="fw-bold text-white mb-1">Editable suggestions</h6>
+                            <p className="text-muted mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                              Shift QA review earlier and assign design approval to Sarah.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="card card-glass card-spotlight-mint h-100 p-3">
+                        <div className="d-flex align-items-start gap-3">
+                          <div className="icon-container-translucent flex-shrink-0">
+                            <i className="bi bi-stars" style={{ color: 'var(--accent-mint)' }}></i>
+                          </div>
+                          <div>
+                            <h6 className="fw-bold text-white mb-1">Impact</h6>
+                            <p className="text-muted mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                              Estimated completion improves by 2 days with balanced workload.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dynamic Live Workflow Diagram */}
+                  <div className="card card-glass mb-4">
+                    <div className="card-header card-glass-header py-3">
+                      <h6 className="mb-0 fw-bold"><i className="bi bi-diagram-3-fill me-2" style={{ color: 'var(--accent-purple)' }}></i> Dynamic Workflow Live Sync</h6>
+                    </div>
+                    <div className="card-body p-4 position-relative" style={{ height: '180px', overflow: 'hidden' }}>
+                      {/* SVG Flow Lines */}
+                      <svg className="position-absolute top-0 start-0 w-100 h-100" style={{ pointerEvents: 'none' }}>
+                        <defs>
+                          <linearGradient id="flowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="var(--accent-purple)" />
+                            <stop offset="50%" stopColor="var(--accent-blue)" />
+                            <stop offset="100%" stopColor="var(--accent-mint)" />
+                          </linearGradient>
+                        </defs>
+                        {/* Connecting bezier curve */}
+                        <path d="M 60 45 C 160 140, 200 10, 280 90 C 370 170, 440 20, 520 45 C 600 70, 680 150, 760 45" 
+                              fill="none" stroke="url(#flowGrad)" strokeWidth="3" filter="drop-shadow(0 0 4px rgba(168, 85, 247, 0.4))" />
+                      </svg>
+
+                      {/* Node 1: Coordinator */}
+                      <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '5%', top: '25px' }}>
+                        <div className="workflow-avatar" style={{ backgroundColor: 'var(--accent-purple)' }}>PC</div>
+                        <span className="small text-muted mt-1" style={{ fontSize: '9px' }}>Coordinator</span>
+                      </div>
+
+                      {/* Node 2: Strategy */}
+                      <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '26%', top: '75px' }}>
+                        <div className="workflow-node-box">
+                          <strong className="d-block">01 Strategy Plan</strong>
+                          <span className="text-muted" style={{ fontSize: '9px' }}>Completed</span>
+                        </div>
+                      </div>
+
+                      {/* Node 3: Mikhail */}
+                      <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '49%', top: '25px' }}>
+                        <div className="workflow-avatar" style={{ backgroundColor: 'var(--accent-blue)' }}>MI</div>
+                        <span className="small text-muted mt-1" style={{ fontSize: '9px' }}>Investigator</span>
+                      </div>
+
+                      {/* Node 4: Review */}
+                      <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '69%', top: '75px' }}>
+                        <div className="workflow-node-box">
+                          <strong className="d-block">02 QA & Compliance</strong>
+                          <span className="text-warning" style={{ fontSize: '9px' }}>In Progress</span>
+                        </div>
+                      </div>
+
+                      {/* Node 5: Archit */}
+                      <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '85%', top: '25px' }}>
+                        <div className="workflow-avatar" style={{ backgroundColor: 'var(--accent-mint)' }}>AC</div>
+                        <span className="small text-muted mt-1" style={{ fontSize: '9px' }}>Manager Coordinator</span>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Active Timelines Gantt Monitor */}
                   <div className="card card-glass mb-4">
                     <div className="card-header card-glass-header py-3">
@@ -1770,6 +1875,115 @@ function App() {
             {/* Investigator Options and Task List */}
             <div className="col-lg-8 mb-4">
               
+              {['running', 'upcoming', 'past'].includes(investigatorTab) && (
+                <>
+                  {/* Aivora-style Feature Cards row */}
+                  <div className="row g-3 mb-4">
+                    <div className="col-md-4">
+                      <div className="card card-glass card-spotlight-blue h-100 p-3">
+                        <div className="d-flex align-items-start gap-3">
+                          <div className="icon-container-translucent flex-shrink-0">
+                            <i className="bi bi-star-fill" style={{ color: 'var(--accent-blue)' }}></i>
+                          </div>
+                          <div>
+                            <h6 className="fw-bold text-white mb-1">Plan created</h6>
+                            <p className="text-muted mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                              Website redesign project with 5 tasks, owners, and two milestone deadlines.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="card card-glass card-spotlight-purple h-100 p-3">
+                        <div className="d-flex align-items-start gap-3">
+                          <div className="icon-container-translucent flex-shrink-0">
+                            <i className="bi bi-pencil-fill" style={{ color: 'var(--accent-purple)' }}></i>
+                          </div>
+                          <div>
+                            <h6 className="fw-bold text-white mb-1">Editable suggestions</h6>
+                            <p className="text-muted mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                              Shift QA review earlier and assign design approval to Sarah.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="card card-glass card-spotlight-mint h-100 p-3">
+                        <div className="d-flex align-items-start gap-3">
+                          <div className="icon-container-translucent flex-shrink-0">
+                            <i className="bi bi-stars" style={{ color: 'var(--accent-mint)' }}></i>
+                          </div>
+                          <div>
+                            <h6 className="fw-bold text-white mb-1">Impact</h6>
+                            <p className="text-muted mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                              Estimated completion improves by 2 days with balanced workload.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dynamic Live Workflow Diagram */}
+                  <div className="card card-glass mb-4">
+                    <div className="card-header card-glass-header py-3">
+                      <h6 className="mb-0 fw-bold"><i className="bi bi-diagram-3-fill me-2" style={{ color: 'var(--accent-purple)' }}></i> Dynamic Workflow Live Sync</h6>
+                    </div>
+                    <div className="card-body p-4 position-relative" style={{ height: '180px', overflow: 'hidden' }}>
+                      {/* SVG Flow Lines */}
+                      <svg className="position-absolute top-0 start-0 w-100 h-100" style={{ pointerEvents: 'none' }}>
+                        <defs>
+                          <linearGradient id="flowGradInv" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="var(--accent-purple)" />
+                            <stop offset="50%" stopColor="var(--accent-blue)" />
+                            <stop offset="100%" stopColor="var(--accent-mint)" />
+                          </linearGradient>
+                        </defs>
+                        {/* Connecting bezier curve */}
+                        <path d="M 60 45 C 160 140, 200 10, 280 90 C 370 170, 440 20, 520 45 C 600 70, 680 150, 760 45" 
+                              fill="none" stroke="url(#flowGradInv)" strokeWidth="3" filter="drop-shadow(0 0 4px rgba(168, 85, 247, 0.4))" />
+                      </svg>
+
+                      {/* Node 1: Coordinator */}
+                      <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '5%', top: '25px' }}>
+                        <div className="workflow-avatar" style={{ backgroundColor: 'var(--accent-purple)' }}>PC</div>
+                        <span className="small text-muted mt-1" style={{ fontSize: '9px' }}>Coordinator</span>
+                      </div>
+
+                      {/* Node 2: Strategy */}
+                      <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '26%', top: '75px' }}>
+                        <div className="workflow-node-box">
+                          <strong className="d-block">01 Strategy Plan</strong>
+                          <span className="text-muted" style={{ fontSize: '9px' }}>Completed</span>
+                        </div>
+                      </div>
+
+                      {/* Node 3: Mikhail */}
+                      <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '49%', top: '25px' }}>
+                        <div className="workflow-avatar" style={{ backgroundColor: 'var(--accent-blue)' }}>MI</div>
+                        <span className="small text-muted mt-1" style={{ fontSize: '9px' }}>Investigator</span>
+                      </div>
+
+                      {/* Node 4: Review */}
+                      <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '69%', top: '75px' }}>
+                        <div className="workflow-node-box">
+                          <strong className="d-block">02 QA & Compliance</strong>
+                          <span className="text-warning" style={{ fontSize: '9px' }}>In Progress</span>
+                        </div>
+                      </div>
+
+                      {/* Node 5: Archit */}
+                      <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '85%', top: '25px' }}>
+                        <div className="workflow-avatar" style={{ backgroundColor: 'var(--accent-mint)' }}>AC</div>
+                        <span className="small text-muted mt-1" style={{ fontSize: '9px' }}>Manager Coordinator</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
               {/* Investigator Task Tables */}
               {['running', 'upcoming', 'past'].includes(investigatorTab) && (
                 <div className="card card-glass mb-4">
