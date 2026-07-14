@@ -2,6 +2,55 @@ import React, { useState, useEffect } from 'react';
 
 const API_BASE = 'http://localhost:8000';
 
+const getMilestonesForProject = (project) => {
+  // Default (no project selected): show generic state
+  if (!project) {
+    return [
+      { label: "Task Initiated", status: "active", initials: "PC", role: "Coordinator" },
+      { label: "Halfway Report", status: "upcoming", initials: "MI", role: "Investigator" },
+      { label: "Final Report", status: "upcoming", initials: "AC", role: "Manager" }
+    ];
+  }
+
+  const projectStatus = (project.status || 'assigned').toLowerCase();
+  const reportStatus = (project.report_status || 'pending').toLowerCase();
+
+  // Stage 3: all done — report approved or project marked completed
+  if (projectStatus === 'completed' || reportStatus === 'approved') {
+    return [
+      { label: "Task Initiated", status: "completed", initials: "PC", role: "Coordinator" },
+      { label: "Halfway Report", status: "completed", initials: "MI", role: "Investigator" },
+      { label: "Final Report",  status: "completed", initials: "AC", role: "Manager" }
+    ];
+  }
+
+  // Stage 2b: report submitted/under review — awaiting manager approval
+  if (['submitted', 'resubmitted', 'under_review', 'under review'].includes(reportStatus)) {
+    return [
+      { label: "Task Initiated", status: "completed", initials: "PC", role: "Coordinator" },
+      { label: "Halfway Report", status: "completed", initials: "MI", role: "Investigator" },
+      { label: "Final Report",  status: "active",    initials: "AC", role: "Manager" }
+    ];
+  }
+
+  // Stage 2a: project ongoing — investigator working on report
+  if (projectStatus === 'ongoing') {
+    return [
+      { label: "Task Initiated", status: "completed", initials: "PC", role: "Coordinator" },
+      { label: "Halfway Report", status: "active",    initials: "MI", role: "Investigator" },
+      { label: "Final Report",  status: "upcoming",  initials: "AC", role: "Manager" }
+    ];
+  }
+
+  // Stage 1: project just assigned — only first node lit
+  return [
+    { label: "Task Initiated", status: "active",   initials: "PC", role: "Coordinator" },
+    { label: "Halfway Report", status: "upcoming", initials: "MI", role: "Investigator" },
+    { label: "Final Report",  status: "upcoming", initials: "AC", role: "Manager" }
+  ];
+};
+
+
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [username, setUsername] = useState(localStorage.getItem('username') || '');
@@ -681,7 +730,7 @@ function App() {
   return (
     <div 
       className="d-flex position-relative min-vh-100 bg-[#0B0C10]" 
-      style={{ backgroundImage: 'radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.12) 0%, transparent 70%)' }}
+      style={{ background: 'radial-gradient(circle at 80% -20%, rgba(168, 85, 247, 0.15) 0%, #0B0C10 60%)' }}
     >
       {/* Background Ambient Glows */}
       <div className="ambient-glow-1"></div>
@@ -756,8 +805,17 @@ function App() {
 
       {/* Right Work area */}
       <div className="flex-fill d-flex flex-column" style={{ minWidth: 0 }}>
-        {/* Top Header */}
-        <div className="d-flex justify-content-between align-items-center px-4 py-3 border-bottom border-secondary border-opacity-10 bg-dark bg-opacity-20 backdrop-blur" style={{ sticky: 'top', zIndex: 90 }}>
+        {/* Top Header — transparent, merged into page background with a subtle top-right glow */}
+        <div
+          className="d-flex justify-content-between align-items-center px-4 py-3"
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 90,
+            background: 'radial-gradient(circle at 85% 0%, rgba(255, 255, 255, 0.055) 0%, transparent 55%), transparent',
+            borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)',
+          }}
+        >
           <div>
             <h5 className="mb-0 fw-bold">Welcome back, {username}</h5>
             <p className="text-muted mb-0 small">Role: {isStaff ? 'Manager Coordinator' : 'Principal Investigator'}</p>
@@ -1022,45 +1080,48 @@ function App() {
                   <div className="row mb-4">
                     {/* Left: 3 Feature Cards stacked vertically */}
                     <div className="col-lg-4 d-flex flex-column gap-3 mb-4 mb-lg-0">
-                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden">
-                        <div className="position-absolute top-0 start-0 w-100 h-100" style={{ background: 'radial-gradient(120% 120% at 100% 0%, rgba(59, 130, 246, 0.25) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                      {/* Blue Card */}
+                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden"
+                           style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.15) 0%, rgba(59, 130, 246, 0.35) 25%, rgba(19, 20, 28, 0.85) 70%)' }}>
                         <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
-                          <div className="icon-container-translucent flex-shrink-0">
-                            <i className="bi bi-star-fill" style={{ color: 'var(--accent-blue)' }}></i>
+                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.4)] rounded-xl p-2 flex items-center justify-center flex-shrink-0">
+                            <i className="bi bi-star-fill text-white fs-5"></i>
                           </div>
                           <div>
                             <h6 className="fw-bold text-white mb-1">Plan created</h6>
-                            <p className="text-muted mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <p className="text-white/60 mb-0 font-light" style={{ fontSize: '11px', lineHeight: '1.4' }}>
                               Website redesign project with 5 tasks, owners, and two milestone deadlines.
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden">
-                        <div className="position-absolute top-0 start-0 w-100 h-100" style={{ background: 'radial-gradient(120% 120% at 100% 0%, rgba(139, 92, 246, 0.25) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                      {/* Purple Card */}
+                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden"
+                           style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.15) 0%, rgba(168, 85, 247, 0.35) 25%, rgba(19, 20, 28, 0.85) 70%)' }}>
                         <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
-                          <div className="icon-container-translucent flex-shrink-0">
-                            <i className="bi bi-pencil-fill" style={{ color: 'var(--accent-purple)' }}></i>
+                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.4)] rounded-xl p-2 flex items-center justify-center flex-shrink-0">
+                            <i className="bi bi-pencil-fill text-white fs-5"></i>
                           </div>
                           <div>
                             <h6 className="fw-bold text-white mb-1">Editable suggestions</h6>
-                            <p className="text-muted mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <p className="text-white/60 mb-0 font-light" style={{ fontSize: '11px', lineHeight: '1.4' }}>
                               Shift QA review earlier and assign design approval to Sarah.
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden">
-                        <div className="position-absolute top-0 start-0 w-100 h-100" style={{ background: 'radial-gradient(120% 120% at 100% 0%, rgba(16, 185, 129, 0.25) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                      {/* Teal Card */}
+                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden"
+                           style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.15) 0%, rgba(20, 184, 166, 0.35) 25%, rgba(19, 20, 28, 0.85) 70%)' }}>
                         <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
-                          <div className="icon-container-translucent flex-shrink-0">
-                            <i className="bi bi-stars" style={{ color: 'var(--accent-mint)' }}></i>
+                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.4)] rounded-xl p-2 flex items-center justify-center flex-shrink-0">
+                            <i className="bi bi-stars text-white fs-5"></i>
                           </div>
                           <div>
                             <h6 className="fw-bold text-white mb-1">Impact</h6>
-                            <p className="text-muted mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <p className="text-white/60 mb-0 font-light" style={{ fontSize: '11px', lineHeight: '1.4' }}>
                               Estimated completion improves by 2 days with balanced workload.
                             </p>
                           </div>
@@ -1072,56 +1133,112 @@ function App() {
                     <div className="col-lg-8">
                       <div className="card card-glass h-100">
                         <div className="card-header card-glass-header py-3">
-                          <h6 className="mb-0 fw-bold"><i className="bi bi-diagram-3-fill me-2" style={{ color: 'var(--accent-purple)' }}></i> Project Timeline Canvas</h6>
+                          <h6 className="mb-0 fw-bold">
+                            <i className="bi bi-diagram-3-fill me-2" style={{ color: '#8B5CF6' }}></i> 
+                            Project Timeline Canvas - {selectedProject ? selectedProject.title : "Workspace Live Flow"}
+                          </h6>
                         </div>
                         <div className="card-body p-4 position-relative d-flex flex-column justify-content-center" style={{ minHeight: '300px', overflow: 'hidden' }}>
-                          {/* SVG Flow Lines */}
-                          <svg className="position-absolute top-0 start-0 w-100 h-100" style={{ pointerEvents: 'none' }}>
-                            <defs>
-                              <linearGradient id="flowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="var(--accent-purple)" />
-                                <stop offset="50%" stopColor="var(--accent-blue)" />
-                                <stop offset="100%" stopColor="var(--accent-mint)" />
-                              </linearGradient>
-                            </defs>
-                            {/* Curved Bezier connecting user avatars (nodes) */}
-                            <path d="M 60 70 C 140 180, 200 20, 280 130 C 370 240, 440 30, 520 80 C 600 120, 640 220, 720 70" 
-                                  fill="none" stroke="url(#flowGrad)" strokeWidth="3" filter="drop-shadow(0 0 6px rgba(168, 85, 247, 0.5))" />
-                          </svg>
+                          
+                          {(() => {
+                            const milestones = getMilestonesForProject(selectedProject);
+                            const completedCount = milestones.filter(m => m.status === 'completed').length;
+                            const isActiveFinal = milestones[2].status === 'active';
+                            const isActiveHalf = milestones[1].status === 'active';
 
-                          {/* Node 1: Coordinator */}
-                          <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '5%', top: '50px' }}>
-                            <div className="workflow-avatar" style={{ backgroundColor: 'var(--accent-purple)' }}>PC</div>
-                            <span className="small text-muted mt-1" style={{ fontSize: '9px' }}>Coordinator</span>
-                          </div>
+                            let progressPercent = 0;
+                            if (completedCount === 3) progressPercent = 100;
+                            else if (completedCount === 2) progressPercent = isActiveFinal ? 90 : 75;
+                            else if (completedCount === 1) progressPercent = isActiveHalf ? 50 : 35;
+                            else progressPercent = 12;
 
-                          {/* Node 2: Strategy */}
-                          <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '26%', top: '115px' }}>
-                            <div className="workflow-node-box">
-                              <strong className="d-block">01 Strategy Plan</strong>
-                              <span className="text-muted" style={{ fontSize: '9px' }}>Completed</span>
-                            </div>
-                          </div>
+                            const strokeLength = 680;
+                            const strokeDashoffset = strokeLength - (strokeLength * progressPercent) / 100;
 
-                          {/* Node 3: Mikhail */}
-                          <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '49%', top: '50px' }}>
-                            <div className="workflow-avatar" style={{ backgroundColor: 'var(--accent-blue)' }}>MI</div>
-                            <span className="small text-muted mt-1" style={{ fontSize: '9px' }}>Investigator</span>
-                          </div>
+                            return (
+                              <>
+                                {/* SVG Flow Lines */}
+                                <svg className="position-absolute top-0 start-0 w-100 h-100" viewBox="0 0 800 240" preserveAspectRatio="none" style={{ pointerEvents: 'none' }}>
+                                  <defs>
+                                    <linearGradient id="flowGradCompleted" x1="0%" y1="0%" x2="100%" y2="0%">
+                                      <stop offset="0%" stopColor="#8B5CF6" />
+                                      <stop offset="100%" stopColor="#a855f7" />
+                                    </linearGradient>
+                                  </defs>
+                                  {/* Underlay: Dim uncompleted path */}
+                                  <path 
+                                    d="M 80 70 C 200 180, 300 180, 400 160 C 500 140, 600 40, 720 70" 
+                                    fill="none" 
+                                    stroke="rgba(220, 220, 235, 0.18)" 
+                                    strokeWidth="4"
+                                    strokeLinecap="round" 
+                                  />
+                                  {/* Overlay: Glow active path */}
+                                  <path 
+                                    d="M 80 70 C 200 180, 300 180, 400 160 C 500 140, 600 40, 720 70" 
+                                    fill="none" 
+                                    stroke="url(#flowGradCompleted)" 
+                                    strokeWidth="4" 
+                                    strokeDasharray={strokeLength}
+                                    strokeDashoffset={strokeDashoffset}
+                                    style={{ transition: 'stroke-dashoffset 0.8s ease-in-out' }}
+                                    filter="drop-shadow(0 0 6px #8B5CF6)"
+                                  />
+                                </svg>
 
-                          {/* Node 4: Review */}
-                          <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '68%', top: '115px' }}>
-                            <div className="workflow-node-box">
-                              <strong className="d-block">02 QA & Compliance</strong>
-                              <span className="text-warning" style={{ fontSize: '9px' }}>In Progress</span>
-                            </div>
-                          </div>
+                                {milestones.map((m, idx) => {
+                                  const isActive = m.status === 'active';
+                                  const isCompleted = m.status === 'completed';
+                                  
+                                  // Map node index to coordinate left/top styles
+                                  const leftPos = idx === 0 ? '10%' : idx === 1 ? '50%' : '90%';
+                                  const topPos = idx === 1 ? '160px' : '70px';
 
-                          {/* Node 5: Archit */}
-                          <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '85%', top: '50px' }}>
-                            <div className="workflow-avatar" style={{ backgroundColor: 'var(--accent-mint)' }}>AC</div>
-                            <span className="small text-muted mt-1" style={{ fontSize: '9px' }}>Manager Coordinator</span>
-                          </div>
+                                  return (
+                                    <div 
+                                      key={idx} 
+                                      className="position-absolute d-flex flex-column align-items-center" 
+                                      style={{ 
+                                        left: leftPos, 
+                                        top: topPos, 
+                                        transform: 'translate(-50%, -50%)', 
+                                        zIndex: 10 
+                                      }}
+                                    >
+                                      <div 
+                                        className={`workflow-avatar position-relative d-flex align-items-center justify-content-center rounded-full transition-all duration-300 ${
+                                          isCompleted ? 'border-[#8B5CF6] shadow-[0_0_12px_#8B5CF6]' : 
+                                          isActive ? 'border-white shadow-[0_0_20px_rgba(139,92,246,0.85)] scale-110' : 
+                                          'border-white/10 opacity-60'
+                                        }`}
+                                        style={{ 
+                                          width: '42px', 
+                                          height: '42px',
+                                          backgroundColor: isCompleted || isActive ? '#8B5CF6' : 'rgba(255,255,255,0.05)',
+                                          borderWidth: '2px'
+                                        }}
+                                      >
+                                        {isActive && (
+                                          <span className="position-absolute inset-0 rounded-full bg-violet-500/40 animate-ping" />
+                                        )}
+                                        <span className="fw-bold text-white small" style={{ fontSize: '12px' }}>{m.initials}</span>
+                                      </div>
+                                      
+                                      <div className="mt-2 text-center" style={{ minWidth: '120px' }}>
+                                        <span className={`d-block small font-semibold ${isActive ? 'text-white' : 'text-white/60'}`} style={{ fontSize: '10px' }}>
+                                          {m.label}
+                                        </span>
+                                        <span className="d-block font-light text-white-50" style={{ fontSize: '8px' }}>
+                                          {m.role} ({m.status})
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </>
+                            );
+                          })()}
+
                         </div>
                       </div>
                     </div>
@@ -1888,45 +2005,48 @@ function App() {
                   <div className="row mb-4">
                     {/* Left: 3 Feature Cards stacked vertically */}
                     <div className="col-lg-4 d-flex flex-column gap-3 mb-4 mb-lg-0">
-                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden">
-                        <div className="position-absolute top-0 start-0 w-100 h-100" style={{ background: 'radial-gradient(120% 120% at 100% 0%, rgba(59, 130, 246, 0.25) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                      {/* Blue Card */}
+                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden"
+                           style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.15) 0%, rgba(59, 130, 246, 0.35) 25%, rgba(19, 20, 28, 0.85) 70%)' }}>
                         <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
-                          <div className="icon-container-translucent flex-shrink-0">
-                            <i className="bi bi-star-fill" style={{ color: 'var(--accent-blue)' }}></i>
+                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.4)] rounded-xl p-2 flex items-center justify-center flex-shrink-0">
+                            <i className="bi bi-star-fill text-white fs-5"></i>
                           </div>
                           <div>
                             <h6 className="fw-bold text-white mb-1">Plan created</h6>
-                            <p className="text-muted mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <p className="text-white/60 mb-0 font-light" style={{ fontSize: '11px', lineHeight: '1.4' }}>
                               Website redesign project with 5 tasks, owners, and two milestone deadlines.
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden">
-                        <div className="position-absolute top-0 start-0 w-100 h-100" style={{ background: 'radial-gradient(120% 120% at 100% 0%, rgba(139, 92, 246, 0.25) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                      {/* Purple Card */}
+                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden"
+                           style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.15) 0%, rgba(168, 85, 247, 0.35) 25%, rgba(19, 20, 28, 0.85) 70%)' }}>
                         <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
-                          <div className="icon-container-translucent flex-shrink-0">
-                            <i className="bi bi-pencil-fill" style={{ color: 'var(--accent-purple)' }}></i>
+                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.4)] rounded-xl p-2 flex items-center justify-center flex-shrink-0">
+                            <i className="bi bi-pencil-fill text-white fs-5"></i>
                           </div>
                           <div>
                             <h6 className="fw-bold text-white mb-1">Editable suggestions</h6>
-                            <p className="text-muted mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <p className="text-white/60 mb-0 font-light" style={{ fontSize: '11px', lineHeight: '1.4' }}>
                               Shift QA review earlier and assign design approval to Sarah.
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden">
-                        <div className="position-absolute top-0 start-0 w-100 h-100" style={{ background: 'radial-gradient(120% 120% at 100% 0%, rgba(16, 185, 129, 0.25) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                      {/* Teal Card */}
+                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden"
+                           style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.15) 0%, rgba(20, 184, 166, 0.35) 25%, rgba(19, 20, 28, 0.85) 70%)' }}>
                         <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
-                          <div className="icon-container-translucent flex-shrink-0">
-                            <i className="bi bi-stars" style={{ color: 'var(--accent-mint)' }}></i>
+                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.4)] rounded-xl p-2 flex items-center justify-center flex-shrink-0">
+                            <i className="bi bi-stars text-white fs-5"></i>
                           </div>
                           <div>
                             <h6 className="fw-bold text-white mb-1">Impact</h6>
-                            <p className="text-muted mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <p className="text-white/60 mb-0 font-light" style={{ fontSize: '11px', lineHeight: '1.4' }}>
                               Estimated completion improves by 2 days with balanced workload.
                             </p>
                           </div>
@@ -1938,56 +2058,112 @@ function App() {
                     <div className="col-lg-8">
                       <div className="card card-glass h-100">
                         <div className="card-header card-glass-header py-3">
-                          <h6 className="mb-0 fw-bold"><i className="bi bi-diagram-3-fill me-2" style={{ color: 'var(--accent-purple)' }}></i> Project Timeline Canvas</h6>
+                          <h6 className="mb-0 fw-bold">
+                            <i className="bi bi-diagram-3-fill me-2" style={{ color: '#8B5CF6' }}></i> 
+                            Project Timeline Canvas - {selectedProject ? selectedProject.title : "Workspace Live Flow"}
+                          </h6>
                         </div>
                         <div className="card-body p-4 position-relative d-flex flex-column justify-content-center" style={{ minHeight: '300px', overflow: 'hidden' }}>
-                          {/* SVG Flow Lines */}
-                          <svg className="position-absolute top-0 start-0 w-100 h-100" style={{ pointerEvents: 'none' }}>
-                            <defs>
-                              <linearGradient id="flowGradInv" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="var(--accent-purple)" />
-                                <stop offset="50%" stopColor="var(--accent-blue)" />
-                                <stop offset="100%" stopColor="var(--accent-mint)" />
-                              </linearGradient>
-                            </defs>
-                            {/* Curved Bezier connecting user avatars (nodes) */}
-                            <path d="M 60 70 C 140 180, 200 20, 280 130 C 370 240, 440 30, 520 80 C 600 120, 640 220, 720 70" 
-                                  fill="none" stroke="url(#flowGradInv)" strokeWidth="3" filter="drop-shadow(0 0 6px rgba(168, 85, 247, 0.5))" />
-                          </svg>
+                          
+                          {(() => {
+                            const milestones = getMilestonesForProject(selectedProject);
+                            const completedCount = milestones.filter(m => m.status === 'completed').length;
+                            const isActiveFinal = milestones[2].status === 'active';
+                            const isActiveHalf = milestones[1].status === 'active';
 
-                          {/* Node 1: Coordinator */}
-                          <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '5%', top: '50px' }}>
-                            <div className="workflow-avatar" style={{ backgroundColor: 'var(--accent-purple)' }}>PC</div>
-                            <span className="small text-muted mt-1" style={{ fontSize: '9px' }}>Coordinator</span>
-                          </div>
+                            let progressPercent = 0;
+                            if (completedCount === 3) progressPercent = 100;
+                            else if (completedCount === 2) progressPercent = isActiveFinal ? 90 : 75;
+                            else if (completedCount === 1) progressPercent = isActiveHalf ? 50 : 35;
+                            else progressPercent = 12;
 
-                          {/* Node 2: Strategy */}
-                          <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '26%', top: '115px' }}>
-                            <div className="workflow-node-box">
-                              <strong className="d-block">01 Strategy Plan</strong>
-                              <span className="text-muted" style={{ fontSize: '9px' }}>Completed</span>
-                            </div>
-                          </div>
+                            const strokeLength = 680;
+                            const strokeDashoffset = strokeLength - (strokeLength * progressPercent) / 100;
 
-                          {/* Node 3: Mikhail */}
-                          <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '49%', top: '50px' }}>
-                            <div className="workflow-avatar" style={{ backgroundColor: 'var(--accent-blue)' }}>MI</div>
-                            <span className="small text-muted mt-1" style={{ fontSize: '9px' }}>Investigator</span>
-                          </div>
+                            return (
+                              <>
+                                {/* SVG Flow Lines */}
+                                <svg className="position-absolute top-0 start-0 w-100 h-100" viewBox="0 0 800 240" preserveAspectRatio="none" style={{ pointerEvents: 'none' }}>
+                                  <defs>
+                                    <linearGradient id="flowGradCompletedInv" x1="0%" y1="0%" x2="100%" y2="0%">
+                                      <stop offset="0%" stopColor="#8B5CF6" />
+                                      <stop offset="100%" stopColor="#a855f7" />
+                                    </linearGradient>
+                                  </defs>
+                                  {/* Underlay: Dim uncompleted path */}
+                                  <path 
+                                    d="M 80 70 C 200 180, 300 180, 400 160 C 500 140, 600 40, 720 70" 
+                                    fill="none" 
+                                    stroke="rgba(220, 220, 235, 0.18)" 
+                                    strokeWidth="4"
+                                    strokeLinecap="round" 
+                                  />
+                                  {/* Overlay: Glow active path */}
+                                  <path 
+                                    d="M 80 70 C 200 180, 300 180, 400 160 C 500 140, 600 40, 720 70" 
+                                    fill="none" 
+                                    stroke="url(#flowGradCompletedInv)" 
+                                    strokeWidth="4" 
+                                    strokeDasharray={strokeLength}
+                                    strokeDashoffset={strokeDashoffset}
+                                    style={{ transition: 'stroke-dashoffset 0.8s ease-in-out' }}
+                                    filter="drop-shadow(0 0 6px #8B5CF6)"
+                                  />
+                                </svg>
 
-                          {/* Node 4: Review */}
-                          <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '68%', top: '115px' }}>
-                            <div className="workflow-node-box">
-                              <strong className="d-block">02 QA & Compliance</strong>
-                              <span className="text-warning" style={{ fontSize: '9px' }}>In Progress</span>
-                            </div>
-                          </div>
+                                {milestones.map((m, idx) => {
+                                  const isActive = m.status === 'active';
+                                  const isCompleted = m.status === 'completed';
+                                  
+                                  // Map node index to coordinate left/top styles
+                                  const leftPos = idx === 0 ? '10%' : idx === 1 ? '50%' : '90%';
+                                  const topPos = idx === 1 ? '160px' : '70px';
 
-                          {/* Node 5: Archit */}
-                          <div className="position-absolute d-flex flex-column align-items-center" style={{ left: '85%', top: '50px' }}>
-                            <div className="workflow-avatar" style={{ backgroundColor: 'var(--accent-mint)' }}>AC</div>
-                            <span className="small text-muted mt-1" style={{ fontSize: '9px' }}>Manager Coordinator</span>
-                          </div>
+                                  return (
+                                    <div 
+                                      key={idx} 
+                                      className="position-absolute d-flex flex-column align-items-center" 
+                                      style={{ 
+                                        left: leftPos, 
+                                        top: topPos, 
+                                        transform: 'translate(-50%, -50%)', 
+                                        zIndex: 10 
+                                      }}
+                                    >
+                                      <div 
+                                        className={`workflow-avatar position-relative d-flex align-items-center justify-content-center rounded-full transition-all duration-300 ${
+                                          isCompleted ? 'border-[#8B5CF6] shadow-[0_0_12px_#8B5CF6]' : 
+                                          isActive ? 'border-white shadow-[0_0_20px_rgba(139,92,246,0.85)] scale-110' : 
+                                          'border-white/10 opacity-60'
+                                        }`}
+                                        style={{ 
+                                          width: '42px', 
+                                          height: '42px',
+                                          backgroundColor: isCompleted || isActive ? '#8B5CF6' : 'rgba(255,255,255,0.05)',
+                                          borderWidth: '2px'
+                                        }}
+                                      >
+                                        {isActive && (
+                                          <span className="position-absolute inset-0 rounded-full bg-violet-500/40 animate-ping" />
+                                        )}
+                                        <span className="fw-bold text-white small" style={{ fontSize: '12px' }}>{m.initials}</span>
+                                      </div>
+                                      
+                                      <div className="mt-2 text-center" style={{ minWidth: '120px' }}>
+                                        <span className={`d-block small font-semibold ${isActive ? 'text-white' : 'text-white/60'}`} style={{ fontSize: '10px' }}>
+                                          {m.label}
+                                        </span>
+                                        <span className="d-block font-light text-white-50" style={{ fontSize: '8px' }}>
+                                          {m.role} ({m.status})
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </>
+                            );
+                          })()}
+
                         </div>
                       </div>
                     </div>
