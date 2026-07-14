@@ -1,0 +1,150 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">
+                    <i class="bi bi-file-earmark-text"></i> Report Details
+                </h3>
+                <span class="badge bg-{% if report.status == 'approved' %}success
+                                      {% elif report.status == 'rejected' %}danger
+                                      {% else %}warning{% endif %}">
+                    {{ report.get_status_display }}
+                </span>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>Project Information</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>Project:</strong> {{ report.project.title }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Project Code:</strong> {{ report.project.project_code }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Submitted On:</strong> {{ report.submitted_at|date:"F j, Y H:i" }}
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5>Report Actions</h5>
+                    <div class="d-grid gap-2">
+                        {% if report.report_file %}
+                            <a href="{{ report.report_file.url }}" 
+                               class="btn btn-primary" 
+                               download>
+                                <i class="bi bi-download"></i> Download Report
+                            </a>
+                            <a href="{{ report.report_file.url }}" 
+                               target="_blank" 
+                               class="btn btn-secondary">
+                                <i class="bi bi-eye"></i> View Report (PDF)
+                            </a>
+                        {% endif %}
+                        
+                        {% if report.status == 'resubmit_requested' %}
+                            <a href="{% url 'resubmit_report' report.id %}" 
+                               class="btn btn-warning">
+                                <i class="bi bi-arrow-repeat"></i> Resubmit Report
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            {% if report.notes %}
+            <div class="mb-3">
+                <h5>Investigator Notes</h5>
+                <div class="card">
+                    <div class="card-body">
+                        {{ report.notes|linebreaks }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if report.admin_comment %}
+            <div class="mb-3">
+                <h5>Admin Feedback</h5>
+                <div class="card border-{% if report.status == 'approved' %}success
+                                      {% elif report.status == 'rejected' %}danger
+                                      {% else %}warning{% endif %}">
+                    <div class="card-body">
+                        {{ report.admin_comment|linebreaks }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if request.user.is_staff and report.status == 'submitted' %}
+            <div class="card mt-4 border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-shield-check"></i> Manager Actions</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'manager_review_report' report.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="adminComment" class="form-label">Review Comment (Required for rejection or resubmission request)</label>
+                            <textarea class="form-control" id="adminComment" name="admin_comment" rows="3" placeholder="Enter feedback for the investigator here..."></textarea>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" name="action" value="approve" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Approve Report
+                            </button>
+                            <button type="submit" name="action" value="reject" class="btn btn-danger" onclick="return validateComment();">
+                                <i class="bi bi-x-circle"></i> Reject Report
+                            </button>
+                            <button type="submit" name="action" value="resubmit" class="btn btn-warning text-dark" onclick="return validateComment();">
+                                <i class="bi bi-arrow-repeat"></i> Request Resubmission
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <script>
+            function validateComment() {
+                const comment = document.getElementById('adminComment').value.trim();
+                if (!comment) {
+                    alert('Please enter a review comment explaining the reason.');
+                    return false;
+                }
+                return true;
+            }
+            </script>
+            {% endif %}
+
+            <div class="mt-4">
+                {% if request.user.is_staff %}
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                {% else %}
+                    <a href="{% url 'investigator_notifications' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Notifications
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-header {
+        padding: 1rem 1.5rem;
+    }
+    .list-group-item {
+        padding: 0.75rem 1.25rem;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0"><i class="bi bi-folder-plus"></i> Add New Project</h3>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="project_code" class="form-label">Project Code*</label>
+                        <input type="text" name="project_code" id="project_code" class="form-control" placeholder="e.g. S&T-2026-01" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="project_type" class="form-label">Project Type*</label>
+                        <select name="project_type" id="project_type" class="form-select" required>
+                            <option value="S&T">Science & Technology</option>
+                            <option value="R&D">Research & Development</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Status*</label>
+                        <select name="status" id="status" class="form-select" required>
+                            <option value="ongoing">Ongoing</option>
+                            <option value="pending">Pending</option>
+                            <option value="completed">Completed</option>
+                            <option value="up_next">Up Next</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="title" class="form-label">Project Title*</label>
+                    <input type="text" name="title" id="title" class="form-control" placeholder="Enter complete project title" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea name="description" id="description" class="form-control" rows="4" placeholder="Brief details about the project goals, scopes, etc."></textarea>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="principal_agency" class="form-label">Principal Agency*</label>
+                        <input type="text" name="principal_agency" id="principal_agency" class="form-control" placeholder="e.g. DST, DBT" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="budget_amount" class="form-label">Budget Amount</label>
+                        <input type="number" name="budget_amount" id="budget_amount" class="form-control" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="budget_unit" class="form-label">Budget Unit</label>
+                        <select name="budget_unit" id="budget_unit" class="form-select">
+                            <option value="rupees">Rupees</option>
+                            <option value="thousands">Thousands (₹)</option>
+                            <option value="lakhs" selected>Lakhs (₹)</option>
+                            <option value="crores">Crores (₹)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="start_date" class="form-label">Start Date*</label>
+                        <input type="date" name="start_date" id="start_date" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="scheduled_completion" class="form-label">Scheduled Completion Date*</label>
+                        <input type="date" name="scheduled_completion" id="scheduled_completion" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="project_investigator" class="form-label">Principal Investigator (Name)</label>
+                        <input type="text" name="project_investigator" id="project_investigator" class="form-control" placeholder="Dr. John Doe">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="project_coordinator" class="form-label">Project Coordinator (Name)</label>
+                        <input type="text" name="project_coordinator" id="project_coordinator" class="form-control" placeholder="Jane Smith">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="assigned_investigator" class="form-label">Assign Investigator (Drishti User)*</label>
+                    <select name="assigned_investigator" id="assigned_investigator" class="form-select" required>
+                        <option value="" selected disabled>Select an investigator</option>
+                        {% for user in investigators %}
+                        <option value="{{ user.id }}">{{ user.username }} ({{ user.email|default:"No email" }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="implementing_agencies" class="form-label">Implementing Agencies</label>
+                    <input type="text" name="implementing_agencies" id="implementing_agencies" class="form-control" placeholder="Comma-separated agencies (e.g. Agency A, Agency B)">
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary me-md-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Create & Assign Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
