@@ -135,16 +135,35 @@ def delete_document(doc_id: int, project_id: int):
 
 # ─── System help knowledge base ───────────────────────────────────────────────
 SYSTEM_HELP_TEXT = """
-Drishti is a project management system designed for government research and scientific projects.
+Drishti is a high-end, secure project management system designed for government research and scientific projects, featuring a glassmorphism UI aesthetic.
+
+ACCOUNT CREATION & SIGN UP:
+- To create an account, navigate to the Drishti Signup page.
+- Enter a unique username, your email address, and a secure password.
+- You will be asked to select your role: either Manager (Staff) or Investigator.
+- If you sign up as an Investigator with an email address that a Manager has already assigned a project to, those projects will automatically be claimed and added to your dashboard.
+
+ROLES:
+- Managers (Principal Coordinators) oversee projects, assign tasks to investigators, and review submitted reports.
+- Investigators (Principal Investigators) receive project assignments, conduct the tasks, and submit compliance reports.
 
 HOW TO LOG IN:
 - Navigate to the Drishti login page. Enter your username and password.
 - Managers (staff) log in at /manager/login/. Investigators log in at /investigator/login/.
 - If you forgot your password, contact your system administrator.
 
+SIDEBAR FEATURES & NAVIGATION:
+- Running Tasks: Projects currently active and assigned.
+- Upcoming Tasks: Projects assigned but work has not formally started.
+- Completed Tasks / Past Tasks: Projects that have been fully approved and closed.
+- Alerts Feed: Real-time notifications for report submissions, approvals, or rejections.
+- Live Chats: Secure, project-independent direct messaging between Managers and Investigators.
+- Ekta AI: Your personal RAG Assistant for querying project documents or Drishti system help.
+- Encrypted Desk: A secure environment for tracking live workspace actions and securely handling files.
+
 HOW TO SUBMIT A REPORT (INVESTIGATOR):
 - Log in to your investigator dashboard.
-- Click on a running project in your task list.
+- Click on a running project in your task list to open the Project Details panel.
 - Go to the "Submit Report" section.
 - Upload your report as a PDF file (only PDFs are accepted).
 - Add any notes/comments about your submission.
@@ -152,8 +171,7 @@ HOW TO SUBMIT A REPORT (INVESTIGATOR):
 
 HOW MANAGERS REVIEW REPORTS:
 - Log in to the manager dashboard.
-- Go to the "Reviews" tab.
-- Click on a pending report to view it.
+- Go to the "Reviews" tab or click on a project that has a submitted report.
 - You can Approve, Reject, or Request Resubmission.
 - Add comments to explain your decision. The investigator will be notified automatically.
 
@@ -167,32 +185,20 @@ WHAT HAPPENS AFTER REJECTION OR RESUBMISSION REQUEST:
 - The investigator can re-upload the report from their dashboard.
 - The project remains in "Running" status until the report is approved.
 
-PROJECT STATUSES:
-- Ongoing: Project has been assigned and is active.
-- Pending / Up Next: Project is assigned but work has not started.
-- Completed: Project has been approved and is done.
+PROJECT TIMELINE CANVAS:
+- The Project Timeline Canvas visually tracks a project through 4 stages: Task Initiated, Report Submitted, Under Review, and Decision.
+- The glowing dot shows the current active stage.
+- A glowing line connects completed stages, while uncompleted stages remain dim.
+- Colors on the final node: Green = approved, Red = rejected, Amber = resubmission requested.
 
 BUDGET DISPLAY:
 - Budget values are shown in smart units: Cr (crores), L (lakhs), K (thousands), or ₹ (rupees).
 - The unit is set by the manager when creating the project.
 
-NOTIFICATIONS:
-- Notifications appear in the bell icon on the top right of the dashboard.
-- Notifications are sent for: report submitted, report approved, report rejected, resubmission requested.
-
-CHAT FEATURE:
-- Use the chat icon in the top bar to message your manager (investigators) or investigators (managers).
-- Chats are private and project-independent.
-
-PROJECT TIMELINE:
-- The Project Timeline Canvas shows 4 stages: Task Initiated, Report Submitted, Under Review, Decision.
-- The glowing dot shows the current active stage.
-- Colors: Green = approved, Red = rejected, Amber = resubmission requested.
-
 EKTA AI ASSISTANT:
-- Ekta can only answer questions about project documents uploaded by managers or submitted by investigators.
-- Ekta cannot answer questions outside of these documents or outside of Drishti system help.
-- Ask Ekta questions like "What are the objectives of this project?" or "What did the report say about outcomes?"
+- Ekta (me) is an AI RAG Assistant integrated directly into Drishti.
+- If you select a project from the context dropdown, I can answer highly specific questions based ONLY on the documents uploaded for that project.
+- If no project is selected, I can act as a System Assistant and answer general questions about how to use Drishti, create accounts, or navigate the UI.
 """
 
 def load_system_help_kb():
