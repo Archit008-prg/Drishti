@@ -13,6 +13,7 @@ import time
 import logging
 import requests
 from pathlib import Path
+from huggingface_hub import InferenceClient
 
 import chromadb
 from chromadb.config import Settings
@@ -70,28 +71,19 @@ def chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVE
 # ─── HuggingFace Embedding API ────────────────────────────────────────────────
 def get_embeddings(texts: list[str]) -> list[list[float]]:
     """
-    Call HF feature-extraction endpoint.
+    Call HF feature-extraction endpoint via InferenceClient.
     Returns a list of 384-dim float vectors (one per text).
-    Retries once on 503 (model loading).
     """
     if not texts:
         return []
 
-    payload = {"inputs": texts, "options": {"wait_for_model": True}}
-
+    client = InferenceClient(token=HF_API_TOKEN)
     for attempt in range(3):
         try:
-            resp = requests.post(EMBED_URL, headers=HF_HEADERS, json=payload, timeout=60)
-            if resp.status_code == 503:
-                logger.warning("HF embedding model loading, retrying in 10s…")
-                time.sleep(10)
-                continue
-            resp.raise_for_status()
-            result = resp.json()
-            # The API returns either [[vec], [vec], ...] or [[[[vec]]]]
-            # Flatten to list of 1-D vectors
-            if isinstance(result[0][0], list):
-                # sentence-transformers returns [[[384-dim]]] for single token
+            result = client.feature_extraction(texts, model="sentence-transformers/all-MiniLM-L6-v2")
+            if hasattr(result, "tolist"):
+                result = result.tolist()
+            if isinstance(result, list) and isinstance(result[0], list) and isinstance(result[0][0], list):
                 result = [r[0] for r in result]
             return result
         except Exception as e:
@@ -248,31 +240,19 @@ SYSTEM_PROMPT = (
 )
 
 
-def _call_llm(prompt: str) -> str:
-    """Call Mistral-7B-Instruct via HuggingFace Inference API."""
-    payload = {
-        "inputs": prompt,
-        "parameters": {
-            "max_new_tokens": 512,
-            "temperature": 0.1,
-            "return_full_text": False,
-            "do_sample": False,
-        },
-        "options": {"wait_for_model": True, "use_cache": False}
-    }
-
+def _call_llm(messages: list[dict]) -> str:
+    """Call Llama-3.1-8B-Instruct via HuggingFace InferenceClient."""
+    client = InferenceClient(token=HF_API_TOKEN)
+    
     for attempt in range(3):
         try:
-            resp = requests.post(LLM_URL, headers=HF_HEADERS, json=payload, timeout=120)
-            if resp.status_code == 503:
-                logger.warning(f"LLM loading, waiting 15s (attempt {attempt+1})…")
-                time.sleep(15)
-                continue
-            resp.raise_for_status()
-            result = resp.json()
-            if isinstance(result, list) and result:
-                return result[0].get("generated_text", "").strip()
-            return str(result)
+            response = client.chat_completion(
+                messages=messages,
+                model="meta-llama/Llama-3.1-8B-Instruct",
+                max_tokens=512,
+                temperature=0.1
+            )
+            return response.choices[0].message.content.strip()
         except Exception as e:
             logger.error(f"LLM call attempt {attempt+1} failed: {e}")
             time.sleep(5)
@@ -361,13 +341,13 @@ def query_ekta(question: str, project_id: int | None = None) -> dict:
 
     context = "\n\n---\n\n".join(context_parts)
 
-    prompt = (
-        f"<s>[INST] {SYSTEM_PROMPT}"
-        f"CONTEXT:\n{context}\n\n"
-        f"QUESTION: {question} [/INST]"
-    )
+    user_message = f"CONTEXT:\n{context}\n\nQUESTION: {question}"
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user_message}
+    ]
 
-    answer = _call_llm(prompt)
+    answer = _call_llm(messages)
 
     # Check if LLM itself said out-of-scope
     in_scope = "outside my scope" not in answer.lower()
