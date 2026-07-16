@@ -380,4 +380,10 @@ def audit_on_report_change(sender, instance, created, **kwargs):
             action='project_completed',
             performed_by=None,
             notes='Auto-completed after report approval'
-        )
+        )
+
+
+# ─── Import Ekta models so Django migration system discovers them ─────────────
+# (Models live in ekta_models.py to keep files clean, imported here for discovery)
+from dashboard.ekta_models import SupportingDocument, EktaQueryLog  # noqa: F401, E402
+

@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, api
+from . import views, api, ekta_api
 
 urlpatterns = [
     # Template Views
@@ -33,6 +33,14 @@ urlpatterns = [
     path('api/chat/managers/', api.api_get_managers, name='api_get_managers'),
     path('api/projects/<int:project_id>/update/', api.api_update_project, name='api_update_project'),
     path('api/projects/<int:project_id>/delete/', api.api_delete_project, name='api_delete_project'),
+
+    # ─── Ekta AI Chatbot API ───────────────────────────────────────────────────
+    path('api/ekta/upload/',                          ekta_api.api_ekta_upload,          name='api_ekta_upload'),
+    path('api/ekta/documents/<int:project_id>/',      ekta_api.api_ekta_documents,       name='api_ekta_documents'),
+    path('api/ekta/documents/<int:doc_id>/delete/',   ekta_api.api_ekta_delete_document, name='api_ekta_delete_document'),
+    path('api/ekta/reports/<int:report_id>/index/',   ekta_api.api_ekta_index_report,    name='api_ekta_index_report'),
+    path('api/ekta/query/',                           ekta_api.api_ekta_query,           name='api_ekta_query'),
+    path('api/ekta/query-log/<int:project_id>/',      ekta_api.api_ekta_query_log,       name='api_ekta_query_log'),
 ]
 
 

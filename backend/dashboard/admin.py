@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.core.exceptions import ValidationError
 from .models import Project, Report, Notification, AuditLog
+from .ekta_models import SupportingDocument, EktaQueryLog
 import csv
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
@@ -410,3 +411,26 @@ class AuditLogAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False  # Immutable
 
+
+# ─── Ekta admin registrations ──────────────────────────────────────────────────
+@admin.register(SupportingDocument)
+class SupportingDocumentAdmin(admin.ModelAdmin):
+    list_display  = ('filename', 'project', 'uploaded_by', 'file_type', 'is_indexed', 'chunk_count', 'uploaded_at')
+    list_filter   = ('is_indexed', 'file_type')
+    search_fields = ('filename', 'project__title', 'project__project_code')
+    readonly_fields = ('filename', 'file_type', 'uploaded_by', 'uploaded_at', 'is_indexed', 'chunk_count', 'indexing_error')
+
+
+@admin.register(EktaQueryLog)
+class EktaQueryLogAdmin(admin.ModelAdmin):
+    """Read-only log of all Ekta queries."""
+    list_display  = ('asked_at', 'asked_by', 'project', 'in_scope', 'question')
+    list_filter   = ('in_scope',)
+    search_fields = ('question', 'answer', 'asked_by__username', 'project__title')
+    readonly_fields = ('project', 'asked_by', 'question', 'answer', 'in_scope', 'sources', 'asked_at')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

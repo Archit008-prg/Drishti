@@ -24,3 +24,11 @@ dist-ssr/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Environment variables — NEVER commit these
+.env
+.env.*
+!.env.example
+
+# ChromaDB local vector store
+chromadb_store/

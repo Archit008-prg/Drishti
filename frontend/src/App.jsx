@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const API_BASE = 'http://localhost:8000';
 
@@ -207,6 +207,268 @@ const TimelineCanvas = ({ project, gradId = 'flowGrad4' }) => {
   );
 };
 
+// ─── Ekta AI Component ────────────────────────────────────────────────────────
+const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token }) => {
+  const [messages, setMessages] = useState([{ sender: 'ekta', text: 'Hi! I am Ekta. Ask me anything about the documents in this project.' }]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [docs, setDocs] = useState([]);
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  // Auto-scroll chat
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Fetch docs for selected project
+  useEffect(() => {
+    if (selectedProject && token) {
+      fetchDocs();
+    } else {
+      setDocs([]);
+      setMessages([{ sender: 'ekta', text: 'Hi! Please select a project from the dropdown first.' }]);
+    }
+  }, [selectedProject, token]);
+
+  const fetchDocs = async () => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/ekta/documents/${selectedProject.id}/`, {
+        headers: { 'Authorization': `Token ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDocs(data);
+      }
+    } catch (e) {
+      console.error('Failed to fetch docs:', e);
+    }
+  };
+
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    if (!uploadFile || !selectedProject) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', uploadFile);
+    formData.append('project_id', selectedProject.id);
+
+    try {
+      const res = await fetch('http://localhost:8000/api/ekta/upload/', {
+        method: 'POST',
+        headers: { 'Authorization': `Token ${token}` },
+        body: formData
+      });
+      if (res.ok) {
+        setUploadFile(null);
+        fetchDocs();
+      } else {
+        alert("Upload failed or file type not supported.");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setUploading(false);
+  };
+
+  const handleDeleteDoc = async (docId) => {
+    if (!window.confirm("Delete this document?")) return;
+    try {
+      await fetch(`http://localhost:8000/api/ekta/documents/${docId}/delete/`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Token ${token}` }
+      });
+      fetchDocs();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!input.trim() || !selectedProject) return;
+    const q = input.trim();
+    setInput('');
+    setMessages(prev => [...prev, { sender: 'user', text: q }]);
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('http://localhost:8000/api/ekta/query/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ question: q, project_id: selectedProject.id })
+      });
+      const data = await res.json();
+      setMessages(prev => [...prev, { 
+        sender: 'ekta', 
+        text: data.answer, 
+        in_scope: data.in_scope, 
+        sources: data.sources 
+      }]);
+    } catch (e) {
+      setMessages(prev => [...prev, { sender: 'ekta', text: "Error connecting to Ekta AI.", in_scope: false }]);
+    }
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="row h-100">
+      {/* Left Column (Manager: Upload Docs, Investigator: Doc List) */}
+      <div className="col-lg-4 mb-4 mb-lg-0 d-flex flex-column gap-3">
+        {/* Project Selector */}
+        <div className="card card-glass p-3">
+          <label className="text-white-50 small mb-2 fw-bold">CONTEXT PROJECT</label>
+          <select 
+            className="form-select glass-input text-white" 
+            value={selectedProject ? selectedProject.id : ''}
+            onChange={(e) => {
+              const p = projects.find(p => p.id === parseInt(e.target.value));
+              onSelectProject(p || null);
+            }}
+          >
+            <option value="" className="text-dark">-- Select Project --</option>
+            {projects.map(p => (
+              <option key={p.id} value={p.id} className="text-dark">{p.title} ({p.project_code})</option>
+            ))}
+          </select>
+        </div>
+
+        {selectedProject && isStaff && (
+          <div className="card card-glass p-3" style={{ borderLeft: '3px solid #8B5CF6' }}>
+            <h6 className="fw-bold mb-3"><i className="bi bi-cloud-arrow-up text-violet-400 me-2"></i>Upload Context</h6>
+            <form onSubmit={handleUpload}>
+              <input 
+                type="file" 
+                className="form-control glass-input text-white mb-2" 
+                onChange={e => setUploadFile(e.target.files[0])}
+                accept=".pdf,.txt,.md"
+              />
+              <button type="submit" className="btn btn-primary w-100" disabled={!uploadFile || uploading} style={{ background: '#8B5CF6', border: 'none' }}>
+                {uploading ? 'Processing...' : 'Add to Knowledge Base'}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {selectedProject && (
+          <div className="card card-glass p-3 flex-fill overflow-auto" style={{ maxHeight: '400px' }}>
+            <h6 className="fw-bold mb-3"><i className="bi bi-journal-text text-violet-400 me-2"></i>Indexed Documents</h6>
+            {docs.length === 0 ? (
+              <p className="text-white-50 small">No documents uploaded for this project yet.</p>
+            ) : (
+              <ul className="list-group list-group-flush">
+                {docs.map(d => (
+                  <li key={d.id} className="list-group-item bg-transparent border-white-10 px-0 d-flex justify-content-between align-items-center">
+                    <div>
+                      <span className="d-block text-white small text-truncate" style={{ maxWidth: '180px' }}>{d.filename}</span>
+                      <span className="text-white-50" style={{ fontSize: '10px' }}>
+                        {d.is_indexed ? <span className="text-success">✓ Indexed ({d.chunk_count} chunks)</span> : <span className="text-warning">✗ Not Indexed</span>}
+                      </span>
+                    </div>
+                    {isStaff && (
+                      <button className="btn btn-sm text-danger" onClick={() => handleDeleteDoc(d.id)}><i className="bi bi-trash"></i></button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Right Column: Chat Interface */}
+      <div className="col-lg-8">
+        <div className="card card-glass h-100 d-flex flex-column">
+          <div className="card-header card-glass-header py-3 d-flex align-items-center">
+            <div className="position-relative me-3">
+              <div className="rounded-circle bg-violet-600 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px', boxShadow: '0 0 15px rgba(139,92,246,0.6)' }}>
+                <i className="bi bi-robot text-white fs-5"></i>
+              </div>
+              <span className="position-absolute bottom-0 end-0 rounded-circle bg-success" style={{ width: '10px', height: '10px', border: '2px solid #13141c' }}></span>
+            </div>
+            <div>
+              <h6 className="mb-0 fw-bold">Ekta AI</h6>
+              <span className="text-white-50" style={{ fontSize: '11px' }}>RAG Assistant — {selectedProject ? selectedProject.title : 'Awaiting context'}</span>
+            </div>
+          </div>
+
+          <div className="card-body p-4 d-flex flex-column" style={{ overflowY: 'auto', minHeight: '400px' }}>
+            {messages.map((m, i) => (
+              <div key={i} className={`d-flex mb-3 ${m.sender === 'user' ? 'justify-content-end' : 'justify-content-start'}`}>
+                {m.sender === 'ekta' && (
+                  <div className="me-2 rounded-circle bg-violet-600 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '28px', height: '28px' }}>
+                    <i className="bi bi-robot text-white" style={{ fontSize: '12px' }}></i>
+                  </div>
+                )}
+                <div 
+                  className={`p-3 rounded-3 ${m.sender === 'user' ? 'bg-primary text-white' : 'bg-white-10 text-white border border-white-10'}`}
+                  style={{ 
+                    maxWidth: '80%', 
+                    borderBottomRightRadius: m.sender === 'user' ? '4px' : '0.5rem',
+                    borderTopLeftRadius: m.sender === 'ekta' ? '4px' : '0.5rem',
+                    background: m.sender === 'user' ? 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)' : 'rgba(255,255,255,0.05)',
+                    backdropFilter: m.sender === 'user' ? 'none' : 'blur(10px)',
+                  }}
+                >
+                  <p className="mb-0 small" style={{ whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{m.text}</p>
+                  
+                  {m.sender === 'ekta' && m.in_scope === false && (
+                    <div className="mt-2 pt-2 border-top border-white-10">
+                      <span className="text-warning" style={{ fontSize: '10px' }}><i className="bi bi-exclamation-triangle me-1"></i>Out of scope</span>
+                    </div>
+                  )}
+                  {m.sender === 'ekta' && m.sources && m.sources.length > 0 && (
+                    <div className="mt-2 pt-2 border-top border-white-10">
+                      <span className="text-white-50" style={{ fontSize: '10px' }}><i className="bi bi-file-earmark-text me-1"></i>Sources: {m.sources.join(', ')}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="d-flex mb-3 justify-content-start">
+                <div className="me-2 rounded-circle bg-violet-600 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '28px', height: '28px' }}>
+                  <i className="bi bi-robot text-white" style={{ fontSize: '12px' }}></i>
+                </div>
+                <div className="p-3 rounded-3 bg-white-10 text-white border border-white-10" style={{ borderTopLeftRadius: '4px' }}>
+                  <span className="spinner-grow spinner-grow-sm text-violet-400 me-1" role="status"></span>
+                  <span className="spinner-grow spinner-grow-sm text-violet-400 me-1" role="status" style={{ animationDelay: '0.2s' }}></span>
+                  <span className="spinner-grow spinner-grow-sm text-violet-400" role="status" style={{ animationDelay: '0.4s' }}></span>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="card-footer card-glass-footer p-3 border-top border-white-10">
+            <form onSubmit={handleSend} className="d-flex gap-2">
+              <input 
+                type="text" 
+                className="form-control glass-input text-white flex-fill" 
+                placeholder={selectedProject ? "Ask Ekta..." : "Select a project first"}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                disabled={!selectedProject || isLoading}
+              />
+              <button 
+                type="submit" 
+                className="btn btn-primary d-flex align-items-center justify-content-center"
+                disabled={!selectedProject || isLoading || !input.trim()}
+                style={{ width: '46px', background: '#8B5CF6', border: 'none' }}
+              >
+                <i className="bi bi-send-fill"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 
 function App() {
@@ -923,6 +1185,9 @@ function App() {
               <button className={`sidebar-item ${managerTab === 'live-chats' ? 'active' : ''}`} onClick={() => { setManagerTab('live-chats'); setActiveThreadUser(null); fetchChatConversations(); }}>
                 <i className="bi bi-chat-dots-fill"></i> Live Chats
               </button>
+              <button className={`sidebar-item ${managerTab === 'ekta' ? 'active' : ''}`} onClick={() => setManagerTab('ekta')}>
+                <i className="bi bi-robot" style={{ color: '#8B5CF6', textShadow: '0 0 10px rgba(139,92,246,0.6)' }}></i> Ekta AI
+              </button>
             </>
           ) : (
             <>
@@ -949,6 +1214,9 @@ function App() {
                 }
               }}>
                 <i className="bi bi-chat-dots-fill"></i> Live Chats
+              </button>
+              <button className={`sidebar-item ${investigatorTab === 'ekta' ? 'active' : ''}`} onClick={() => setInvestigatorTab('ekta')}>
+                <i className="bi bi-robot" style={{ color: '#8B5CF6', textShadow: '0 0 10px rgba(139,92,246,0.6)' }}></i> Ekta AI
               </button>
             </>
           )}
@@ -1852,6 +2120,18 @@ function App() {
                 </div>
               )}
 
+              {managerTab === 'ekta' && (
+                <div style={{ height: 'calc(100vh - 140px)', minHeight: '600px' }}>
+                  <EktaTab 
+                    isStaff={isStaff} 
+                    projects={projects} 
+                    selectedProject={selectedProject} 
+                    onSelectProject={setSelectedProject} 
+                    token={token} 
+                  />
+                </div>
+              )}
+
             </div>
             
             {/* Manager Sidebar (Project Detail) */}
@@ -2359,6 +2639,18 @@ function App() {
                       </div>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {investigatorTab === 'ekta' && (
+                <div style={{ height: 'calc(100vh - 140px)', minHeight: '600px' }}>
+                  <EktaTab 
+                    isStaff={isStaff} 
+                    projects={projects} 
+                    selectedProject={selectedProject} 
+                    onSelectProject={setSelectedProject} 
+                    token={token} 
+                  />
                 </div>
               )}
 

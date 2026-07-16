@@ -13,6 +13,15 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 
+# Load .env file securely (API keys, secrets)
+try:
+    from dotenv import load_dotenv
+    # Look for .env two levels up from settings.py (i.e. project root)
+    _ENV_PATH = Path(__file__).resolve().parent.parent.parent / '.env'
+    load_dotenv(_ENV_PATH)
+except ImportError:
+    pass  # python-dotenv not installed — fall back to OS env vars
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -175,3 +184,9 @@ REST_FRAMEWORK = {
     ],
 }
 
+# ─── Ekta AI Settings ─────────────────────────────────────────────────────────
+# HuggingFace Inference API token (loaded from .env file)
+HF_API_TOKEN = os.environ.get('HF_API_TOKEN', '')
+
+# ChromaDB persistent storage path (relative to backend/)
+CHROMADB_PATH = BASE_DIR.parent / 'chromadb_store'
