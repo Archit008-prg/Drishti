@@ -31,7 +31,7 @@ CHROMA_PATH  = Path(__file__).resolve().parent.parent.parent / "chromadb_store"
 CHUNK_SIZE   = 500   # characters per chunk
 CHUNK_OVERLAP = 80
 TOP_K        = 5
-MIN_SCORE    = 0.30   # cosine distance threshold (lower = more similar in ChromaDB)
+MIN_SCORE    = 0.15   # cosine distance threshold (lower = more similar in ChromaDB)
 
 
 # ─── ChromaDB client (singleton) ───────────────────────────────────────────────
@@ -237,12 +237,11 @@ OUT_OF_SCOPE_RESPONSE = (
 )
 
 SYSTEM_PROMPT = (
-    "You are Ekta, the AI assistant for the Drishti project management system.\n"
-    "Your job is to answer questions ONLY based on the document context provided below.\n"
-    "If the context does not contain enough information to answer the question, "
-    "respond exactly with: \"This question is outside my scope for this project.\"\n"
-    "Do NOT use any outside knowledge. Be concise, professional, and helpful.\n"
-    "Cite the document name when relevant.\n\n"
+    "You are Ekta, the AI RAG assistant for the Drishti project management system.\n"
+    "Your job is to answer questions or fulfill requests (including translation requests like 'in hindi') based on the document context provided below.\n"
+    "Even if the documents only contain partial information (like a consent form or an outline), use whatever information is available to answer the user's prompt as best as you can.\n"
+    "If the context is completely empty or completely unrelated to the question, respond exactly with: \"This question is outside my scope for this project.\"\n"
+    "Be concise, professional, and helpful. Cite the document name when relevant.\n\n"
 )
 
 
