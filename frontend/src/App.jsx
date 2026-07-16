@@ -228,7 +228,7 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
       fetchDocs();
     } else {
       setDocs([]);
-      setMessages([{ sender: 'ekta', text: 'Hi! Please select a project from the dropdown first.' }]);
+      setMessages([{ sender: 'ekta', text: 'Hi! I am Ekta. Ask me anything about Drishti, or select a project to ask about its documents.' }]);
     }
   }, [selectedProject, token]);
 
@@ -287,7 +287,7 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!input.trim() || !selectedProject) return;
+    if (!input.trim()) return;
     const q = input.trim();
     setInput('');
     setMessages(prev => [...prev, { sender: 'user', text: q }]);
@@ -300,7 +300,7 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
           'Authorization': `Token ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ question: q, project_id: selectedProject.id })
+        body: JSON.stringify({ question: q, project_id: selectedProject ? selectedProject.id : null })
       });
       const data = await res.json();
       setMessages(prev => [...prev, { 
@@ -392,7 +392,7 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
             </div>
             <div>
               <h6 className="mb-0 fw-bold">Ekta AI</h6>
-              <span className="text-white-50" style={{ fontSize: '11px' }}>RAG Assistant — {selectedProject ? selectedProject.title : 'Awaiting context'}</span>
+              <span className="text-white-50" style={{ fontSize: '11px' }}>{selectedProject ? `RAG Assistant — ${selectedProject.title}` : 'System Assistant — Drishti Help'}</span>
             </div>
           </div>
 
@@ -449,15 +449,15 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
               <input 
                 type="text" 
                 className="form-control glass-input text-white flex-fill" 
-                placeholder={selectedProject ? "Ask Ekta..." : "Select a project first"}
+                placeholder={selectedProject ? "Ask Ekta..." : "Ask Ekta about Drishti..."}
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                disabled={!selectedProject || isLoading}
+                disabled={isLoading}
               />
               <button 
                 type="submit" 
                 className="btn btn-primary d-flex align-items-center justify-content-center"
-                disabled={!selectedProject || isLoading || !input.trim()}
+                disabled={isLoading || !input.trim()}
                 style={{ width: '46px', background: '#8B5CF6', border: 'none' }}
               >
                 <i className="bi bi-send-fill"></i>
