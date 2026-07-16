@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.html import format_html
 from django.core.exceptions import ValidationError
-from .models import Project, Report, Notification
+from .models import Project, Report, Notification, AuditLog
 import csv
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
@@ -395,6 +395,18 @@ class ReportAdmin(admin.ModelAdmin):
         }
         js = ['admin/js/report_actions.js']
 
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    """Read-only audit trail — visible in Django Admin only."""
+    list_display  = ('timestamp', 'action', 'project', 'performed_by', 'notes')
+    list_filter   = ('action',)
+    search_fields = ('project__title', 'project__project_code', 'performed_by__username', 'notes')
+    readonly_fields = ('project', 'action', 'performed_by', 'notes', 'timestamp')
+    ordering      = ('-timestamp',)
 
+    def has_add_permission(self, request):
+        return False  # Audit logs are auto-generated; no manual creation
 
+    def has_change_permission(self, request, obj=None):
+        return False  # Immutable
 

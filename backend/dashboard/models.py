@@ -318,3 +318,66 @@ class ChatMessage(models.Model):
         
     def __str__(self):
         return f"{self.sender.username} -> {self.receiver.username}: {self.message[:30]}"
+
+
+# ─── AuditLog (internal only — not exposed in any UI) ────────────────────────
+class AuditLog(models.Model):
+    ACTION_CHOICES = [
+        ('project_created',      'Project Created'),
+        ('report_submitted',     'Report Submitted'),
+        ('report_resubmitted',   'Report Resubmitted'),
+        ('report_approved',      'Report Approved'),
+        ('report_rejected',      'Report Rejected'),
+        ('resubmit_requested',   'Resubmission Requested'),
+        ('project_completed',    'Project Completed'),
+        ('status_changed',       'Project Status Changed'),
+    ]
+
+    project      = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='audit_logs')
+    action       = models.CharField(max_length=30, choices=ACTION_CHOICES)
+    performed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='audit_actions'
+    )
+    notes        = models.TextField(blank=True)
+    timestamp    = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering  = ['-timestamp']
+        verbose_name = 'Audit Log'
+        verbose_name_plural = 'Audit Logs'
+
+    def __str__(self):
+        return f"[{self.get_action_display()}] {self.project} @ {self.timestamp:%Y-%m-%d %H:%M}"
+
+
+@receiver(post_save, sender=Report)
+def audit_on_report_change(sender, instance, created, **kwargs):
+    """Silently write an audit record whenever a report status changes."""
+    action_map = {
+        'submitted':         'report_submitted',
+        'resubmitted':       'report_resubmitted',
+        'approved':          'report_approved',
+        'rejected':          'report_rejected',
+        'resubmit_requested': 'resubmit_requested',
+    }
+    action = action_map.get(instance.status)
+    if not action:
+        return
+
+    AuditLog.objects.create(
+        project=instance.project,
+        action=action,
+        performed_by=instance.investigator if created else None,
+        notes=f"Report ID {instance.id} — {instance.status}"
+    )
+
+    # Extra audit entry when project auto-completes on approval
+    if instance.status == 'approved':
+        AuditLog.objects.create(
+            project=instance.project,
+            action='project_completed',
+            performed_by=None,
+            notes='Auto-completed after report approval'
+        )

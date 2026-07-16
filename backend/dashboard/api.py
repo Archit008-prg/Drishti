@@ -251,9 +251,12 @@ def api_review_report(request, report_id):
         report.status = 'approved'
         report.admin_comment = admin_comment
         report.save()
-        
+
+        # Auto-complete the project when report is approved
         report.project.report_approved = True
         report.project.report_resubmit_requested = False
+        report.project.status = 'completed'
+        report.project.actual_completion = timezone.now().date()
         report.project.save()
         
     elif action == 'reject':

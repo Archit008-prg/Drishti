@@ -2,53 +2,211 @@ import React, { useState, useEffect } from 'react';
 
 const API_BASE = 'http://localhost:8000';
 
+// ─── Smart budget formatter ──────────────────────────────────────────────────
+const formatBudget = (amount, unit) => {
+  const amt = parseFloat(amount);
+  if (!amount || isNaN(amt)) return '—';
+  const rupees = amt * ({ rupees: 1, thousands: 1000, lakhs: 100000, crores: 10000000 }[unit] || 1);
+  if (rupees >= 10000000) return (rupees / 10000000).toFixed(2) + ' Cr';
+  if (rupees >= 100000)   return (rupees / 100000).toFixed(2) + ' L';
+  if (rupees >= 1000)     return (rupees / 1000).toFixed(2) + ' K';
+  return '₹' + rupees.toFixed(0);
+};
+
+// ─── Timeline milestone builder (4 stages) ───────────────────────────────────
 const getMilestonesForProject = (project) => {
-  // Default (no project selected): show generic state
+  // No project selected → generic idle state
   if (!project) {
     return [
-      { label: "Task Initiated", status: "active", initials: "PC", role: "Coordinator" },
-      { label: "Halfway Report", status: "upcoming", initials: "MI", role: "Investigator" },
-      { label: "Final Report", status: "upcoming", initials: "AC", role: "Manager" }
+      { label: 'Task Initiated',  status: 'active',    icon: 'bi-play-circle',    color: '#9b4dff', role: 'Coordinator' },
+      { label: 'Report Submitted', status: 'upcoming', icon: 'bi-file-earmark-text', color: '#3b82f6', role: 'Investigator' },
+      { label: 'Under Review',    status: 'upcoming',  icon: 'bi-search',          color: '#f59e0b', role: 'Manager' },
+      { label: 'Decision',        status: 'upcoming',  icon: 'bi-shield-check',    color: '#10b981', role: 'Manager' },
     ];
   }
 
-  const projectStatus = (project.status || 'assigned').toLowerCase();
-  const reportStatus = (project.report_status || 'pending').toLowerCase();
+  const pStatus    = (project.status         || 'ongoing').toLowerCase();
+  const rStatus    = (project.report_status  || 'not_submitted').toLowerCase();
 
-  // Stage 3: all done — report approved or project marked completed
-  if (projectStatus === 'completed' || reportStatus === 'approved') {
+  // Stage 4 — Final decision reached
+  if (rStatus === 'approved' || pStatus === 'completed') {
     return [
-      { label: "Task Initiated", status: "completed", initials: "PC", role: "Coordinator" },
-      { label: "Halfway Report", status: "completed", initials: "MI", role: "Investigator" },
-      { label: "Final Report",  status: "completed", initials: "AC", role: "Manager" }
+      { label: 'Task Initiated',  status: 'completed', icon: 'bi-check2',            color: '#9b4dff', role: 'Coordinator' },
+      { label: 'Report Submitted', status: 'completed', icon: 'bi-check2',           color: '#3b82f6', role: 'Investigator' },
+      { label: 'Under Review',    status: 'completed', icon: 'bi-check2',             color: '#f59e0b', role: 'Manager' },
+      { label: 'Approved ✓',      status: 'approved',  icon: 'bi-shield-fill-check', color: '#10b981', role: 'Manager' },
     ];
   }
-
-  // Stage 2b: report submitted/under review — awaiting manager approval
-  if (['submitted', 'resubmitted', 'under_review', 'under review'].includes(reportStatus)) {
+  if (rStatus === 'rejected') {
     return [
-      { label: "Task Initiated", status: "completed", initials: "PC", role: "Coordinator" },
-      { label: "Halfway Report", status: "completed", initials: "MI", role: "Investigator" },
-      { label: "Final Report",  status: "active",    initials: "AC", role: "Manager" }
+      { label: 'Task Initiated',  status: 'completed', icon: 'bi-check2',         color: '#9b4dff', role: 'Coordinator' },
+      { label: 'Report Submitted', status: 'completed', icon: 'bi-check2',        color: '#3b82f6', role: 'Investigator' },
+      { label: 'Under Review',    status: 'completed', icon: 'bi-check2',          color: '#f59e0b', role: 'Manager' },
+      { label: 'Rejected ✗',      status: 'rejected',  icon: 'bi-x-circle-fill',  color: '#ef4444', role: 'Manager' },
     ];
   }
-
-  // Stage 2a: project ongoing — investigator working on report
-  if (projectStatus === 'ongoing') {
+  if (rStatus === 'resubmit_requested') {
     return [
-      { label: "Task Initiated", status: "completed", initials: "PC", role: "Coordinator" },
-      { label: "Halfway Report", status: "active",    initials: "MI", role: "Investigator" },
-      { label: "Final Report",  status: "upcoming",  initials: "AC", role: "Manager" }
+      { label: 'Task Initiated',  status: 'completed',          icon: 'bi-check2',       color: '#9b4dff', role: 'Coordinator' },
+      { label: 'Report Submitted', status: 'completed',         icon: 'bi-check2',       color: '#3b82f6', role: 'Investigator' },
+      { label: 'Under Review',    status: 'completed',          icon: 'bi-check2',       color: '#f59e0b', role: 'Manager' },
+      { label: 'Resubmit 🔄',     status: 'resubmit_requested', icon: 'bi-arrow-repeat', color: '#f59e0b', role: 'Manager' },
     ];
   }
 
-  // Stage 1: project just assigned — only first node lit
+  // Stage 3 — report submitted, manager reviewing
+  if (['submitted', 'resubmitted'].includes(rStatus)) {
+    return [
+      { label: 'Task Initiated',  status: 'completed', icon: 'bi-check2',            color: '#9b4dff', role: 'Coordinator' },
+      { label: 'Report Submitted', status: 'completed', icon: 'bi-check2',           color: '#3b82f6', role: 'Investigator' },
+      { label: 'Under Review',    status: 'active',    icon: 'bi-hourglass-split',   color: '#f59e0b', role: 'Manager' },
+      { label: 'Decision',        status: 'upcoming',  icon: 'bi-shield-check',      color: '#10b981', role: 'Manager' },
+    ];
+  }
+
+  // Stage 2 — project ongoing, investigator working
+  if (pStatus === 'ongoing') {
+    return [
+      { label: 'Task Initiated',  status: 'completed', icon: 'bi-check2',               color: '#9b4dff', role: 'Coordinator' },
+      { label: 'Report Submitted', status: 'active',   icon: 'bi-file-earmark-arrow-up', color: '#3b82f6', role: 'Investigator' },
+      { label: 'Under Review',    status: 'upcoming',  icon: 'bi-search',               color: '#f59e0b', role: 'Manager' },
+      { label: 'Decision',        status: 'upcoming',  icon: 'bi-shield-check',         color: '#10b981', role: 'Manager' },
+    ];
+  }
+
+  // Stage 1 — just assigned, task initiated
   return [
-    { label: "Task Initiated", status: "active",   initials: "PC", role: "Coordinator" },
-    { label: "Halfway Report", status: "upcoming", initials: "MI", role: "Investigator" },
-    { label: "Final Report",  status: "upcoming", initials: "AC", role: "Manager" }
+    { label: 'Task Initiated',  status: 'active',   icon: 'bi-play-circle',    color: '#9b4dff', role: 'Coordinator' },
+    { label: 'Report Submitted', status: 'upcoming', icon: 'bi-file-earmark-text', color: '#3b82f6', role: 'Investigator' },
+    { label: 'Under Review',    status: 'upcoming', icon: 'bi-search',          color: '#f59e0b', role: 'Manager' },
+    { label: 'Decision',        status: 'upcoming', icon: 'bi-shield-check',    color: '#10b981', role: 'Manager' },
   ];
 };
+
+// ─── Reusable 4-node Timeline Canvas component ───────────────────────────────
+const TimelineCanvas = ({ project, gradId = 'flowGrad4' }) => {
+  const milestones = getMilestonesForProject(project);
+  const completedCount = milestones.filter(m => m.status === 'completed').length;
+  const activeIdx = milestones.findIndex(m => m.status === 'active' || m.status === 'approved' || m.status === 'rejected' || m.status === 'resubmit_requested');
+
+  // Progress: each segment = 33.3%; active node = segment midpoint
+  let progressPercent = 0;
+  if (completedCount === 4) progressPercent = 100;
+  else if (completedCount === 3) progressPercent = activeIdx >= 0 ? 88 : 75;
+  else if (completedCount === 2) progressPercent = activeIdx >= 0 ? 55 : 50;
+  else if (completedCount === 1) progressPercent = activeIdx >= 0 ? 22 : 18;
+  else progressPercent = 5;
+
+  const strokeLength = 700;
+  const strokeDashoffset = strokeLength - (strokeLength * progressPercent) / 100;
+
+  // 4-node positions along an S-curve: x: 70, 260, 490, 710; y alternates 75, 170, 75, 170
+  const nodePos = [
+    { x: 70,  y: 75  },
+    { x: 260, y: 170 },
+    { x: 490, y: 75  },
+    { x: 710, y: 170 },
+  ];
+
+  return (
+    <div className="position-relative" style={{ minHeight: '260px' }}>
+      {/* SVG curved path */}
+      <svg
+        className="position-absolute top-0 start-0 w-100 h-100"
+        viewBox="0 0 800 250"
+        preserveAspectRatio="none"
+        style={{ pointerEvents: 'none' }}
+      >
+        <defs>
+          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#9b4dff" />
+            <stop offset="50%" stopColor="#3b82f6" />
+            <stop offset="100%" stopColor="#10b981" />
+          </linearGradient>
+        </defs>
+        {/* Dim underlay */}
+        <path
+          d="M 70 75 C 140 170, 190 170, 260 170 C 330 170, 420 75, 490 75 C 560 75, 640 170, 710 170"
+          fill="none" stroke="rgba(220,220,235,0.16)" strokeWidth="3" strokeLinecap="round"
+        />
+        {/* Glowing progress overlay */}
+        <path
+          d="M 70 75 C 140 170, 190 170, 260 170 C 330 170, 420 75, 490 75 C 560 75, 640 170, 710 170"
+          fill="none"
+          stroke={`url(#${gradId})`}
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeDasharray={strokeLength}
+          strokeDashoffset={strokeDashoffset}
+          style={{ transition: 'stroke-dashoffset 0.9s ease-in-out', filter: 'drop-shadow(0 0 5px rgba(155,77,255,0.7))' }}
+        />
+      </svg>
+
+      {/* Milestone nodes */}
+      {milestones.map((m, idx) => {
+        const isActive    = m.status === 'active';
+        const isCompleted = m.status === 'completed';
+        const isApproved  = m.status === 'approved';
+        const isRejected  = m.status === 'rejected';
+        const isResubmit  = m.status === 'resubmit_requested';
+        const isFinal     = isApproved || isRejected || isResubmit;
+
+        const nodeColor = isFinal ? m.color :
+                          isCompleted ? '#9b4dff' :
+                          isActive    ? m.color :
+                          'rgba(255,255,255,0.06)';
+
+        const glowColor = isFinal ? m.color :
+                          isActive ? m.color : '#9b4dff';
+
+        const nx = nodePos[idx].x;
+        const ny = nodePos[idx].y;
+        // Convert SVG coords to % for absolute positioning
+        const leftPct = `${(nx / 800) * 100}%`;
+        const topPct  = `${(ny / 250) * 100}%`;
+
+        return (
+          <div
+            key={idx}
+            className="position-absolute d-flex flex-column align-items-center"
+            style={{ left: leftPct, top: topPct, transform: 'translate(-50%, -50%)', zIndex: 10 }}
+          >
+            <div
+              className="d-flex align-items-center justify-content-center rounded-circle"
+              style={{
+                width: '40px', height: '40px',
+                backgroundColor: nodeColor,
+                border: `2px solid ${(isActive || isFinal) ? glowColor : 'rgba(255,255,255,0.12)'}`,
+                boxShadow: (isActive || isFinal) ? `0 0 18px ${glowColor}88` : 'none',
+                transition: 'all 0.4s ease',
+                position: 'relative',
+              }}
+            >
+              {isActive && (
+                <span style={{
+                  position: 'absolute', inset: '-6px',
+                  borderRadius: '50%',
+                  background: `${glowColor}30`,
+                  animation: 'ping 1.5s cubic-bezier(0,0,0.2,1) infinite',
+                }} />
+              )}
+              <i className={`bi ${m.icon} text-white`} style={{ fontSize: '14px' }} />
+            </div>
+            <div className="mt-2 text-center" style={{ minWidth: '90px', maxWidth: '95px' }}>
+              <span className="d-block fw-semibold" style={{ fontSize: '9px', color: (isActive || isFinal) ? '#fff' : 'rgba(255,255,255,0.5)', lineHeight: 1.3 }}>
+                {m.label}
+              </span>
+              <span className="d-block" style={{ fontSize: '8px', color: 'rgba(255,255,255,0.35)' }}>
+                {m.role}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 
 
 function App() {
@@ -1039,16 +1197,22 @@ function App() {
                             const agencyBudgets = {};
                             projects.forEach(p => {
                               const agency = p.principal_agency || 'Other';
-                              let amt = parseFloat(p.budget_amount) || 0;
-                              if (p.budget_unit === 'rupees') amt = amt / 100000;
-                              else if (p.budget_unit === 'thousands') amt = amt / 100;
-                              agencyBudgets[agency] = (agencyBudgets[agency] || 0) + amt;
+                              let rupees = parseFloat(p.budget_amount) || 0;
+                              const conv = { rupees: 1, thousands: 1000, lakhs: 100000, crores: 10000000 };
+                              rupees = rupees * (conv[p.budget_unit] || 1);
+                              agencyBudgets[agency] = (agencyBudgets[agency] || 0) + rupees;
                             });
                             const sortedAgencies = Object.entries(agencyBudgets)
                               .map(([agency, budget]) => ({ agency, budget }))
                               .sort((a, b) => b.budget - a.budget)
                               .slice(0, 4);
                             const maxBudget = sortedAgencies.length > 0 ? sortedAgencies[0].budget : 1;
+                            const fmtAmt = (r) => {
+                              if (r >= 10000000) return (r/10000000).toFixed(2) + ' Cr';
+                              if (r >= 100000)   return (r/100000).toFixed(2) + ' L';
+                              if (r >= 1000)     return (r/1000).toFixed(2) + ' K';
+                              return '₹' + r.toFixed(0);
+                            };
                             if (sortedAgencies.length > 0) {
                               return sortedAgencies.map((item, idx) => {
                                 const pct = (item.budget / maxBudget) * 100;
@@ -1056,7 +1220,7 @@ function App() {
                                   <div key={idx} className="mb-2">
                                     <div className="d-flex justify-content-between mb-1 small">
                                       <span className="text-truncate fw-bold" style={{ maxWidth: '70%', color: 'var(--text-primary)' }}>{item.agency}</span>
-                                      <span className="text-muted">{item.budget.toFixed(1)} L</span>
+                                      <span className="text-muted">{fmtAmt(item.budget)}</span>
                                     </div>
                                     <div className="progress" style={{ height: '8px', backgroundColor: 'rgba(255,255,255,0.06)' }}>
                                       <div 
@@ -1079,51 +1243,66 @@ function App() {
                   </div>
                   {/* Split layout: Vertical Feature Cards on Left, Large Workflow Timeline Canvas on Right */}
                   <div className="row mb-4">
-                    {/* Left: 3 Feature Cards stacked vertically */}
+                    {/* Left: 3 Feature Cards stacked vertically — Live Data */}
                     <div className="col-lg-4 d-flex flex-column gap-3 mb-4 mb-lg-0">
-                      {/* Blue Card */}
-                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden"
-                           style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.15) 0%, rgba(59, 130, 246, 0.35) 25%, rgba(19, 20, 28, 0.85) 70%)' }}>
+                      {/* Blue Card — Active Projects */}
+                      <div
+                        className="card card-glass p-3 flex-fill position-relative overflow-hidden"
+                        style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255,255,255,0.15) 0%, rgba(59,130,246,0.35) 25%, rgba(19,20,28,0.85) 70%)', cursor: 'pointer' }}
+                        onClick={() => setManagerTab('projects')}
+                      >
                         <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
-                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.4)] rounded-xl p-2 flex items-center justify-center flex-shrink-0">
-                            <i className="bi bi-star-fill text-white fs-5"></i>
+                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 rounded-xl p-2 d-flex align-items-center justify-content-center flex-shrink-0">
+                            <i className="bi bi-folder2-open text-white fs-5"></i>
                           </div>
                           <div>
-                            <h6 className="fw-bold text-white mb-1">Plan created</h6>
-                            <p className="text-white/60 mb-0 font-light" style={{ fontSize: '11px', lineHeight: '1.4' }}>
-                              Website redesign project with 5 tasks, owners, and two milestone deadlines.
+                            <h6 className="fw-bold text-white mb-1">Active Projects</h6>
+                            <p className="text-white/60 mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                              <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>{projects.filter(p => p.status === 'ongoing').length}</span> ongoing &nbsp;·&nbsp;
+                              {projects.filter(p => p.status !== 'completed').length} total open
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      {/* Purple Card */}
-                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden"
-                           style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.15) 0%, rgba(168, 85, 247, 0.35) 25%, rgba(19, 20, 28, 0.85) 70%)' }}>
+                      {/* Purple Card — Reports Awaiting Review */}
+                      <div
+                        className="card card-glass p-3 flex-fill position-relative overflow-hidden"
+                        style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255,255,255,0.15) 0%, rgba(155,77,255,0.35) 25%, rgba(19,20,28,0.85) 70%)', cursor: 'pointer' }}
+                        onClick={() => setManagerTab('reviews')}
+                      >
                         <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
-                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.4)] rounded-xl p-2 flex items-center justify-center flex-shrink-0">
-                            <i className="bi bi-pencil-fill text-white fs-5"></i>
+                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 rounded-xl p-2 d-flex align-items-center justify-content-center flex-shrink-0">
+                            <i className="bi bi-file-earmark-check text-white fs-5"></i>
                           </div>
                           <div>
-                            <h6 className="fw-bold text-white mb-1">Editable suggestions</h6>
-                            <p className="text-white/60 mb-0 font-light" style={{ fontSize: '11px', lineHeight: '1.4' }}>
-                              Shift QA review earlier and assign design approval to Sarah.
+                            <h6 className="fw-bold text-white mb-1">Reports to Review</h6>
+                            <p className="text-white/60 mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                              <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>{projects.filter(p => ['submitted','resubmitted'].includes(p.report_status)).length}</span> pending action
+                              {projects.filter(p => p.report_status === 'resubmit_requested').length > 0 && (
+                                <span style={{ color: '#f59e0b' }}> · {projects.filter(p => p.report_status === 'resubmit_requested').length} resubmit</span>
+                              )}
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      {/* Teal Card */}
-                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden"
-                           style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.15) 0%, rgba(20, 184, 166, 0.35) 25%, rgba(19, 20, 28, 0.85) 70%)' }}>
+                      {/* Teal Card — Completion Rate */}
+                      <div
+                        className="card card-glass p-3 flex-fill position-relative overflow-hidden"
+                        style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255,255,255,0.15) 0%, rgba(20,184,166,0.35) 25%, rgba(19,20,28,0.85) 70%)' }}
+                      >
                         <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
-                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.4)] rounded-xl p-2 flex items-center justify-center flex-shrink-0">
-                            <i className="bi bi-stars text-white fs-5"></i>
+                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 rounded-xl p-2 d-flex align-items-center justify-content-center flex-shrink-0">
+                            <i className="bi bi-graph-up-arrow text-white fs-5"></i>
                           </div>
                           <div>
                             <h6 className="fw-bold text-white mb-1">Impact</h6>
-                            <p className="text-white/60 mb-0 font-light" style={{ fontSize: '11px', lineHeight: '1.4' }}>
-                              Estimated completion improves by 2 days with balanced workload.
+                            <p className="text-white/60 mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                              <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>
+                                {projects.length > 0 ? Math.round((projects.filter(p => p.status === 'completed').length / projects.length) * 100) : 0}%
+                              </span> completion rate
+                              {(() => { const now = new Date(); const ov = projects.filter(p => p.status !== 'completed' && p.scheduled_completion && new Date(p.scheduled_completion) < now).length; return ov > 0 ? <span style={{ color: '#ef4444' }}> · {ov} overdue</span> : null; })()}
                             </p>
                           </div>
                         </div>
@@ -1135,111 +1314,12 @@ function App() {
                       <div className="card card-glass h-100">
                         <div className="card-header card-glass-header py-3">
                           <h6 className="mb-0 fw-bold">
-                            <i className="bi bi-diagram-3-fill me-2" style={{ color: '#8B5CF6' }}></i> 
-                            Project Timeline Canvas - {selectedProject ? selectedProject.title : "Workspace Live Flow"}
+                            <i className="bi bi-diagram-3-fill me-2" style={{ color: '#9b4dff' }}></i>
+                            Project Timeline — {selectedProject ? selectedProject.title : 'Workspace Live Flow'}
                           </h6>
                         </div>
-                        <div className="card-body p-4 position-relative d-flex flex-column justify-content-center" style={{ minHeight: '300px', overflow: 'hidden' }}>
-                          
-                          {(() => {
-                            const milestones = getMilestonesForProject(selectedProject);
-                            const completedCount = milestones.filter(m => m.status === 'completed').length;
-                            const isActiveFinal = milestones[2].status === 'active';
-                            const isActiveHalf = milestones[1].status === 'active';
-
-                            let progressPercent = 0;
-                            if (completedCount === 3) progressPercent = 100;
-                            else if (completedCount === 2) progressPercent = isActiveFinal ? 90 : 75;
-                            else if (completedCount === 1) progressPercent = isActiveHalf ? 50 : 35;
-                            else progressPercent = 12;
-
-                            const strokeLength = 680;
-                            const strokeDashoffset = strokeLength - (strokeLength * progressPercent) / 100;
-
-                            return (
-                              <>
-                                {/* SVG Flow Lines */}
-                                <svg className="position-absolute top-0 start-0 w-100 h-100" viewBox="0 0 800 240" preserveAspectRatio="none" style={{ pointerEvents: 'none' }}>
-                                  <defs>
-                                    <linearGradient id="flowGradCompleted" x1="0%" y1="0%" x2="100%" y2="0%">
-                                      <stop offset="0%" stopColor="#8B5CF6" />
-                                      <stop offset="100%" stopColor="#a855f7" />
-                                    </linearGradient>
-                                  </defs>
-                                  {/* Underlay: Dim uncompleted path */}
-                                  <path 
-                                    d="M 80 70 C 200 180, 300 180, 400 160 C 500 140, 600 40, 720 70" 
-                                    fill="none" 
-                                    stroke="rgba(220, 220, 235, 0.18)" 
-                                    strokeWidth="4"
-                                    strokeLinecap="round" 
-                                  />
-                                  {/* Overlay: Glow active path */}
-                                  <path 
-                                    d="M 80 70 C 200 180, 300 180, 400 160 C 500 140, 600 40, 720 70" 
-                                    fill="none" 
-                                    stroke="url(#flowGradCompleted)" 
-                                    strokeWidth="4" 
-                                    strokeDasharray={strokeLength}
-                                    strokeDashoffset={strokeDashoffset}
-                                    style={{ transition: 'stroke-dashoffset 0.8s ease-in-out' }}
-                                    filter="drop-shadow(0 0 6px #8B5CF6)"
-                                  />
-                                </svg>
-
-                                {milestones.map((m, idx) => {
-                                  const isActive = m.status === 'active';
-                                  const isCompleted = m.status === 'completed';
-                                  
-                                  // Map node index to coordinate left/top styles
-                                  const leftPos = idx === 0 ? '10%' : idx === 1 ? '50%' : '90%';
-                                  const topPos = idx === 1 ? '160px' : '70px';
-
-                                  return (
-                                    <div 
-                                      key={idx} 
-                                      className="position-absolute d-flex flex-column align-items-center" 
-                                      style={{ 
-                                        left: leftPos, 
-                                        top: topPos, 
-                                        transform: 'translate(-50%, -50%)', 
-                                        zIndex: 10 
-                                      }}
-                                    >
-                                      <div 
-                                        className={`workflow-avatar position-relative d-flex align-items-center justify-content-center rounded-full transition-all duration-300 ${
-                                          isCompleted ? 'border-[#8B5CF6] shadow-[0_0_12px_#8B5CF6]' : 
-                                          isActive ? 'border-white shadow-[0_0_20px_rgba(139,92,246,0.85)] scale-110' : 
-                                          'border-white/10 opacity-60'
-                                        }`}
-                                        style={{ 
-                                          width: '42px', 
-                                          height: '42px',
-                                          backgroundColor: isCompleted || isActive ? '#8B5CF6' : 'rgba(255,255,255,0.05)',
-                                          borderWidth: '2px'
-                                        }}
-                                      >
-                                        {isActive && (
-                                          <span className="position-absolute inset-0 rounded-full bg-violet-500/40 animate-ping" />
-                                        )}
-                                        <span className="fw-bold text-white small" style={{ fontSize: '12px' }}>{m.initials}</span>
-                                      </div>
-                                      
-                                      <div className="mt-2 text-center" style={{ minWidth: '120px' }}>
-                                        <span className={`d-block small font-semibold ${isActive ? 'text-white' : 'text-white/60'}`} style={{ fontSize: '10px' }}>
-                                          {m.label}
-                                        </span>
-                                        <span className="d-block font-light text-white-50" style={{ fontSize: '8px' }}>
-                                          {m.role} ({m.status})
-                                        </span>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </>
-                            );
-                          })()}
-
+                        <div className="card-body p-4" style={{ minHeight: '300px' }}>
+                          <TimelineCanvas project={selectedProject} gradId="mgr4" />
                         </div>
                       </div>
                     </div>
@@ -2004,51 +2084,77 @@ function App() {
                 <>
                   {/* Split layout: Vertical Feature Cards on Left, Large Workflow Timeline Canvas on Right */}
                   <div className="row mb-4">
-                    {/* Left: 3 Feature Cards stacked vertically */}
+                    {/* Left: 3 Feature Cards stacked vertically — Investigator Live Data */}
                     <div className="col-lg-4 d-flex flex-column gap-3 mb-4 mb-lg-0">
-                      {/* Blue Card */}
-                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden"
-                           style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.15) 0%, rgba(59, 130, 246, 0.35) 25%, rgba(19, 20, 28, 0.85) 70%)' }}>
+                      {/* Blue Card — My Active Task */}
+                      <div
+                        className="card card-glass p-3 flex-fill position-relative overflow-hidden"
+                        style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255,255,255,0.15) 0%, rgba(59,130,246,0.35) 25%, rgba(19,20,28,0.85) 70%)', cursor: 'pointer' }}
+                        onClick={() => setInvestigatorTab('running')}
+                      >
                         <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
-                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.4)] rounded-xl p-2 flex items-center justify-center flex-shrink-0">
-                            <i className="bi bi-star-fill text-white fs-5"></i>
+                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 rounded-xl p-2 d-flex align-items-center justify-content-center flex-shrink-0">
+                            <i className="bi bi-play-circle text-white fs-5"></i>
                           </div>
                           <div>
-                            <h6 className="fw-bold text-white mb-1">Plan created</h6>
-                            <p className="text-white/60 mb-0 font-light" style={{ fontSize: '11px', lineHeight: '1.4' }}>
-                              Website redesign project with 5 tasks, owners, and two milestone deadlines.
+                            <h6 className="fw-bold text-white mb-1">My Active Projects</h6>
+                            <p className="text-white/60 mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                              <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>{runningTasks.length}</span> running &nbsp;·&nbsp;
+                              {upcomingTasks.length} upcoming
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      {/* Purple Card */}
-                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden"
-                           style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.15) 0%, rgba(168, 85, 247, 0.35) 25%, rgba(19, 20, 28, 0.85) 70%)' }}>
+                      {/* Purple Card — Report Status */}
+                      <div
+                        className="card card-glass p-3 flex-fill position-relative overflow-hidden"
+                        style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255,255,255,0.15) 0%, rgba(155,77,255,0.35) 25%, rgba(19,20,28,0.85) 70%)' }}
+                      >
                         <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
-                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.4)] rounded-xl p-2 flex items-center justify-center flex-shrink-0">
-                            <i className="bi bi-pencil-fill text-white fs-5"></i>
+                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 rounded-xl p-2 d-flex align-items-center justify-content-center flex-shrink-0">
+                            <i className="bi bi-file-earmark-text text-white fs-5"></i>
                           </div>
                           <div>
-                            <h6 className="fw-bold text-white mb-1">Editable suggestions</h6>
-                            <p className="text-white/60 mb-0 font-light" style={{ fontSize: '11px', lineHeight: '1.4' }}>
-                              Shift QA review earlier and assign design approval to Sarah.
+                            <h6 className="fw-bold text-white mb-1">Report Status</h6>
+                            <p className="text-white/60 mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                              {selectedProject ? (
+                                <>
+                                  <span style={{ fontSize: '12px', fontWeight: 600, color: selectedProject.report_status === 'approved' ? '#10b981' : selectedProject.report_status === 'rejected' ? '#ef4444' : selectedProject.report_status === 'submitted' ? '#f59e0b' : '#fff' }}>
+                                    {selectedProject.report_status === 'not_submitted' ? 'Not Submitted' :
+                                     selectedProject.report_status === 'submitted' ? 'Under Review' :
+                                     selectedProject.report_status === 'approved' ? '✓ Approved' :
+                                     selectedProject.report_status === 'rejected' ? '✗ Rejected' :
+                                     selectedProject.report_status === 'resubmit_requested' ? '🔄 Resubmit' :
+                                     selectedProject.report_status}
+                                  </span>
+                                  <span className="d-block mt-1" style={{ color: 'rgba(255,255,255,0.45)', fontSize: '10px' }}>{selectedProject.title}</span>
+                                </>
+                              ) : (
+                                <span>{projects.filter(p => p.report_status === 'submitted').length} under review · {projects.filter(p => p.report_status === 'approved').length} approved</span>
+                              )}
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      {/* Teal Card */}
-                      <div className="card card-glass p-3 flex-fill position-relative overflow-hidden"
-                           style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.15) 0%, rgba(20, 184, 166, 0.35) 25%, rgba(19, 20, 28, 0.85) 70%)' }}>
+                      {/* Teal Card — Completion */}
+                      <div
+                        className="card card-glass p-3 flex-fill position-relative overflow-hidden"
+                        style={{ background: 'radial-gradient(circle at 90% 10%, rgba(255,255,255,0.15) 0%, rgba(20,184,166,0.35) 25%, rgba(19,20,28,0.85) 70%)', cursor: 'pointer' }}
+                        onClick={() => setInvestigatorTab('past')}
+                      >
                         <div className="d-flex align-items-start gap-3 position-relative" style={{ zIndex: 1 }}>
-                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.4)] rounded-xl p-2 flex items-center justify-center flex-shrink-0">
-                            <i className="bi bi-stars text-white fs-5"></i>
+                          <div className="bg-white/10 backdrop-blur-md border-[0.5px] border-white/20 rounded-xl p-2 d-flex align-items-center justify-content-center flex-shrink-0">
+                            <i className="bi bi-trophy text-white fs-5"></i>
                           </div>
                           <div>
-                            <h6 className="fw-bold text-white mb-1">Impact</h6>
-                            <p className="text-white/60 mb-0 font-light" style={{ fontSize: '11px', lineHeight: '1.4' }}>
-                              Estimated completion improves by 2 days with balanced workload.
+                            <h6 className="fw-bold text-white mb-1">Completed</h6>
+                            <p className="text-white/60 mb-0" style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                              <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>{pastTasks.length}</span> task{pastTasks.length !== 1 ? 's' : ''} done
+                              {projects.length > 0 && (
+                                <span> · {Math.round((pastTasks.length / projects.length) * 100)}% rate</span>
+                              )}
                             </p>
                           </div>
                         </div>
@@ -2060,111 +2166,12 @@ function App() {
                       <div className="card card-glass h-100">
                         <div className="card-header card-glass-header py-3">
                           <h6 className="mb-0 fw-bold">
-                            <i className="bi bi-diagram-3-fill me-2" style={{ color: '#8B5CF6' }}></i> 
-                            Project Timeline Canvas - {selectedProject ? selectedProject.title : "Workspace Live Flow"}
+                            <i className="bi bi-diagram-3-fill me-2" style={{ color: '#9b4dff' }}></i>
+                            Project Timeline — {selectedProject ? selectedProject.title : 'Select a project'}
                           </h6>
                         </div>
-                        <div className="card-body p-4 position-relative d-flex flex-column justify-content-center" style={{ minHeight: '300px', overflow: 'hidden' }}>
-                          
-                          {(() => {
-                            const milestones = getMilestonesForProject(selectedProject);
-                            const completedCount = milestones.filter(m => m.status === 'completed').length;
-                            const isActiveFinal = milestones[2].status === 'active';
-                            const isActiveHalf = milestones[1].status === 'active';
-
-                            let progressPercent = 0;
-                            if (completedCount === 3) progressPercent = 100;
-                            else if (completedCount === 2) progressPercent = isActiveFinal ? 90 : 75;
-                            else if (completedCount === 1) progressPercent = isActiveHalf ? 50 : 35;
-                            else progressPercent = 12;
-
-                            const strokeLength = 680;
-                            const strokeDashoffset = strokeLength - (strokeLength * progressPercent) / 100;
-
-                            return (
-                              <>
-                                {/* SVG Flow Lines */}
-                                <svg className="position-absolute top-0 start-0 w-100 h-100" viewBox="0 0 800 240" preserveAspectRatio="none" style={{ pointerEvents: 'none' }}>
-                                  <defs>
-                                    <linearGradient id="flowGradCompletedInv" x1="0%" y1="0%" x2="100%" y2="0%">
-                                      <stop offset="0%" stopColor="#8B5CF6" />
-                                      <stop offset="100%" stopColor="#a855f7" />
-                                    </linearGradient>
-                                  </defs>
-                                  {/* Underlay: Dim uncompleted path */}
-                                  <path 
-                                    d="M 80 70 C 200 180, 300 180, 400 160 C 500 140, 600 40, 720 70" 
-                                    fill="none" 
-                                    stroke="rgba(220, 220, 235, 0.18)" 
-                                    strokeWidth="4"
-                                    strokeLinecap="round" 
-                                  />
-                                  {/* Overlay: Glow active path */}
-                                  <path 
-                                    d="M 80 70 C 200 180, 300 180, 400 160 C 500 140, 600 40, 720 70" 
-                                    fill="none" 
-                                    stroke="url(#flowGradCompletedInv)" 
-                                    strokeWidth="4" 
-                                    strokeDasharray={strokeLength}
-                                    strokeDashoffset={strokeDashoffset}
-                                    style={{ transition: 'stroke-dashoffset 0.8s ease-in-out' }}
-                                    filter="drop-shadow(0 0 6px #8B5CF6)"
-                                  />
-                                </svg>
-
-                                {milestones.map((m, idx) => {
-                                  const isActive = m.status === 'active';
-                                  const isCompleted = m.status === 'completed';
-                                  
-                                  // Map node index to coordinate left/top styles
-                                  const leftPos = idx === 0 ? '10%' : idx === 1 ? '50%' : '90%';
-                                  const topPos = idx === 1 ? '160px' : '70px';
-
-                                  return (
-                                    <div 
-                                      key={idx} 
-                                      className="position-absolute d-flex flex-column align-items-center" 
-                                      style={{ 
-                                        left: leftPos, 
-                                        top: topPos, 
-                                        transform: 'translate(-50%, -50%)', 
-                                        zIndex: 10 
-                                      }}
-                                    >
-                                      <div 
-                                        className={`workflow-avatar position-relative d-flex align-items-center justify-content-center rounded-full transition-all duration-300 ${
-                                          isCompleted ? 'border-[#8B5CF6] shadow-[0_0_12px_#8B5CF6]' : 
-                                          isActive ? 'border-white shadow-[0_0_20px_rgba(139,92,246,0.85)] scale-110' : 
-                                          'border-white/10 opacity-60'
-                                        }`}
-                                        style={{ 
-                                          width: '42px', 
-                                          height: '42px',
-                                          backgroundColor: isCompleted || isActive ? '#8B5CF6' : 'rgba(255,255,255,0.05)',
-                                          borderWidth: '2px'
-                                        }}
-                                      >
-                                        {isActive && (
-                                          <span className="position-absolute inset-0 rounded-full bg-violet-500/40 animate-ping" />
-                                        )}
-                                        <span className="fw-bold text-white small" style={{ fontSize: '12px' }}>{m.initials}</span>
-                                      </div>
-                                      
-                                      <div className="mt-2 text-center" style={{ minWidth: '120px' }}>
-                                        <span className={`d-block small font-semibold ${isActive ? 'text-white' : 'text-white/60'}`} style={{ fontSize: '10px' }}>
-                                          {m.label}
-                                        </span>
-                                        <span className="d-block font-light text-white-50" style={{ fontSize: '8px' }}>
-                                          {m.role} ({m.status})
-                                        </span>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </>
-                            );
-                          })()}
-
+                        <div className="card-body p-4" style={{ minHeight: '300px' }}>
+                          <TimelineCanvas project={selectedProject} gradId="inv4" />
                         </div>
                       </div>
                     </div>
