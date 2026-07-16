@@ -530,6 +530,10 @@ function App() {
   // Search filter
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Project Reference Document Upload state
+  const [refUploadFile, setRefUploadFile] = useState(null);
+  const [refUploading, setRefUploading] = useState(false);
+
   useEffect(() => {
     if (token) {
       fetchProjects();
@@ -1145,6 +1149,33 @@ function App() {
       </div>
     );
   }
+
+  const handleRefUpload = async (e) => {
+    e.preventDefault();
+    if (!refUploadFile || !selectedProject) return;
+    setRefUploading(true);
+    const fd = new FormData();
+    fd.append('file', refUploadFile);
+    fd.append('project_id', selectedProject.id);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/ekta/upload/`, {
+        method: 'POST',
+        headers: { 'Authorization': `Token ${token}` },
+        body: fd
+      });
+      if (res.ok) {
+        setRefUploadFile(null);
+        alert("Reference document successfully uploaded and indexed for Ekta AI!");
+      } else {
+        alert("Upload failed.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error uploading file.");
+    }
+    setRefUploading(false);
+  };
 
   // 4. MAIN APPLICATION DASHBOARDS (AFTER AUTH)
   return (
@@ -2198,6 +2229,23 @@ function App() {
                     ) : (
                       <div className="alert alert-secondary py-2 small">No report submission loaded.</div>
                     )}
+
+                    {/* Quick Document Upload Form */}
+                    <div className="bg-dark bg-opacity-35 p-3 rounded border border-secondary border-opacity-20 mt-3">
+                      <h6 className="mb-2 fw-bold"><i className="bi bi-cloud-arrow-up text-violet-400 me-2"></i>Upload Reference Docs</h6>
+                      <p className="small text-white-50 mb-3">Add supporting materials (.pdf, .txt, .md) to this project at any time. Ekta AI will read them instantly.</p>
+                      <form onSubmit={handleRefUpload}>
+                        <input 
+                          type="file" 
+                          className="form-control form-control-sm glass-input text-white mb-2" 
+                          onChange={e => setRefUploadFile(e.target.files[0])}
+                          accept=".pdf,.txt,.md"
+                        />
+                        <button type="submit" className="btn btn-sm btn-primary w-100" disabled={!refUploadFile || refUploading} style={{ background: '#8B5CF6', border: 'none' }}>
+                          {refUploading ? 'Uploading...' : 'Upload & Index'}
+                        </button>
+                      </form>
+                    </div>
 
                     {selectedProject.report && selectedProject.report.status === 'submitted' && (
                       <div className="card card-glass mt-3">
