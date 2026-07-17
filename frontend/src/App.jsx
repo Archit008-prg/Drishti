@@ -938,87 +938,113 @@ function App() {
   // 1. HOME LANDING VIEW
   if (currentView === 'home') {
     return (
-      <div>
-        {/* Landing Navbar */}
-        <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-4 py-3 shadow-sm">
-          <div className="container">
-            <span className="navbar-brand fs-3 fw-bold"><i className="bi bi-eye"></i> Drishti</span>
-            <button 
-              className="btn btn-outline-light btn-sm px-3"
-              onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }}
-            >
-              Sign In
-            </button>
-          </div>
-        </nav>
+      <div className="bg-[#0a0514] min-h-screen font-sans text-white overflow-hidden relative">
+        {/* Animated Fluid Background */}
+        <div 
+          className="absolute inset-0 z-0 pointer-events-none animate-pulse" 
+          style={{ 
+            background: 'radial-gradient(125% 125% at 50% 10%, #0a0514 40%, #6d28d9 80%, #c084fc 100%)',
+            animationDuration: '8s' 
+          }}
+        ></div>
 
-        {/* Hero Section */}
-        <header className="bg-dark text-white text-center py-5 shadow-sm" style={{ background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)' }}>
-          <div className="container py-5">
-            <h1 className="display-4 fw-bold mb-3">Empower Audits & Project Management</h1>
-            <p className="lead text-gray-300 mb-4 max-w-2xl mx-auto">
-              Drishti is a unified operations platform designed for organizations to streamline task delegation, audit tracking, compliance documentation, and guidelines verification.
-            </p>
-            <div className="d-flex justify-content-center gap-3">
+        {/* Relative Wrapper for Content above Background */}
+        <div className="relative z-10 flex flex-col min-h-screen">
+          
+          {/* Landing Navbar */}
+          <nav className="flex items-center justify-between px-6 md:px-12 py-6">
+            <span className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              <i className="bi bi-eye text-purple-400"></i> Drishti
+            </span>
+            <div className="flex gap-4">
               <button 
-                className="btn btn-primary btn-lg px-4"
+                className="bg-white/10 hover:bg-white/20 text-white rounded-full px-5 py-2 font-medium text-sm transition-colors backdrop-blur-md border border-white/10"
                 onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }}
               >
-                Access Manager Portal
+                Log in <i className="bi bi-arrow-up-right ms-1"></i>
               </button>
+            </div>
+          </nav>
+
+          {/* Hero Section */}
+          <main className="flex-grow flex flex-col items-center justify-center text-center px-4 py-24 mt-4">
+            <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-sans font-bold text-white max-w-5xl leading-[1.1] tracking-tight mb-8">
+              Your <span className="font-serif italic text-purple-200 font-medium px-1">Future Operations</span> with <br/> Drishti platform
+            </h1>
+            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mb-12 font-light leading-relaxed">
+              A comprehensive platform for task delegation, audit tracking, compliance documentation, connecting teams, managers, and auditors in a cohesive environment.
+            </p>
+            
+            <div className="flex justify-center mb-16">
               <button 
-                className="btn btn-outline-light btn-lg px-4"
-                onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }}
+                className="bg-white text-gray-900 rounded-full pl-6 pr-2 py-2 flex items-center justify-between gap-4 font-semibold hover:bg-gray-200 transition-colors shadow-[0_0_40px_rgba(109,40,217,0.3)]"
+                onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }}
               >
-                Access Team Portal
+                <span>Start for free</span>
+                <div className="bg-purple-600 text-white rounded-full p-2 flex items-center justify-center w-8 h-8">
+                  <i className="bi bi-arrow-up-right" style={{ fontSize: '14px' }}></i>
+                </div>
               </button>
             </div>
-          </div>
-        </header>
+            
+            {/* Trust Badges */}
+            <div className="flex flex-wrap justify-center gap-6 md:gap-12 text-sm text-gray-300 font-medium">
+              <div className="flex items-center gap-2"><i className="bi bi-shield-check text-purple-400 fs-5"></i> Certified workflows</div>
+              <div className="flex items-center gap-2"><i className="bi bi-credit-card text-purple-400 fs-5"></i> No credit card required</div>
+              <div className="flex items-center gap-2"><i className="bi bi-check-circle text-purple-400 fs-5"></i> Completely free</div>
+            </div>
+          </main>
 
-        {/* Feature Cards Grid */}
-        <section className="container py-5">
-          <div className="text-center mb-5">
-            <h2 className="fw-bold">Designed for Collaborative Governance</h2>
-            <p className="text-muted">Simple interfaces for managers to coordinate and teams to execute.</p>
-          </div>
-          <div className="row g-4">
-            <div className="col-md-4">
-              <div className="card h-100 border-0 shadow-sm p-4 text-center">
-                <div className="fs-1 text-primary mb-3"><i className="bi bi-shield-check"></i></div>
-                <h4 className="fw-bold">Manager Oversight</h4>
-                <p className="text-muted">
-                  Create and assign projects. Audit project timeline, inspect metadata, and review submitted PDF reports with full approval workflows.
-                </p>
+          {/* Premium Footer */}
+          <footer className="relative mt-20 pt-32 pb-16 overflow-hidden bg-gradient-to-b from-[#0a0514] via-[#2e1065] to-[#581c87]">
+            {/* Giant Watermark */}
+            <div className="absolute bottom-0 left-0 w-full overflow-hidden text-[15vw] leading-none font-black text-white/5 select-none z-0 tracking-tighter text-center pointer-events-none" style={{ marginBottom: '-2vw' }}>
+              DRISHTI
+            </div>
+            
+            {/* Footer Content */}
+            <div className="relative z-10 container mx-auto px-6 md:px-12 flex flex-col lg:flex-row justify-between items-start gap-16">
+              <div className="max-w-lg">
+                <h3 className="text-3xl md:text-4xl text-white font-sans font-medium mb-8 leading-snug">
+                  Drishti is a <span className="font-serif italic text-purple-200">professional</span> growth <br/> & Employment Platform — <br/> Connecting Teams with <br/> Managers & Auditors.
+                </h3>
+                <div className="flex gap-3 mt-8">
+                  <a href="#" className="bg-[#3b0764] hover:bg-purple-800 transition-colors text-white rounded-full w-10 h-10 flex items-center justify-center text-lg text-decoration-none"><i className="bi bi-linkedin"></i></a>
+                  <a href="#" className="bg-[#3b0764] hover:bg-purple-800 transition-colors text-white rounded-full w-10 h-10 flex items-center justify-center text-lg text-decoration-none"><i className="bi bi-twitter-x"></i></a>
+                  <a href="#" className="bg-[#3b0764] hover:bg-purple-800 transition-colors text-white rounded-full w-10 h-10 flex items-center justify-center text-lg text-decoration-none"><i className="bi bi-instagram"></i></a>
+                  <a href="#" className="bg-[#3b0764] hover:bg-purple-800 transition-colors text-white rounded-full w-10 h-10 flex items-center justify-center text-lg text-decoration-none"><i className="bi bi-facebook"></i></a>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap gap-12 md:gap-24 text-sm pt-2">
+                <div className="flex flex-col gap-4 text-gray-300">
+                  <h5 className="text-white font-semibold mb-2 text-base">Get started now</h5>
+                  <button onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }} className="text-left hover:text-white transition-colors bg-transparent border-0 p-0">Register as a team</button>
+                  <button onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }} className="text-left hover:text-white transition-colors bg-transparent border-0 p-0">Join as a manager</button>
+                  <button onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }} className="text-left hover:text-white transition-colors bg-transparent border-0 p-0">Register as a company</button>
+                  <button onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }} className="text-left hover:text-white transition-colors bg-transparent border-0 p-0 mt-2">Login</button>
+                </div>
+                <div className="flex flex-col gap-4 text-gray-300">
+                  <h5 className="text-white font-semibold mb-2 text-base">About</h5>
+                  <a href="#" className="hover:text-white transition-colors text-decoration-none text-gray-300">Features</a>
+                  <a href="#" className="hover:text-white transition-colors text-decoration-none text-gray-300">Who is this platform for?</a>
+                  <a href="#" className="hover:text-white transition-colors text-decoration-none text-gray-300">How does it work?</a>
+                  <a href="#" className="hover:text-white transition-colors text-decoration-none text-gray-300">Frequently Asked Questions</a>
+                </div>
+                <div className="flex flex-col gap-4 text-gray-300">
+                  <h5 className="text-white font-semibold mb-2 text-base">Support</h5>
+                  <a href="#" className="hover:text-white transition-colors text-decoration-none text-gray-300">Contact us</a>
+                  <a href="#" className="hover:text-white transition-colors text-decoration-none text-gray-300">Privacy Policy</a>
+                  <a href="#" className="hover:text-white transition-colors text-decoration-none text-gray-300">Terms of Use</a>
+                </div>
               </div>
             </div>
-            <div className="col-md-4">
-              <div className="card h-100 border-0 shadow-sm p-4 text-center">
-                <div className="fs-1 text-success mb-3"><i className="bi bi-person-workspace"></i></div>
-                <h4 className="fw-bold">Team Execution</h4>
-                <p className="text-muted">
-                  Track running, upcoming, and past tasks. Directly upload PDF reports, write progress notes, and view supervisor feedback.
-                </p>
-              </div>
+            
+            <div className="relative z-10 text-center text-white/40 text-xs mt-32">
+              ©2026 Drishti All rights reserved.
             </div>
-            <div className="col-md-4">
-              <div className="card h-100 border-0 shadow-sm p-4 text-center">
-                <div className="fs-1 text-warning mb-3"><i className="bi bi-chat-square-text"></i></div>
-                <h4 className="fw-bold">Internal AI Assistant</h4>
-                <p className="text-muted">
-                  Ask context-based audit questions. The built-in bot clarifies operational queries directly based on project metadata and uploads.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer className="bg-light py-4 border-top text-center mt-5">
-          <div className="container">
-            <span className="text-muted">© 2026 Drishti Operations Platform. All rights reserved.</span>
-          </div>
-        </footer>
+          </footer>
+        </div>
       </div>
     );
   }
