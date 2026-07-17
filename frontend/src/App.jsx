@@ -479,6 +479,8 @@ function App() {
   // Navigation Routing State
   // 'home', 'auth-select', 'login', 'signup', 'dashboard'
   const [currentView, setCurrentView] = useState(token ? 'dashboard' : 'home');
+
+
   const [authRole, setAuthRole] = useState('investigator'); // 'investigator' or 'manager'
   
   // Auth state
@@ -703,6 +705,11 @@ function App() {
     formData.append('implementing_agencies', implAgencies);
     formData.append('assigned_investigator', assignedInvestigatorId);
 
+    console.log("--- SUBMITTING NEW PROJECT PAYLOAD ---");
+    for (let [key, value] of formData.entries()) {
+      console.log(key, ":", value);
+    }
+
     try {
       const res = await fetch(`${API_BASE}/api/projects/add/`, {
         method: 'POST',
@@ -728,11 +735,19 @@ function App() {
         setPcName('');
         setImplAgencies('');
       } else {
-        const errData = await res.json();
-        alert(errData.error || 'Failed to create project');
+        const text = await res.text();
+        console.error("Backend Error Response Text:", text);
+        try {
+          const errData = JSON.parse(text);
+          console.error("Backend JSON Error:", errData);
+          alert(`Backend Error (${res.status}): ${errData.error || JSON.stringify(errData)}`);
+        } catch (parseErr) {
+          alert(`Backend Error (${res.status}): HTML/Non-JSON response returned. See console for text.`);
+        }
       }
     } catch (err) {
-      alert('Error creating project');
+      console.error("Network/Fetch Exception:", err);
+      alert(`Network/Fetch Error: ${err.message}`);
     }
   };
   const fetchChatConversations = async () => {
@@ -941,6 +956,8 @@ function App() {
       <div style={{ background: 'linear-gradient(180deg, #07030f 0%, #0d0420 35%, #07030f 65%, #0d0420 100%)', minHeight: '100vh', fontFamily: 'Inter, sans-serif', overflow: 'hidden', position: 'relative' }}>
 
         {/* ── Animated Background: rotating light-beam spotlight ── */}
+
+
         <style>{`
           @keyframes beamSweep {
             0%   { transform: rotate(0deg) scale(1.2);   opacity: 1; }
@@ -1035,7 +1052,7 @@ function App() {
             <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1, flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <i className="bi bi-eye" style={{ color: '#fff', fontSize: 22 }}></i>
-                <span style={{ color: '#fff', fontWeight: 800, fontSize: 20, letterSpacing: '-0.02em' }}>Drishti</span>
+                <span style={{ color: '#fff', fontWeight: 900, fontSize: 20, letterSpacing: '-0.02em', fontFamily: '"Helvetica Neue Black", "Arial Black", sans-serif' }}>Drishti</span>
               </div>
               <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', paddingLeft: 30 }}>Audit & Ops Platform</span>
             </div>
@@ -1064,10 +1081,12 @@ function App() {
               maxWidth: 900,
             }}>
               Empower{' '}
-              <span style={{ fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>
-                Audits &amp;
-              </span>
-              {' '}Project Management
+              <span style={{ color: '#a78bfa' }}>
+                <span style={{ fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>
+                  Audits &amp;
+                </span>
+                {' '}Project
+              </span> Management
             </h1>
 
             {/* Subtext */}
@@ -1079,24 +1098,26 @@ function App() {
               Drishti is a unified operations platform designed for organizations to streamline task delegation, audit tracking, compliance documentation, and guidelines verification.
             </p>
 
-            {/* CTA Buttons — pill-shaped */}
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 36 }}>
-              <button className="pill-btn" onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }}>
-                Access Manager Portal
+            {/* CTA Button — single "Get Started" */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 36 }}>
+              <button
+                onClick={() => setCurrentView('auth-select')}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 12,
+                  background: 'linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%)',
+                  color: '#fff', border: 'none', borderRadius: 999,
+                  padding: '16px 40px', fontSize: 16, fontWeight: 700,
+                  cursor: 'pointer', boxShadow: '0 4px 24px rgba(109,40,217,0.5)',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 36px rgba(109,40,217,0.65)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='0 4px 24px rgba(109,40,217,0.5)'; }}
+              >
+                Get Started
                 <span style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  width: 28, height: 28, borderRadius: '50%',
-                  background: '#6d28d9', color: '#fff', fontSize: 13,
-                }}>
-                  <i className="bi bi-arrow-up-right"></i>
-                </span>
-              </button>
-              <button className="pill-btn-outline" onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }}>
-                Access Team Portal
-                <span style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  width: 28, height: 28, borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: 13,
+                  width: 30, height: 30, borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.22)', color: '#fff', fontSize: 14,
                 }}>
                   <i className="bi bi-arrow-up-right"></i>
                 </span>
@@ -2720,7 +2741,23 @@ function App() {
               ) : (
                 <div className="card card-glass text-center py-5 text-muted">
                   <i className="bi bi-folder2-open fs-2 mb-2 d-block text-purple" style={{ color: 'var(--accent-purple)' }}></i>
-                  Select a project from the directory list to examine details.
+                  <p className="mb-3">Select a project from the directory list to examine details.</p>
+                  <div className="px-4">
+                    <select 
+                      className="form-select" 
+                      onChange={(e) => {
+                        if (e.target.value) fetchProjectDetail(e.target.value);
+                      }}
+                      style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
+                    >
+                      <option value="" style={{ color: '#000' }}>-- Or quickly select a project here --</option>
+                      {projects.map(p => (
+                        <option key={p.id} value={p.id} style={{ color: '#000' }}>
+                          {p.project_code} - {p.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               )}
             </div>
@@ -3221,7 +3258,23 @@ function App() {
               ) : (
                 <div className="card card-glass text-center py-5 text-muted">
                   <i className="bi bi-card-checklist fs-2 mb-2 d-block text-purple" style={{ color: 'var(--accent-purple)' }}></i>
-                  Select any task from the category list to review metadata details or submit compliance reports.
+                  <p className="mb-3">Select any task from the category list to review metadata details or submit compliance reports.</p>
+                  <div className="px-4">
+                    <select 
+                      className="form-select" 
+                      onChange={(e) => {
+                        if (e.target.value) fetchProjectDetail(e.target.value);
+                      }}
+                      style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
+                    >
+                      <option value="" style={{ color: '#000' }}>-- Or quickly select a task here --</option>
+                      {projects.map(p => (
+                        <option key={p.id} value={p.id} style={{ color: '#000' }}>
+                          {p.project_code} - {p.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               )}
             </div>

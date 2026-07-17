@@ -20,9 +20,13 @@ def api_login(request):
     password = request.data.get('password')
     user = authenticate(username=username, password=password)
     if user is not None:
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(user)
         token, _ = Token.objects.get_or_create(user=user)
         return Response({
             'token': token.key,
+            'jwt_access': str(refresh.access_token),
+            'jwt_refresh': str(refresh),
             'username': user.username,
             'is_staff': user.is_staff
         })
@@ -55,8 +59,12 @@ def api_signup(request):
                 p.save()
         
     token, _ = Token.objects.get_or_create(user=user)
+    from rest_framework_simplejwt.tokens import RefreshToken
+    refresh = RefreshToken.for_user(user)
     return Response({
         'token': token.key,
+        'jwt_access': str(refresh.access_token),
+        'jwt_refresh': str(refresh),
         'username': user.username,
         'is_staff': user.is_staff
     })
