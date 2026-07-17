@@ -938,51 +938,182 @@ function App() {
   // 1. HOME LANDING VIEW
   if (currentView === 'home') {
     return (
-      <div className="bg-[#0a0514] min-h-screen font-sans overflow-hidden relative">
-        {/* Animated Fluid Background (Top Section) */}
-        <div 
-          className="absolute top-0 left-0 w-full h-[80vh] z-0 pointer-events-none animate-pulse" 
-          style={{ 
-            background: 'radial-gradient(125% 125% at 50% 10%, #0a0514 40%, #6d28d9 80%, #c084fc 100%)',
-            animationDuration: '8s' 
-          }}
-        ></div>
+      <div style={{ backgroundColor: '#07030f', minHeight: '100vh', fontFamily: 'Inter, sans-serif', overflow: 'hidden', position: 'relative' }}>
 
-        <div className="relative z-10 flex flex-col min-h-screen">
-          {/* Landing Navbar */}
-          <nav className="navbar navbar-expand-lg navbar-dark px-4 py-3 shadow-sm bg-transparent">
-            <div className="container">
-              <span className="navbar-brand fs-3 fw-bold"><i className="bi bi-eye"></i> Drishti</span>
-              <button 
-                className="btn btn-outline-light btn-sm px-3"
-                onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }}
-              >
-                Sign In
-              </button>
+        {/* ── Animated Background: rotating light-beam spotlight ── */}
+        <style>{`
+          @keyframes beamSweep {
+            0%   { transform: rotate(0deg) scale(1.2);   opacity: 1; }
+            50%  { transform: rotate(20deg) scale(1.35); opacity: 0.85; }
+            100% { transform: rotate(0deg) scale(1.2);   opacity: 1; }
+          }
+          @keyframes beamDrift {
+            0%   { transform: translateX(0px)  rotate(-10deg); }
+            50%  { transform: translateX(60px) rotate(10deg);  }
+            100% { transform: translateX(0px)  rotate(-10deg); }
+          }
+          .beam-container {
+            animation: beamSweep 20s ease-in-out infinite;
+          }
+          .pill-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: rgba(255,255,255,0.93); color: #1a0533;
+            border: none; border-radius: 999px;
+            padding: 14px 32px; font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+          }
+          .pill-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(109,40,217,0.35); }
+          .pill-btn-outline {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: rgba(255,255,255,0.08);
+            color: #fff; border: 1.5px solid rgba(255,255,255,0.35);
+            border-radius: 999px; padding: 14px 32px;
+            font-size: 15px; font-weight: 600;
+            cursor: pointer; transition: transform 0.2s, background 0.2s;
+          }
+          .pill-btn-outline:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); }
+          .nav-link-item {
+            color: rgba(255,255,255,0.72); font-size: 13px; font-weight: 400;
+            text-decoration: none; white-space: nowrap;
+            transition: color 0.15s;
+          }
+          .nav-link-item:hover { color: #fff; }
+          .sign-in-pill {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,0.95); color: #1a0533;
+            border: none; border-radius: 999px;
+            padding: 8px 18px 8px 20px; font-size: 13px; font-weight: 700;
+            cursor: pointer; transition: transform 0.15s;
+          }
+          .sign-in-pill:hover { transform: scale(1.03); }
+          .sign-in-pill .arrow-circle {
+            display: flex; align-items: center; justify-content: center;
+            width: 26px; height: 26px; border-radius: 50%;
+            background: #6d28d9; color: #fff; font-size: 12px;
+          }
+        `}</style>
+
+        {/* Animated background light-beam layer */}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+          {/* Base dark */}
+          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 80% 70% at 50% 50%, #1a0533 0%, #07030f 70%)' }} />
+          {/* Animated beam */}
+          <div className="beam-container" style={{
+            position: 'absolute', top: '-20%', left: '-10%',
+            width: '120%', height: '120%',
+            background: 'conic-gradient(from 200deg at 25% 55%, transparent 0deg, #4c1d95 8deg, #7c3aed 14deg, transparent 20deg, transparent 40deg, #3b0764 50deg, #5b21b6 54deg, transparent 60deg)',
+            opacity: 0.55,
+          }} />
+          {/* Secondary softer glow */}
+          <div style={{
+            position: 'absolute', top: 0, left: '-15%',
+            width: '70%', height: '100%',
+            background: 'radial-gradient(ellipse 60% 80% at 20% 50%, rgba(109,40,217,0.3) 0%, transparent 65%)',
+            animation: 'beamDrift 18s ease-in-out infinite',
+          }} />
+          {/* Grain overlay */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E")`,
+            opacity: 0.045,
+          }} />
+        </div>
+
+        <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+
+          {/* ── Navbar ── */}
+          <nav style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '20px clamp(24px, 5vw, 64px)', gap: 24,
+          }}>
+            {/* Logo */}
+            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1, flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <i className="bi bi-eye" style={{ color: '#fff', fontSize: 22 }}></i>
+                <span style={{ color: '#fff', fontWeight: 800, fontSize: 20, letterSpacing: '-0.02em' }}>Drishti</span>
+              </div>
+              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', paddingLeft: 30 }}>Audit & Ops Platform</span>
             </div>
+
+            {/* Center nav links */}
+            <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
+              {['Platforms', 'Features', 'How It Works', 'For Teams', 'Contact'].map(link => (
+                <a key={link} href="#" className="nav-link-item">{link}</a>
+              ))}
+            </div>
+
+            {/* Sign In pill */}
+            <button className="sign-in-pill" onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }}>
+              Sign In
+              <span className="arrow-circle"><i className="bi bi-arrow-up-right"></i></span>
+            </button>
           </nav>
 
-          {/* Hero Section (Original Text, New Background) */}
-          <header className="text-white text-center py-5 shadow-sm bg-transparent">
-            <div className="container py-5 mt-5 mb-5">
-              <h1 className="display-4 fw-bold mb-3">Empower Audits & Project Management</h1>
-              <p className="lead text-gray-300 mb-4 max-w-2xl mx-auto">
-                Drishti is a unified operations platform designed for organizations to streamline task delegation, audit tracking, compliance documentation, and guidelines verification.
-              </p>
-              <div className="d-flex justify-content-center gap-3">
-                <button 
-                  className="btn btn-primary btn-lg px-4"
-                  onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }}
-                >
-                  Access Manager Portal
-                </button>
-                <button 
-                  className="btn btn-outline-light btn-lg px-4"
-                  onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }}
-                >
-                  Access Team Portal
-                </button>
-              </div>
+          {/* ── Hero Section ── */}
+          <header style={{
+            flex: 1, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            textAlign: 'center', padding: 'clamp(48px, 8vw, 80px) clamp(24px, 5vw, 64px)',
+          }}>
+            {/* Headline — mixed serif/sans */}
+            <h1 style={{
+              color: '#fff', fontSize: 'clamp(36px, 6vw, 72px)',
+              fontWeight: 800, lineHeight: 1.08,
+              letterSpacing: '-0.03em', margin: '0 0 24px 0',
+              maxWidth: 900,
+            }}>
+              Empower{' '}
+              <span style={{ fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>
+                Audits &amp;
+              </span>
+              {' '}Project Management
+            </h1>
+
+            {/* Subtext */}
+            <p style={{
+              color: 'rgba(255,255,255,0.68)', fontSize: 'clamp(14px, 1.8vw, 18px)',
+              lineHeight: 1.65, maxWidth: 640,
+              margin: '0 0 40px 0', fontWeight: 400,
+            }}>
+              Drishti is a unified operations platform designed for organizations to streamline task delegation, audit tracking, compliance documentation, and guidelines verification.
+            </p>
+
+            {/* CTA Buttons — pill-shaped */}
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 36 }}>
+              <button className="pill-btn" onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }}>
+                Access Manager Portal
+                <span style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 28, height: 28, borderRadius: '50%',
+                  background: '#6d28d9', color: '#fff', fontSize: 13,
+                }}>
+                  <i className="bi bi-arrow-up-right"></i>
+                </span>
+              </button>
+              <button className="pill-btn-outline" onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }}>
+                Access Team Portal
+                <span style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 28, height: 28, borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: 13,
+                }}>
+                  <i className="bi bi-arrow-up-right"></i>
+                </span>
+              </button>
+            </div>
+
+            {/* Feature bullets */}
+            <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {[
+                { icon: 'bi-shield-check',   label: 'Role-based access control' },
+                { icon: 'bi-file-earmark-check', label: 'Audit trail & PDF reports' },
+                { icon: 'bi-robot',          label: 'AI-assisted compliance' },
+              ].map(({ icon, label }) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.55)', fontSize: 13 }}>
+                  <i className={`bi ${icon}`} style={{ fontSize: 15, color: 'rgba(200,170,255,0.8)' }}></i>
+                  <span>{label}</span>
+                </div>
+              ))}
             </div>
           </header>
 
