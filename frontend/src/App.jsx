@@ -1027,18 +1027,18 @@ function App() {
 
           {/* Premium Footer — full-bleed, diagonal gradient */}
           <footer
-            className="relative overflow-hidden w-full px-12 pt-12 pb-8"
+            className="relative overflow-hidden w-full pt-12 pb-8"
             style={{ background: 'linear-gradient(135deg, #1a0533 0%, #3b0764 40%, #6d28d9 100%)' }}
           >
-              {/* Giant Watermark — fancy italic serif, top-opaque → bottom-transparent gradient fade */}
+              {/* Giant Watermark — Arial Black / Helvetica Neue Black, top-opaque → bottom-transparent fade */}
               <div className="absolute bottom-0 left-0 w-full flex justify-center pointer-events-none select-none overflow-hidden z-0">
                 <span
                   style={{
                     fontSize: '19vw',
-                    fontFamily: '"Playfair Display", Georgia, serif',
-                    fontStyle: 'italic',
+                    fontFamily: '"Helvetica Neue", "Arial Black", Arial, sans-serif',
+                    fontStyle: 'normal',
                     fontWeight: 900,
-                    letterSpacing: '-0.04em',
+                    letterSpacing: '-0.03em',
                     lineHeight: 1,
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -1051,8 +1051,9 @@ function App() {
                 </span>
               </div>
 
-              {/* Main content row — left brand + right links, always side-by-side */}
-              <div className="relative z-10 flex flex-col md:flex-row justify-between gap-12 mb-10">
+              {/* Main content row — centered, with proper horizontal padding */}
+              <div className="relative z-10 w-full max-w-7xl mx-auto px-12 md:px-16">
+                <div className="flex flex-col md:flex-row justify-between gap-12 mb-10">
 
                 {/* ── Left: Headline + Social Icons ── */}
                 <div className="flex-shrink-0 max-w-xs">
@@ -1146,10 +1147,11 @@ function App() {
                     ))}
                   </div>
                 </div>
+                </div>
               </div>
 
               {/* Copyright — centered, muted, bottom */}
-              <div className="relative z-10 text-center text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              <div className="relative z-10 w-full max-w-7xl mx-auto px-12 md:px-16 text-center text-sm pb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>
                 © 2026 Drishti All rights reserved.
               </div>
           </footer>
