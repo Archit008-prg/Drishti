@@ -1026,51 +1026,59 @@ function App() {
           <div className="flex-grow-1"></div>
 
           {/* Premium Footer */}
-          <footer className="relative mt-auto pt-32 pb-12 overflow-hidden bg-gradient-to-b from-[#0a0514] via-[#081b3d] to-[#1a4a82]">
+          <footer className="relative mt-auto overflow-hidden bg-gradient-to-b from-[#0B0C10] via-[#2e1065] to-[#a855f7]/40">
             {/* Giant Watermark */}
-            <div className="absolute bottom-[-3vw] left-0 w-full overflow-hidden text-[20vw] leading-none font-black text-white/[0.05] select-none z-0 tracking-tight text-center pointer-events-none">
+            <div className="absolute bottom-0 left-0 w-full text-center text-[16vw] font-black tracking-tighter leading-none select-none z-0 translate-y-12 bg-clip-text text-transparent bg-gradient-to-b from-white/10 to-white/0">
               DRISHTI
             </div>
             
             {/* Footer Content */}
-            <div className="relative z-10 container mx-auto px-6 md:px-12 flex flex-col lg:flex-row justify-between items-start gap-16 text-white">
+            <div className="relative z-10 flex flex-col lg:flex-row justify-between gap-16 w-full max-w-7xl mx-auto px-8 py-24">
+              {/* Brand & Socials */}
               <div className="max-w-lg">
-                <h3 className="text-3xl md:text-4xl text-white font-sans font-medium mb-8 leading-snug">
-                  Drishti is a <span className="font-serif italic text-blue-200">professional</span> growth <br/> & Employment Platform — <br/> Connecting Teams with <br/> Managers & Auditors.
+                <h3 className="text-white font-sans text-3xl font-medium mb-8 leading-snug">
+                  Drishti is a <span className="font-serif italic text-purple-200">professional</span> growth <br/> & Employment Platform — <br/> Connecting Teams with <br/> Managers & Auditors.
                 </h3>
-                <div className="flex gap-3 mt-8">
-                  <a href="#" className="bg-[#0b2857] hover:bg-[#1a4a82] transition-colors text-white rounded-full w-10 h-10 flex items-center justify-center text-lg text-decoration-none"><i className="bi bi-linkedin"></i></a>
-                  <a href="#" className="bg-[#0b2857] hover:bg-[#1a4a82] transition-colors text-white rounded-full w-10 h-10 flex items-center justify-center text-lg text-decoration-none"><i className="bi bi-twitter-x"></i></a>
-                  <a href="#" className="bg-[#0b2857] hover:bg-[#1a4a82] transition-colors text-white rounded-full w-10 h-10 flex items-center justify-center text-lg text-decoration-none"><i className="bi bi-instagram"></i></a>
-                  <a href="#" className="bg-[#0b2857] hover:bg-[#1a4a82] transition-colors text-white rounded-full w-10 h-10 flex items-center justify-center text-lg text-decoration-none"><i className="bi bi-facebook"></i></a>
+                <div className="flex gap-4 mt-8">
+                  <a href="#" className="bg-[#3b0764] text-white p-3 rounded-full hover:bg-purple-600 transition-colors flex items-center justify-center w-12 h-12 text-lg text-decoration-none"><i className="bi bi-linkedin"></i></a>
+                  <a href="#" className="bg-[#3b0764] text-white p-3 rounded-full hover:bg-purple-600 transition-colors flex items-center justify-center w-12 h-12 text-lg text-decoration-none"><i className="bi bi-twitter-x"></i></a>
+                  <a href="#" className="bg-[#3b0764] text-white p-3 rounded-full hover:bg-purple-600 transition-colors flex items-center justify-center w-12 h-12 text-lg text-decoration-none"><i className="bi bi-instagram"></i></a>
+                  <a href="#" className="bg-[#3b0764] text-white p-3 rounded-full hover:bg-purple-600 transition-colors flex items-center justify-center w-12 h-12 text-lg text-decoration-none"><i className="bi bi-facebook"></i></a>
                 </div>
               </div>
               
-              <div className="flex flex-wrap gap-12 md:gap-24 text-sm pt-2">
-                <div className="flex flex-col gap-4 text-gray-300">
-                  <h5 className="text-white font-semibold mb-2 text-base">Get started now</h5>
-                  <button onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }} className="text-left hover:text-white transition-colors bg-transparent border-0 p-0 text-gray-300">Register as a team</button>
-                  <button onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }} className="text-left hover:text-white transition-colors bg-transparent border-0 p-0 text-gray-300">Join as a manager</button>
-                  <button onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }} className="text-left hover:text-white transition-colors bg-transparent border-0 p-0 text-gray-300">Register as a company</button>
-                  <button onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }} className="text-left hover:text-white transition-colors bg-transparent border-0 p-0 mt-2 text-gray-300">Login</button>
+              {/* Links */}
+              <div className="grid grid-cols-3 gap-12 w-full max-w-2xl">
+                <div>
+                  <h5 className="text-white font-semibold mb-6 text-base">Get started now</h5>
+                  <div className="flex flex-col gap-4">
+                    <button onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }} className="text-left text-white/70 hover:text-white transition-colors text-sm font-medium bg-transparent border-0 p-0">Register as a team</button>
+                    <button onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }} className="text-left text-white/70 hover:text-white transition-colors text-sm font-medium bg-transparent border-0 p-0">Join as a manager</button>
+                    <button onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }} className="text-left text-white/70 hover:text-white transition-colors text-sm font-medium bg-transparent border-0 p-0">Register as a company</button>
+                    <button onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }} className="text-left text-white/70 hover:text-white transition-colors text-sm font-medium bg-transparent border-0 p-0">Login</button>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-4 text-gray-300">
-                  <h5 className="text-white font-semibold mb-2 text-base">About</h5>
-                  <a href="#" className="hover:text-white transition-colors text-decoration-none text-gray-300">Features</a>
-                  <a href="#" className="hover:text-white transition-colors text-decoration-none text-gray-300">Who is this platform for?</a>
-                  <a href="#" className="hover:text-white transition-colors text-decoration-none text-gray-300">How does it work?</a>
-                  <a href="#" className="hover:text-white transition-colors text-decoration-none text-gray-300">Frequently Asked Questions</a>
+                <div>
+                  <h5 className="text-white font-semibold mb-6 text-base">About</h5>
+                  <div className="flex flex-col gap-4">
+                    <a href="#" className="text-white/70 hover:text-white transition-colors text-sm font-medium text-decoration-none">Features</a>
+                    <a href="#" className="text-white/70 hover:text-white transition-colors text-sm font-medium text-decoration-none">Who is this platform for?</a>
+                    <a href="#" className="text-white/70 hover:text-white transition-colors text-sm font-medium text-decoration-none">How does it work?</a>
+                    <a href="#" className="text-white/70 hover:text-white transition-colors text-sm font-medium text-decoration-none">Frequently Asked Questions</a>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-4 text-gray-300">
-                  <h5 className="text-white font-semibold mb-2 text-base">Support</h5>
-                  <a href="#" className="hover:text-white transition-colors text-decoration-none text-gray-300">Contact us</a>
-                  <a href="#" className="hover:text-white transition-colors text-decoration-none text-gray-300">Privacy Policy</a>
-                  <a href="#" className="hover:text-white transition-colors text-decoration-none text-gray-300">Terms of Use</a>
+                <div>
+                  <h5 className="text-white font-semibold mb-6 text-base">Support</h5>
+                  <div className="flex flex-col gap-4">
+                    <a href="#" className="text-white/70 hover:text-white transition-colors text-sm font-medium text-decoration-none">Contact us</a>
+                    <a href="#" className="text-white/70 hover:text-white transition-colors text-sm font-medium text-decoration-none">Privacy Policy</a>
+                    <a href="#" className="text-white/70 hover:text-white transition-colors text-sm font-medium text-decoration-none">Terms of Use</a>
+                  </div>
                 </div>
               </div>
             </div>
             
-            <div className="relative z-10 text-center text-white/40 text-xs mt-32">
+            <div className="relative z-10 text-center text-white/40 text-xs mt-24 mb-8">
               ©2026 Drishti All rights reserved.
             </div>
           </footer>
