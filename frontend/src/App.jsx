@@ -1025,17 +1025,27 @@ function App() {
 
           <div className="flex-grow-1"></div>
 
-          {/* Premium Footer — rounded card, diagonal gradient, reference-matching layout */}
-          <div className="mx-4 md:mx-8 lg:mx-12 mb-8">
-            <footer
-              className="relative overflow-hidden rounded-3xl px-12 pt-12 pb-8"
-              style={{ background: 'linear-gradient(135deg, #1a0533 0%, #3b0764 40%, #6d28d9 100%)' }}
-            >
-              {/* Giant Watermark — bottom-anchored, behind everything */}
+          {/* Premium Footer — full-bleed, diagonal gradient */}
+          <footer
+            className="relative overflow-hidden w-full px-12 pt-12 pb-8"
+            style={{ background: 'linear-gradient(135deg, #1a0533 0%, #3b0764 40%, #6d28d9 100%)' }}
+          >
+              {/* Giant Watermark — fancy italic serif, top-opaque → bottom-transparent gradient fade */}
               <div className="absolute bottom-0 left-0 w-full flex justify-center pointer-events-none select-none overflow-hidden z-0">
                 <span
-                  className="font-black leading-none tracking-tighter text-white"
-                  style={{ fontSize: '18vw', opacity: 0.08 }}
+                  style={{
+                    fontSize: '19vw',
+                    fontFamily: '"Playfair Display", Georgia, serif',
+                    fontStyle: 'italic',
+                    fontWeight: 900,
+                    letterSpacing: '-0.04em',
+                    lineHeight: 1,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    backgroundImage: 'linear-gradient(to bottom, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0) 100%)',
+                    userSelect: 'none',
+                  }}
                 >
                   DRISHTI
                 </span>
@@ -1142,8 +1152,7 @@ function App() {
               <div className="relative z-10 text-center text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
                 © 2026 Drishti All rights reserved.
               </div>
-            </footer>
-          </div>
+          </footer>
         </div>
       </div>
     );
