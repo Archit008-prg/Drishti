@@ -938,7 +938,7 @@ function App() {
   // 1. HOME LANDING VIEW
   if (currentView === 'home') {
     return (
-      <div style={{ backgroundColor: '#07030f', minHeight: '100vh', fontFamily: 'Inter, sans-serif', overflow: 'hidden', position: 'relative' }}>
+      <div style={{ background: 'linear-gradient(180deg, #07030f 0%, #0d0420 35%, #07030f 65%, #0d0420 100%)', minHeight: '100vh', fontFamily: 'Inter, sans-serif', overflow: 'hidden', position: 'relative' }}>
 
         {/* ── Animated Background: rotating light-beam spotlight ── */}
         <style>{`
@@ -994,9 +994,14 @@ function App() {
         `}</style>
 
         {/* Animated background light-beam layer */}
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-          {/* Base dark */}
-          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 80% 70% at 50% 50%, #1a0533 0%, #07030f 70%)' }} />
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+          {/* Base dark — spans full page */}
+          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 90% 45% at 50% 15%, #1a0533 0%, #07030f 60%)' }} />
+          {/* Mid-page subtle purple bridge */}
+          <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translateX(-50%)', width: '80%', height: '40%', background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(76,29,149,0.12) 0%, transparent 70%)' }} />
+          {/* Footer region glow — mirrors hero glow at bottom */}
+          <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '55%', background: 'radial-gradient(ellipse 80% 60% at 30% 90%, rgba(109,40,217,0.22) 0%, transparent 60%)' }} />
+          <div style={{ position: 'absolute', bottom: 0, right: '-10%', width: '60%', height: '45%', background: 'radial-gradient(ellipse 60% 50% at 70% 80%, rgba(76,29,149,0.15) 0%, transparent 65%)' }} />
           {/* Animated beam */}
           <div className="beam-container" style={{
             position: 'absolute', top: '-20%', left: '-10%',
@@ -1162,7 +1167,7 @@ function App() {
               position: 'relative',
               overflow: 'hidden',
               width: '100%',
-              background: 'linear-gradient(135deg, #1a0533 0%, #3b0764 40%, #6d28d9 100%)',
+              background: 'linear-gradient(180deg, rgba(13,4,32,0) 0%, rgba(26,5,51,0.85) 20%, rgba(59,7,100,0.75) 60%, rgba(109,40,217,0.25) 100%)',
             }}
           >
             {/* Giant Watermark — Arial Black, top-opaque → bottom-transparent */}
