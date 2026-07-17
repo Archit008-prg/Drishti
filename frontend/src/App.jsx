@@ -1026,9 +1026,9 @@ function App() {
           <div className="flex-grow-1"></div>
 
           {/* Premium Footer */}
-          <footer className="relative mt-auto pt-32 pb-16 overflow-hidden bg-gradient-to-b from-[#0a0514] via-[#2e1065] to-[#581c87]">
+          <footer className="relative mt-auto pt-32 pb-12 overflow-hidden bg-gradient-to-b from-[#0a0514] via-[#081b3d] to-[#1a4a82]">
             {/* Giant Watermark */}
-            <div className="absolute bottom-0 left-0 w-full overflow-hidden text-[15vw] leading-none font-black text-white/5 select-none z-0 tracking-tighter text-center pointer-events-none" style={{ marginBottom: '-2vw' }}>
+            <div className="absolute bottom-[-3vw] left-0 w-full overflow-hidden text-[20vw] leading-none font-black text-white/[0.05] select-none z-0 tracking-tight text-center pointer-events-none">
               DRISHTI
             </div>
             
@@ -1036,13 +1036,13 @@ function App() {
             <div className="relative z-10 container mx-auto px-6 md:px-12 flex flex-col lg:flex-row justify-between items-start gap-16 text-white">
               <div className="max-w-lg">
                 <h3 className="text-3xl md:text-4xl text-white font-sans font-medium mb-8 leading-snug">
-                  Drishti is a <span className="font-serif italic text-purple-200">professional</span> growth <br/> & Employment Platform — <br/> Connecting Teams with <br/> Managers & Auditors.
+                  Drishti is a <span className="font-serif italic text-blue-200">professional</span> growth <br/> & Employment Platform — <br/> Connecting Teams with <br/> Managers & Auditors.
                 </h3>
                 <div className="flex gap-3 mt-8">
-                  <a href="#" className="bg-[#3b0764] hover:bg-purple-800 transition-colors text-white rounded-full w-10 h-10 flex items-center justify-center text-lg text-decoration-none"><i className="bi bi-linkedin"></i></a>
-                  <a href="#" className="bg-[#3b0764] hover:bg-purple-800 transition-colors text-white rounded-full w-10 h-10 flex items-center justify-center text-lg text-decoration-none"><i className="bi bi-twitter-x"></i></a>
-                  <a href="#" className="bg-[#3b0764] hover:bg-purple-800 transition-colors text-white rounded-full w-10 h-10 flex items-center justify-center text-lg text-decoration-none"><i className="bi bi-instagram"></i></a>
-                  <a href="#" className="bg-[#3b0764] hover:bg-purple-800 transition-colors text-white rounded-full w-10 h-10 flex items-center justify-center text-lg text-decoration-none"><i className="bi bi-facebook"></i></a>
+                  <a href="#" className="bg-[#0b2857] hover:bg-[#1a4a82] transition-colors text-white rounded-full w-10 h-10 flex items-center justify-center text-lg text-decoration-none"><i className="bi bi-linkedin"></i></a>
+                  <a href="#" className="bg-[#0b2857] hover:bg-[#1a4a82] transition-colors text-white rounded-full w-10 h-10 flex items-center justify-center text-lg text-decoration-none"><i className="bi bi-twitter-x"></i></a>
+                  <a href="#" className="bg-[#0b2857] hover:bg-[#1a4a82] transition-colors text-white rounded-full w-10 h-10 flex items-center justify-center text-lg text-decoration-none"><i className="bi bi-instagram"></i></a>
+                  <a href="#" className="bg-[#0b2857] hover:bg-[#1a4a82] transition-colors text-white rounded-full w-10 h-10 flex items-center justify-center text-lg text-decoration-none"><i className="bi bi-facebook"></i></a>
                 </div>
               </div>
               
