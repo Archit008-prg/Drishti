@@ -1047,11 +1047,7 @@ function App() {
               ))}
             </div>
 
-            {/* Sign In pill */}
-            <button className="sign-in-pill" onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }}>
-              Sign In
-              <span className="arrow-circle"><i className="bi bi-arrow-up-right"></i></span>
-            </button>
+            {/* Sign In pill — REMOVED (hero CTAs serve same purpose) */}
           </nav>
 
           {/* ── Hero Section ── */}
@@ -1122,40 +1118,38 @@ function App() {
             </div>
           </header>
 
-          {/* Feature Cards Grid (Original) */}
-          <section className="container py-5 my-5">
-            <div className="text-center mb-5 text-white">
-              <h2 className="fw-bold">Designed for Collaborative Governance</h2>
-              <p className="text-gray-400">Simple interfaces for managers to coordinate and teams to execute.</p>
+          {/* Feature Cards Grid — dark frosted glass treatment */}
+          <section style={{ padding: '48px clamp(24px, 5vw, 64px)' }}>
+            <div style={{ textAlign: 'center', marginBottom: 48 }}>
+              <h2 style={{ color: '#fff', fontWeight: 800, fontSize: 'clamp(22px, 3vw, 32px)', marginBottom: 10 }}>Designed for Collaborative Governance</h2>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 15 }}>Simple interfaces for managers to coordinate and teams to execute.</p>
             </div>
-            <div className="row g-4">
-              <div className="col-md-4">
-                <div className="card h-100 border-0 shadow-sm p-4 text-center bg-white text-dark">
-                  <div className="fs-1 text-primary mb-3"><i className="bi bi-shield-check"></i></div>
-                  <h4 className="fw-bold">Manager Oversight</h4>
-                  <p className="text-muted">
-                    Create and assign projects. Audit project timeline, inspect metadata, and review submitted PDF reports with full approval workflows.
-                  </p>
+            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {[
+                { icon: 'bi-shield-check', iconColor: '#60a5fa', title: 'Manager Oversight', body: 'Create and assign projects. Audit project timeline, inspect metadata, and review submitted PDF reports with full approval workflows.' },
+                { icon: 'bi-person-workspace', iconColor: '#34d399', title: 'Team Execution', body: 'Track running, upcoming, and past tasks. Directly upload PDF reports, write progress notes, and view supervisor feedback.' },
+                { icon: 'bi-chat-square-text', iconColor: '#fbbf24', title: 'Internal AI Assistant', body: 'Ask context-based audit questions. The built-in bot clarifies operational queries directly based on project metadata and uploads.' },
+              ].map(({ icon, iconColor, title, body }) => (
+                <div key={title} style={{
+                  flex: '1 1 280px', maxWidth: 380,
+                  background: 'rgba(255,255,255,0.05)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: 20,
+                  padding: '36px 28px',
+                  textAlign: 'center',
+                  boxShadow: '0 4px 32px rgba(109,40,217,0.12), inset 0 1px 0 rgba(255,255,255,0.07)',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow='0 8px 40px rgba(109,40,217,0.25), inset 0 1px 0 rgba(255,255,255,0.1)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='0 4px 32px rgba(109,40,217,0.12), inset 0 1px 0 rgba(255,255,255,0.07)'; }}
+                >
+                  <div style={{ fontSize: 40, color: iconColor, marginBottom: 20 }}><i className={`bi ${icon}`}></i></div>
+                  <h4 style={{ color: '#fff', fontWeight: 700, marginBottom: 12, fontSize: 18 }}>{title}</h4>
+                  <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 14, lineHeight: 1.65, margin: 0 }}>{body}</p>
                 </div>
-              </div>
-              <div className="col-md-4">
-                <div className="card h-100 border-0 shadow-sm p-4 text-center bg-white text-dark">
-                  <div className="fs-1 text-success mb-3"><i className="bi bi-person-workspace"></i></div>
-                  <h4 className="fw-bold">Team Execution</h4>
-                  <p className="text-muted">
-                    Track running, upcoming, and past tasks. Directly upload PDF reports, write progress notes, and view supervisor feedback.
-                  </p>
-                </div>
-              </div>
-              <div className="col-md-4">
-                <div className="card h-100 border-0 shadow-sm p-4 text-center bg-white text-dark">
-                  <div className="fs-1 text-warning mb-3"><i className="bi bi-chat-square-text"></i></div>
-                  <h4 className="fw-bold">Internal AI Assistant</h4>
-                  <p className="text-muted">
-                    Ask context-based audit questions. The built-in bot clarifies operational queries directly based on project metadata and uploads.
-                  </p>
-                </div>
-              </div>
+              ))}
             </div>
           </section>
 
@@ -1320,38 +1314,86 @@ function App() {
   // 2. ROLE ACCESS SELECTION
   if (currentView === 'auth-select') {
     return (
-      <div className="container mt-5">
-        <div className="row justify-content-center">
-          <div className="col-md-8 text-center mb-4">
-            <button className="btn btn-outline-secondary btn-sm mb-3" onClick={() => setCurrentView('home')}>
-              <i className="bi bi-arrow-left"></i> Back to Home
-            </button>
-            <h2 className="fw-bold">Select Portal Entrance</h2>
-            <p className="text-muted">Choose your access type to enter corresponding login dashboard</p>
-          </div>
+      <div style={{
+        minHeight: '100vh', fontFamily: 'Inter, sans-serif',
+        background: 'linear-gradient(160deg, #07030f 0%, #1a0533 40%, #07030f 100%)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        padding: '40px 24px', position: 'relative', overflow: 'hidden',
+      }}>
+        {/* Ambient glow */}
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+          <div style={{ position: 'absolute', top: '20%', left: '20%', width: '60%', height: '60%', background: 'radial-gradient(ellipse at 50% 50%, rgba(109,40,217,0.18) 0%, transparent 70%)' }} />
         </div>
 
-        <div className="row justify-content-center g-4">
-          <div className="col-md-5">
-            <div className="card shadow-sm h-100 text-center border-primary p-4 hover-shadow">
-              <div className="fs-1 text-primary mb-3"><i className="bi bi-shield-lock"></i></div>
-              <h3 className="fw-bold">Manager Portal</h3>
-              <p className="text-muted mb-4">For Administrators, Supervisors, and Auditors managing organizational project directories and reviewing team outputs.</p>
-              <button 
-                className="btn btn-primary w-100 mt-auto" 
+        <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 900, textAlign: 'center' }}>
+          {/* Back button */}
+          <button
+            onClick={() => setCurrentView('home')}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: 999, color: 'rgba(255,255,255,0.7)', fontSize: 13,
+              padding: '8px 18px', marginBottom: 40, cursor: 'pointer', transition: 'background 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
+          >
+            <i className="bi bi-arrow-left"></i> Back to Home
+          </button>
+
+          <h2 style={{ color: '#fff', fontWeight: 800, fontSize: 'clamp(24px, 4vw, 40px)', marginBottom: 12, letterSpacing: '-0.02em' }}>Select Portal Entrance</h2>
+          <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: 48, fontSize: 15 }}>Choose your access type to enter corresponding login dashboard</p>
+
+          {/* Portal cards */}
+          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {/* Manager Portal */}
+            <div style={{
+              flex: '1 1 320px', maxWidth: 400,
+              background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              border: '1px solid rgba(109,40,217,0.45)',
+              borderRadius: 24, padding: '40px 32px',
+              boxShadow: '0 4px 40px rgba(109,40,217,0.15)',
+            }}>
+              <div style={{ fontSize: 44, color: '#818cf8', marginBottom: 20 }}><i className="bi bi-shield-lock"></i></div>
+              <h3 style={{ color: '#fff', fontWeight: 800, fontSize: 24, marginBottom: 12 }}>Manager Portal</h3>
+              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 14, lineHeight: 1.65, marginBottom: 32 }}>For Administrators, Supervisors, and Auditors managing organizational project directories and reviewing team outputs.</p>
+              <button
+                style={{
+                  width: '100%', borderRadius: 999, padding: '14px 0', fontWeight: 700, fontSize: 15,
+                  background: 'linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%)',
+                  color: '#fff', border: 'none', cursor: 'pointer',
+                  boxShadow: '0 4px 20px rgba(109,40,217,0.4)', transition: 'transform 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
                 onClick={() => { setAuthRole('manager'); setCurrentView('login'); }}
               >
                 Sign In as Manager
               </button>
             </div>
-          </div>
-          <div className="col-md-5">
-            <div className="card shadow-sm h-100 text-center border-success p-4 hover-shadow">
-              <div className="fs-1 text-success mb-3"><i className="bi bi-people"></i></div>
-              <h3 className="fw-bold">Team / Individual</h3>
-              <p className="text-muted mb-4">For Investigators, Project Leads, and Staff running designated tasks, logging updates, and uploading compliance reports.</p>
-              <button 
-                className="btn btn-success w-100 mt-auto" 
+
+            {/* Team Portal */}
+            <div style={{
+              flex: '1 1 320px', maxWidth: 400,
+              background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              border: '1px solid rgba(52,211,153,0.35)',
+              borderRadius: 24, padding: '40px 32px',
+              boxShadow: '0 4px 40px rgba(52,211,153,0.08)',
+            }}>
+              <div style={{ fontSize: 44, color: '#34d399', marginBottom: 20 }}><i className="bi bi-people"></i></div>
+              <h3 style={{ color: '#fff', fontWeight: 800, fontSize: 24, marginBottom: 12 }}>Team / Individual</h3>
+              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 14, lineHeight: 1.65, marginBottom: 32 }}>For Investigators, Project Leads, and Staff running designated tasks, logging updates, and uploading compliance reports.</p>
+              <button
+                style={{
+                  width: '100%', borderRadius: 999, padding: '14px 0', fontWeight: 700, fontSize: 15,
+                  background: 'linear-gradient(135deg, #065f46 0%, #059669 100%)',
+                  color: '#fff', border: 'none', cursor: 'pointer',
+                  boxShadow: '0 4px 20px rgba(52,211,153,0.25)', transition: 'transform 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
                 onClick={() => { setAuthRole('investigator'); setCurrentView('login'); }}
               >
                 Sign In as Investigator
@@ -1365,78 +1407,143 @@ function App() {
 
   // 3. LOGIN & SIGNUP FORMS
   if (currentView === 'login' || currentView === 'signup') {
+    const isManager = authRole === 'manager';
+    const accentColor = isManager ? '#7c3aed' : '#059669';
+    const accentGlow  = isManager ? 'rgba(109,40,217,0.35)' : 'rgba(52,211,153,0.25)';
     return (
-      <div className="container mt-5">
-        <div className="row justify-content-center">
-          <div className="col-md-6">
-            <button className="btn btn-outline-secondary btn-sm mb-3" onClick={() => setCurrentView('auth-select')}>
-              <i className="bi bi-arrow-left"></i> Back to Portal Selection
-            </button>
+      <div style={{
+        minHeight: '100vh', fontFamily: 'Inter, sans-serif',
+        background: 'linear-gradient(160deg, #07030f 0%, #1a0533 40%, #07030f 100%)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        padding: '40px 24px', position: 'relative', overflow: 'hidden',
+      }}>
+        {/* Ambient glow */}
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+          <div style={{ position: 'absolute', top: '25%', left: '50%', transform: 'translateX(-50%)', width: '70%', height: '60%', background: `radial-gradient(ellipse at 50% 50%, ${isManager ? 'rgba(109,40,217,0.15)' : 'rgba(52,211,153,0.08)'} 0%, transparent 70%)` }} />
+        </div>
 
-            <div className="card shadow">
-              <div className={`card-header text-white ${authRole === 'manager' ? 'bg-primary' : 'bg-success'}`}>
-                <h4 className="mb-0">
-                  {authRole === 'manager' ? 'Manager Portal' : 'Investigator Portal'} - {currentView === 'login' ? 'Login' : 'Sign Up'}
-                </h4>
-              </div>
-              <div className="card-body">
-                {authError && <div className="alert alert-danger small py-2">{authError}</div>}
-                {authSuccess && <div className="alert alert-success small py-2">{authSuccess}</div>}
+        <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 440 }}>
+          {/* Back button */}
+          <button
+            onClick={() => setCurrentView('auth-select')}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: 999, color: 'rgba(255,255,255,0.7)', fontSize: 13,
+              padding: '8px 18px', marginBottom: 32, cursor: 'pointer', transition: 'background 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
+          >
+            <i className="bi bi-arrow-left"></i> Back to Portal Selection
+          </button>
 
-                <form onSubmit={handleAuthSubmit}>
-                  <div className="mb-3">
-                    <label className="form-label">Username</label>
-                    <input 
-                      type="text" 
-                      className="form-control"
-                      value={authUsername}
-                      onChange={(e) => setAuthUsername(e.target.value)}
-                      required 
-                    />
-                  </div>
+          {/* Card */}
+          <div style={{
+            background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: `1px solid ${isManager ? 'rgba(109,40,217,0.4)' : 'rgba(52,211,153,0.3)'}`,
+            borderRadius: 24, overflow: 'hidden',
+            boxShadow: `0 8px 48px ${accentGlow}`,
+          }}>
+            {/* Header */}
+            <div style={{ background: isManager ? 'linear-gradient(135deg,#3b0764,#5b21b6)' : 'linear-gradient(135deg,#064e3b,#065f46)', padding: '24px 32px' }}>
+              <h4 style={{ color: '#fff', fontWeight: 800, margin: 0, fontSize: 20 }}>
+                {isManager ? 'Manager Portal' : 'Investigator Portal'} — {currentView === 'login' ? 'Sign In' : 'Create Account'}
+              </h4>
+            </div>
 
-                  {currentView === 'signup' && (
-                    <div className="mb-3">
-                      <label className="form-label">Email</label>
-                      <input 
-                        type="email" 
-                        className="form-control"
-                        value={authEmail}
-                        onChange={(e) => setAuthEmail(e.target.value)}
-                      />
-                    </div>
-                  )}
+            {/* Body */}
+            <div style={{ padding: '32px' }}>
+              {authError   && <div style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 10, color: '#fca5a5', padding: '10px 14px', fontSize: 13, marginBottom: 20 }}>{authError}</div>}
+              {authSuccess && <div style={{ background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.35)', borderRadius: 10, color: '#6ee7b7', padding: '10px 14px', fontSize: 13, marginBottom: 20 }}>{authSuccess}</div>}
 
-                  <div className="mb-3">
-                    <label className="form-label">Password</label>
-                    <input 
-                      type="password" 
-                      className="form-control"
-                      value={authPassword}
-                      onChange={(e) => setAuthPassword(e.target.value)}
-                      required 
-                    />
-                  </div>
+              <form onSubmit={handleAuthSubmit}>
+                {/* Username */}
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginBottom: 8, fontWeight: 500 }}>Username</label>
+                  <input
+                    type="text"
+                    value={authUsername}
+                    onChange={e => setAuthUsername(e.target.value)}
+                    required
+                    style={{
+                      width: '100%', boxSizing: 'border-box',
+                      background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)',
+                      borderRadius: 12, padding: '12px 16px',
+                      color: '#fff', fontSize: 15, outline: 'none',
+                    }}
+                    onFocus={e => e.target.style.borderColor = accentColor}
+                    onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.15)'}
+                  />
+                </div>
 
-                  <button type="submit" className={`btn w-100 mb-3 text-white ${authRole === 'manager' ? 'btn-primary' : 'btn-success'}`}>
-                    {currentView === 'login' ? 'Sign In' : 'Register Account'}
-                  </button>
-
-                  <div className="text-center">
-                    <button 
-                      type="button" 
-                      className="btn btn-link btn-sm" 
-                      onClick={() => {
-                        setCurrentView(currentView === 'login' ? 'signup' : 'login');
-                        setAuthError('');
-                        setAuthSuccess('');
+                {/* Email (signup only) */}
+                {currentView === 'signup' && (
+                  <div style={{ marginBottom: 20 }}>
+                    <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginBottom: 8, fontWeight: 500 }}>Email</label>
+                    <input
+                      type="email"
+                      value={authEmail}
+                      onChange={e => setAuthEmail(e.target.value)}
+                      style={{
+                        width: '100%', boxSizing: 'border-box',
+                        background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)',
+                        borderRadius: 12, padding: '12px 16px',
+                        color: '#fff', fontSize: 15, outline: 'none',
                       }}
-                    >
-                      {currentView === 'login' ? "Don't have an account? Sign Up" : 'Already have an account? Login'}
-                    </button>
+                      onFocus={e => e.target.style.borderColor = accentColor}
+                      onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.15)'}
+                    />
                   </div>
-                </form>
-              </div>
+                )}
+
+                {/* Password */}
+                <div style={{ marginBottom: 28 }}>
+                  <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginBottom: 8, fontWeight: 500 }}>Password</label>
+                  <input
+                    type="password"
+                    value={authPassword}
+                    onChange={e => setAuthPassword(e.target.value)}
+                    required
+                    style={{
+                      width: '100%', boxSizing: 'border-box',
+                      background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)',
+                      borderRadius: 12, padding: '12px 16px',
+                      color: '#fff', fontSize: 15, outline: 'none',
+                    }}
+                    onFocus={e => e.target.style.borderColor = accentColor}
+                    onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.15)'}
+                  />
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  style={{
+                    width: '100%', borderRadius: 999, padding: '14px 0',
+                    fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer',
+                    background: isManager ? 'linear-gradient(135deg,#5b21b6,#7c3aed)' : 'linear-gradient(135deg,#065f46,#059669)',
+                    color: '#fff', boxShadow: `0 4px 20px ${accentGlow}`,
+                    marginBottom: 20, transition: 'transform 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  {currentView === 'login' ? 'Sign In' : 'Create Account'}
+                </button>
+
+                {/* Toggle link */}
+                <div style={{ textAlign: 'center' }}>
+                  <button
+                    type="button"
+                    style={{ background: 'none', border: 'none', color: accentColor === '#7c3aed' ? '#a78bfa' : '#6ee7b7', fontSize: 13, cursor: 'pointer', padding: 0 }}
+                    onClick={() => { setCurrentView(currentView === 'login' ? 'signup' : 'login'); setAuthError(''); setAuthSuccess(''); }}
+                  >
+                    {currentView === 'login' ? "Don't have an account? Sign Up" : 'Already have an account? Login'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
