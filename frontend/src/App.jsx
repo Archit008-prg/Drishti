@@ -1025,63 +1025,78 @@ function App() {
 
           <div className="flex-grow-1"></div>
 
-          {/* Premium Footer — full-bleed, diagonal gradient */}
+          {/* Premium Footer — full-bleed gradient, inline-style spacing to bypass Bootstrap */}
           <footer
-            className="relative overflow-hidden w-full pt-12 pb-8"
-            style={{ background: 'linear-gradient(135deg, #1a0533 0%, #3b0764 40%, #6d28d9 100%)' }}
+            style={{
+              position: 'relative',
+              overflow: 'hidden',
+              width: '100%',
+              background: 'linear-gradient(135deg, #1a0533 0%, #3b0764 40%, #6d28d9 100%)',
+            }}
           >
-              {/* Giant Watermark — Arial Black / Helvetica Neue Black, top-opaque → bottom-transparent fade */}
-              <div className="absolute bottom-0 left-0 w-full flex justify-center pointer-events-none select-none overflow-hidden z-0">
-                <span
-                  style={{
-                    fontSize: '19vw',
-                    fontFamily: '"Helvetica Neue", "Arial Black", Arial, sans-serif',
-                    fontStyle: 'normal',
-                    fontWeight: 900,
-                    letterSpacing: '-0.03em',
-                    lineHeight: 1,
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    backgroundImage: 'linear-gradient(to bottom, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0) 100%)',
-                    userSelect: 'none',
-                  }}
-                >
-                  DRISHTI
-                </span>
-              </div>
+            {/* Giant Watermark — Arial Black, top-opaque → bottom-transparent */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, width: '100%',
+              display: 'flex', justifyContent: 'center',
+              pointerEvents: 'none', userSelect: 'none', overflow: 'hidden', zIndex: 0,
+            }}>
+              <span style={{
+                fontSize: '19vw',
+                fontFamily: '"Helvetica Neue", "Arial Black", Arial, sans-serif',
+                fontStyle: 'normal',
+                fontWeight: 900,
+                letterSpacing: '-0.03em',
+                lineHeight: 1,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                backgroundImage: 'linear-gradient(to bottom, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0) 100%)',
+                userSelect: 'none',
+              }}>
+                DRISHTI
+              </span>
+            </div>
 
-              {/* Main content row — centered, with proper horizontal padding */}
-              <div className="relative z-10 w-full max-w-7xl mx-auto px-12 md:px-16">
-                <div className="flex flex-col md:flex-row justify-between gap-12 mb-10">
-
-                {/* ── Left: Headline + Social Icons ── */}
-                <div className="flex-shrink-0 max-w-xs">
-                  <h3 className="text-white font-bold text-2xl leading-snug mb-6">
+            {/* Content — max-width container with guaranteed padding */}
+            <div style={{
+              position: 'relative', zIndex: 10,
+              maxWidth: 1400, margin: '0 auto',
+              padding: 'clamp(24px, 5vw, 64px)',
+              paddingTop: 48, paddingBottom: 16,
+            }}>
+              {/* Main row: headline+socials left | link columns right */}
+              <div style={{
+                display: 'flex', flexWrap: 'wrap',
+                justifyContent: 'space-between', gap: 48,
+                marginBottom: 40,
+              }}>
+                {/* Left: Headline + Social icons */}
+                <div style={{ flex: '0 0 auto', maxWidth: 360 }}>
+                  <h3 style={{
+                    color: '#fff', fontSize: 24, fontWeight: 700,
+                    lineHeight: 1.4, marginBottom: 24, margin: '0 0 24px 0',
+                  }}>
                     Drishti is a{' '}
-                    <span className="font-serif italic font-normal text-purple-200">professional growth</span>
-                    {' '}& Employment Platform —{' '}
-                    Connecting Teams with Managers & Auditors.
+                    <span style={{ fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic', fontWeight: 400, color: '#d8b4fe' }}>
+                      professional growth
+                    </span>
+                    {' '}& Employment Platform — Connecting Teams with Managers & Auditors.
                   </h3>
-
-                  {/* Social icons — thin white outline circles */}
-                  <div className="flex gap-4 mt-6">
+                  {/* Social icons — white outline circles */}
+                  <div style={{ display: 'flex', gap: 16, marginTop: 24 }}>
                     {[
-                      { icon: 'bi-linkedin',   href: '#' },
-                      { icon: 'bi-twitter-x',  href: '#' },
-                      { icon: 'bi-instagram',  href: '#' },
-                      { icon: 'bi-facebook',   href: '#' },
+                      { icon: 'bi-linkedin',  href: '#' },
+                      { icon: 'bi-twitter-x', href: '#' },
+                      { icon: 'bi-instagram', href: '#' },
+                      { icon: 'bi-facebook',  href: '#' },
                     ].map(({ icon, href }) => (
-                      <a
-                        key={icon}
-                        href={href}
-                        className="text-decoration-none"
-                        style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          width: 40, height: 40, borderRadius: '50%',
-                          border: '1.5px solid rgba(255,255,255,0.7)',
-                          color: '#fff', fontSize: 16, transition: 'background 0.2s',
-                        }}
+                      <a key={icon} href={href} className="text-decoration-none" style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        width: 40, height: 40, borderRadius: '50%',
+                        border: '1.5px solid rgba(255,255,255,0.7)',
+                        color: '#fff', fontSize: 16, transition: 'background 0.2s',
+                        flexShrink: 0,
+                      }}
                         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                       >
@@ -1091,69 +1106,75 @@ function App() {
                   </div>
                 </div>
 
-                {/* ── Right: 3 link columns ── */}
-                <div className="flex-grow grid grid-cols-3 gap-8">
-
+                {/* Right: 3 link columns */}
+                <div style={{ display: 'flex', gap: 64, flexWrap: 'wrap' }}>
                   {/* Get started now */}
                   <div>
-                    <h5 className="text-white font-semibold text-sm mb-5">Get started now</h5>
-                    <button onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }}
-                      className="text-left text-sm block bg-transparent border-0 p-0 w-full mb-4 transition-colors"
-                      style={{ color: 'rgba(255,255,255,0.65)' }}
-                      onMouseEnter={e => e.currentTarget.style.color='#fff'}
-                      onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.65)'}
-                    >Register as a team</button>
-                    <button onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }}
-                      className="text-left text-sm block bg-transparent border-0 p-0 w-full mb-4 transition-colors"
-                      style={{ color: 'rgba(255,255,255,0.65)' }}
-                      onMouseEnter={e => e.currentTarget.style.color='#fff'}
-                      onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.65)'}
-                    >Join as a manager</button>
-                    <button onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }}
-                      className="text-left text-sm block bg-transparent border-0 p-0 w-full mb-4 transition-colors"
-                      style={{ color: 'rgba(255,255,255,0.65)' }}
-                      onMouseEnter={e => e.currentTarget.style.color='#fff'}
-                      onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.65)'}
-                    >Register as a company</button>
-                    {/* Login — full-opacity bold, priority action */}
-                    <button onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }}
-                      className="text-left text-sm font-semibold block bg-transparent border-0 p-0 w-full text-white transition-colors"
+                    <h5 style={{ color: '#fff', fontWeight: 600, fontSize: 14, marginBottom: 20 }}>Get started now</h5>
+                    {[
+                      { label: 'Register as a team',    role: 'investigator' },
+                      { label: 'Join as a manager',     role: 'manager' },
+                      { label: 'Register as a company', role: 'manager' },
+                    ].map(({ label, role }) => (
+                      <button key={label}
+                        onClick={() => { setAuthRole(role); setCurrentView('auth-select'); }}
+                        style={{
+                          display: 'block', background: 'none', border: 0, padding: 0,
+                          color: 'rgba(255,255,255,0.65)', fontSize: 13, textAlign: 'left',
+                          marginBottom: 16, cursor: 'pointer', transition: 'color 0.15s',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+                        onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.65)'}
+                      >{label}</button>
+                    ))}
+                    <button
+                      onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }}
+                      style={{
+                        display: 'block', background: 'none', border: 0, padding: 0,
+                        color: '#fff', fontSize: 13, fontWeight: 700,
+                        textAlign: 'left', cursor: 'pointer',
+                      }}
                     >Login</button>
                   </div>
 
                   {/* About */}
                   <div>
-                    <h5 className="text-white font-semibold text-sm mb-5">About</h5>
+                    <h5 style={{ color: '#fff', fontWeight: 600, fontSize: 14, marginBottom: 20 }}>About</h5>
                     {['Features', 'Who is this platform for?', 'How does it work?', 'Frequently Asked Questions'].map(link => (
-                      <a key={link} href="#"
-                        className="text-sm block mb-4 text-decoration-none transition-colors"
-                        style={{ color: 'rgba(255,255,255,0.65)' }}
-                        onMouseEnter={e => e.currentTarget.style.color='#fff'}
-                        onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.65)'}
+                      <a key={link} href="#" className="text-decoration-none" style={{
+                        display: 'block', color: 'rgba(255,255,255,0.65)',
+                        fontSize: 13, marginBottom: 16, transition: 'color 0.15s',
+                      }}
+                        onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+                        onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.65)'}
                       >{link}</a>
                     ))}
                   </div>
 
                   {/* Support */}
                   <div>
-                    <h5 className="text-white font-semibold text-sm mb-5">Support</h5>
+                    <h5 style={{ color: '#fff', fontWeight: 600, fontSize: 14, marginBottom: 20 }}>Support</h5>
                     {['Contact us', 'Privacy Policy', 'Terms of Use'].map(link => (
-                      <a key={link} href="#"
-                        className="text-sm block mb-4 text-decoration-none transition-colors"
-                        style={{ color: 'rgba(255,255,255,0.65)' }}
-                        onMouseEnter={e => e.currentTarget.style.color='#fff'}
-                        onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.65)'}
+                      <a key={link} href="#" className="text-decoration-none" style={{
+                        display: 'block', color: 'rgba(255,255,255,0.65)',
+                        fontSize: 13, marginBottom: 16, transition: 'color 0.15s',
+                      }}
+                        onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+                        onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.65)'}
                       >{link}</a>
                     ))}
                   </div>
                 </div>
-                </div>
               </div>
 
-              {/* Copyright — centered, muted, bottom */}
-              <div className="relative z-10 w-full max-w-7xl mx-auto px-12 md:px-16 text-center text-sm pb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              {/* Copyright */}
+              <div style={{
+                textAlign: 'center', color: 'rgba(255,255,255,0.38)',
+                fontSize: 13, paddingTop: 16,
+              }}>
                 © 2026 Drishti All rights reserved.
               </div>
+            </div>
           </footer>
         </div>
       </div>
