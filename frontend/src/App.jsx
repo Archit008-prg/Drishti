@@ -1025,60 +1025,125 @@ function App() {
 
           <div className="flex-grow-1"></div>
 
-          {/* Premium Footer */}
-          <footer className="relative bg-gradient-to-b from-[#0B0C10] to-[#3b0764] overflow-hidden pt-24 pb-8">
-            
-            {/* The Content Grid (Fixes the misalignment) */}
-            <div className="relative z-10 w-full max-w-7xl mx-auto px-8 md:px-12 flex flex-col md:flex-row justify-between gap-16 mb-16">
-              
-              {/* Left Column (Brand Text & Socials) */}
-              <div className="max-w-md">
-                <h3 className="text-white text-3xl md:text-4xl font-medium">
-                  Drishti is a <span className="font-serif italic text-purple-300">professional</span> growth <br/> & Employment Platform — <br/> Connecting Teams with <br/> Managers & Auditors.
-                </h3>
-                <div className="flex gap-4 mt-8">
-                  <a href="#" className="bg-[#3b0764] text-white p-3 rounded-full hover:bg-purple-600 transition-colors flex items-center justify-center w-12 h-12 text-lg text-decoration-none"><i className="bi bi-linkedin"></i></a>
-                  <a href="#" className="bg-[#3b0764] text-white p-3 rounded-full hover:bg-purple-600 transition-colors flex items-center justify-center w-12 h-12 text-lg text-decoration-none"><i className="bi bi-twitter-x"></i></a>
-                  <a href="#" className="bg-[#3b0764] text-white p-3 rounded-full hover:bg-purple-600 transition-colors flex items-center justify-center w-12 h-12 text-lg text-decoration-none"><i className="bi bi-instagram"></i></a>
-                  <a href="#" className="bg-[#3b0764] text-white p-3 rounded-full hover:bg-purple-600 transition-colors flex items-center justify-center w-12 h-12 text-lg text-decoration-none"><i className="bi bi-facebook"></i></a>
-                </div>
+          {/* Premium Footer — rounded card, diagonal gradient, reference-matching layout */}
+          <div className="mx-4 md:mx-8 lg:mx-12 mb-8">
+            <footer
+              className="relative overflow-hidden rounded-3xl px-12 pt-12 pb-8"
+              style={{ background: 'linear-gradient(135deg, #1a0533 0%, #3b0764 40%, #6d28d9 100%)' }}
+            >
+              {/* Giant Watermark — bottom-anchored, behind everything */}
+              <div className="absolute bottom-0 left-0 w-full flex justify-center pointer-events-none select-none overflow-hidden z-0">
+                <span
+                  className="font-black leading-none tracking-tighter text-white"
+                  style={{ fontSize: '18vw', opacity: 0.08 }}
+                >
+                  DRISHTI
+                </span>
               </div>
-              
-              {/* Right Column (Links Grid) */}
-              <div className="w-full md:w-1/2 grid grid-cols-2 md:grid-cols-3 gap-8">
-                <div>
-                  <h5 className="text-white font-semibold mb-6">Get started now</h5>
-                  <button onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }} className="text-left text-gray-400 hover:text-white text-sm block mb-4 transition-colors bg-transparent border-0 p-0">Register as a team</button>
-                  <button onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }} className="text-left text-gray-400 hover:text-white text-sm block mb-4 transition-colors bg-transparent border-0 p-0">Join as a manager</button>
-                  <button onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }} className="text-left text-gray-400 hover:text-white text-sm block mb-4 transition-colors bg-transparent border-0 p-0">Register as a company</button>
-                  <button onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }} className="text-left text-gray-400 hover:text-white text-sm block mb-4 transition-colors bg-transparent border-0 p-0">Login</button>
-                </div>
-                <div>
-                  <h5 className="text-white font-semibold mb-6">About</h5>
-                  <a href="#" className="text-gray-400 hover:text-white text-sm block mb-4 transition-colors text-decoration-none">Features</a>
-                  <a href="#" className="text-gray-400 hover:text-white text-sm block mb-4 transition-colors text-decoration-none">Who is this platform for?</a>
-                  <a href="#" className="text-gray-400 hover:text-white text-sm block mb-4 transition-colors text-decoration-none">How does it work?</a>
-                  <a href="#" className="text-gray-400 hover:text-white text-sm block mb-4 transition-colors text-decoration-none">Frequently Asked Questions</a>
-                </div>
-                <div>
-                  <h5 className="text-white font-semibold mb-6">Support</h5>
-                  <a href="#" className="text-gray-400 hover:text-white text-sm block mb-4 transition-colors text-decoration-none">Contact us</a>
-                  <a href="#" className="text-gray-400 hover:text-white text-sm block mb-4 transition-colors text-decoration-none">Privacy Policy</a>
-                  <a href="#" className="text-gray-400 hover:text-white text-sm block mb-4 transition-colors text-decoration-none">Terms of Use</a>
-                </div>
-              </div>
-            </div>
-            
-            {/* Copyright */}
-            <div className="relative z-10 text-center text-gray-500 text-sm mt-12">
-              © 2026 Drishti. All rights reserved.
-            </div>
 
-            {/* The Giant Watermark (Fixes the tiny text) */}
-            <div className="absolute -bottom-8 left-0 w-full flex justify-center pointer-events-none select-none overflow-hidden">
-              <span className="text-[24vw] font-black text-white opacity-5 leading-none tracking-tighter">DRISHTI</span>
-            </div>
-          </footer>
+              {/* Main content row — left brand + right links, always side-by-side */}
+              <div className="relative z-10 flex flex-col md:flex-row justify-between gap-12 mb-10">
+
+                {/* ── Left: Headline + Social Icons ── */}
+                <div className="flex-shrink-0 max-w-xs">
+                  <h3 className="text-white font-bold text-2xl leading-snug mb-6">
+                    Drishti is a{' '}
+                    <span className="font-serif italic font-normal text-purple-200">professional growth</span>
+                    {' '}& Employment Platform —{' '}
+                    Connecting Teams with Managers & Auditors.
+                  </h3>
+
+                  {/* Social icons — thin white outline circles */}
+                  <div className="flex gap-4 mt-6">
+                    {[
+                      { icon: 'bi-linkedin',   href: '#' },
+                      { icon: 'bi-twitter-x',  href: '#' },
+                      { icon: 'bi-instagram',  href: '#' },
+                      { icon: 'bi-facebook',   href: '#' },
+                    ].map(({ icon, href }) => (
+                      <a
+                        key={icon}
+                        href={href}
+                        className="text-decoration-none"
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          width: 40, height: 40, borderRadius: '50%',
+                          border: '1.5px solid rgba(255,255,255,0.7)',
+                          color: '#fff', fontSize: 16, transition: 'background 0.2s',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <i className={`bi ${icon}`}></i>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── Right: 3 link columns ── */}
+                <div className="flex-grow grid grid-cols-3 gap-8">
+
+                  {/* Get started now */}
+                  <div>
+                    <h5 className="text-white font-semibold text-sm mb-5">Get started now</h5>
+                    <button onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }}
+                      className="text-left text-sm block bg-transparent border-0 p-0 w-full mb-4 transition-colors"
+                      style={{ color: 'rgba(255,255,255,0.65)' }}
+                      onMouseEnter={e => e.currentTarget.style.color='#fff'}
+                      onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.65)'}
+                    >Register as a team</button>
+                    <button onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }}
+                      className="text-left text-sm block bg-transparent border-0 p-0 w-full mb-4 transition-colors"
+                      style={{ color: 'rgba(255,255,255,0.65)' }}
+                      onMouseEnter={e => e.currentTarget.style.color='#fff'}
+                      onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.65)'}
+                    >Join as a manager</button>
+                    <button onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }}
+                      className="text-left text-sm block bg-transparent border-0 p-0 w-full mb-4 transition-colors"
+                      style={{ color: 'rgba(255,255,255,0.65)' }}
+                      onMouseEnter={e => e.currentTarget.style.color='#fff'}
+                      onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.65)'}
+                    >Register as a company</button>
+                    {/* Login — full-opacity bold, priority action */}
+                    <button onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }}
+                      className="text-left text-sm font-semibold block bg-transparent border-0 p-0 w-full text-white transition-colors"
+                    >Login</button>
+                  </div>
+
+                  {/* About */}
+                  <div>
+                    <h5 className="text-white font-semibold text-sm mb-5">About</h5>
+                    {['Features', 'Who is this platform for?', 'How does it work?', 'Frequently Asked Questions'].map(link => (
+                      <a key={link} href="#"
+                        className="text-sm block mb-4 text-decoration-none transition-colors"
+                        style={{ color: 'rgba(255,255,255,0.65)' }}
+                        onMouseEnter={e => e.currentTarget.style.color='#fff'}
+                        onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.65)'}
+                      >{link}</a>
+                    ))}
+                  </div>
+
+                  {/* Support */}
+                  <div>
+                    <h5 className="text-white font-semibold text-sm mb-5">Support</h5>
+                    {['Contact us', 'Privacy Policy', 'Terms of Use'].map(link => (
+                      <a key={link} href="#"
+                        className="text-sm block mb-4 text-decoration-none transition-colors"
+                        style={{ color: 'rgba(255,255,255,0.65)' }}
+                        onMouseEnter={e => e.currentTarget.style.color='#fff'}
+                        onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.65)'}
+                      >{link}</a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Copyright — centered, muted, bottom */}
+              <div className="relative z-10 text-center text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                © 2026 Drishti All rights reserved.
+              </div>
+            </footer>
+          </div>
         </div>
       </div>
     );
