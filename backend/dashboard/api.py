@@ -263,7 +263,11 @@ def api_add_project(request):
                 saved_doc.file.seek(0)
                 text = ekta_api._extract_text_from_file(saved_doc.file, saved_doc.file.name)
                 if text.strip():
-                    ekta_rag.index_document(project.id, saved_doc.id, saved_doc.file.name, text)
+                    # index_document(doc_id, project_id, text, doc_name)
+                    chunks = ekta_rag.index_document(saved_doc.id, project.id, text, saved_doc.file.name)
+                    saved_doc.is_indexed = True
+                    saved_doc.chunk_count = chunks
+                    saved_doc.save()
             except Exception as e:
                 print(f"Error indexing doc: {e}")
 

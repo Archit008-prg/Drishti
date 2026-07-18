@@ -2215,7 +2215,8 @@ function App() {
                           <th>Agency</th>
                           <th>Assigned To</th>
                           <th>Project Status</th>
-                          <th className="pe-3">Report</th>
+                          <th>Report</th>
+                          <th className="pe-3 text-end">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -2226,11 +2227,11 @@ function App() {
                             className={selectedProject?.id === p.id ? 'table-primary' : ''}
                             onClick={() => fetchProjectDetail(p.id)}
                           >
-                            <td className="ps-3"><strong>{p.project_code}</strong></td>
-                            <td>{p.title}</td>
-                            <td>{p.principal_agency}</td>
-                            <td>{p.assigned_investigator || '-'}</td>
-                            <td>
+                            <td className="ps-3 align-middle"><strong>{p.project_code}</strong></td>
+                            <td className="align-middle">{p.title}</td>
+                            <td className="align-middle">{p.principal_agency}</td>
+                            <td className="align-middle">{p.assigned_investigator || '-'}</td>
+                            <td className="align-middle">
                               <span className={
                                  p.status === 'completed' ? 'pulse-badge-green' : 
                                  p.status === 'ongoing' ? 'pulse-badge-yellow' : 'pulse-badge-red'
@@ -2238,13 +2239,29 @@ function App() {
                                  {p.status}
                                </span>
                             </td>
-                            <td className="pe-3">
+                            <td className="align-middle">
                               <span className={
                                  p.report_status === 'approved' ? 'pulse-badge-green' :
                                  ['submitted', 'resubmitted'].includes(p.report_status) ? 'pulse-badge-yellow' : 'pulse-badge-red'
                                }>
                                  {p.report_status}
                                </span>
+                            </td>
+                            <td className="pe-3 text-end align-middle">
+                              <button 
+                                className="btn btn-sm btn-outline-light me-2" 
+                                onClick={(e) => { e.stopPropagation(); handleEditProjectClick(p); }}
+                                title="Edit Project"
+                              >
+                                <i className="bi bi-pencil-square"></i>
+                              </button>
+                              <button 
+                                className="btn btn-sm btn-danger" 
+                                onClick={(e) => { e.stopPropagation(); handleDeleteProject(p.id); }}
+                                title="Delete Project"
+                              >
+                                <i className="bi bi-trash"></i>
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -2696,7 +2713,7 @@ function App() {
             </div>
             
             {/* Manager Sidebar (Project Detail) */}
-            <div className="col-lg-4">
+            <div className="col-lg-4" style={{ position: 'sticky', top: '20px', alignSelf: 'start' }}>
               {selectedProject ? (
                 <div className="card card-glass mb-4">
                   <div className="card-header card-glass-header d-flex justify-content-between align-items-center py-3">
