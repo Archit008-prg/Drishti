@@ -14,6 +14,8 @@ import logging
 import requests
 from pathlib import Path
 from huggingface_hub import InferenceClient
+import os
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
 
 import chromadb
 from chromadb.config import Settings
@@ -41,7 +43,10 @@ def get_chroma_client():
     global _chroma_client
     if _chroma_client is None:
         CHROMA_PATH.mkdir(parents=True, exist_ok=True)
-        _chroma_client = chromadb.PersistentClient(path=str(CHROMA_PATH))
+        _chroma_client = chromadb.PersistentClient(
+            path=str(CHROMA_PATH),
+            settings=Settings(anonymized_telemetry=False)
+        )
     return _chroma_client
 
 

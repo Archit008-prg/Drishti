@@ -23,6 +23,12 @@ except ImportError:
     pass  # python-dotenv not installed — fall back to OS env vars
 
 
+# Disable ChromaDB Telemetry globally before anything imports it
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
+
+# Email Configuration
+# Moved to bottom of settings.py
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -161,13 +167,23 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # settings.py
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_HOST = 'smtp.sendgrid.net'  
-EMAIL_PORT = 587                    
-EMAIL_USE_TLS = True                
-EMAIL_HOST_USER = 'apikey'  
-EMAIL_HOST_PASSWORD = ''  
-DEFAULT_FROM_EMAIL = 'Drishti App <appdrishty@gmail.com>'  
+# Email Settings
+# To actually send emails, add EMAIL_HOST_PASSWORD (e.g. Gmail App Password) to your .env file
+_email_password = os.environ.get('EMAIL_HOST_PASSWORD', '')
+
+if _email_password:
+    # Use real SMTP backend
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'appdrishty@gmail.com')
+    EMAIL_HOST_PASSWORD = _email_password
+    DEFAULT_FROM_EMAIL = f'Drishti App <{EMAIL_HOST_USER}>'
+else:
+    # Fallback to console backend if no password is provided in .env
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_FROM_EMAIL = 'Drishti App <appdrishty@gmail.com>'
 
 # Application Settings
 BASE_URL = 'http://localhost:8000'  
@@ -183,6 +199,13 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=14),
+    'ROTATE_REFRESH_TOKENS': True,
 }
 
 # ─── Ekta AI Settings ─────────────────────────────────────────────────────────

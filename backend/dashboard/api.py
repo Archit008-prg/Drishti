@@ -178,14 +178,25 @@ def api_add_project(request):
     start_date = request.data.get('start_date')
     scheduled_completion = request.data.get('scheduled_completion')
     status = request.data.get('status', 'ongoing')
-    assigned_investigator_id = request.data.get('assigned_investigator')
+    assignee_input = request.data.get('assigned_investigator')
     project_investigator = request.data.get('project_investigator', '')
     project_coordinator = request.data.get('project_coordinator', '')
     implementing_agencies = request.data.get('implementing_agencies', '')
     
     assigned_investigator = None
-    if assigned_investigator_id:
-        assigned_investigator = get_object_or_404(User, id=assigned_investigator_id)
+    assigned_email = None
+    
+    if assignee_input:
+        if str(assignee_input).isdigit() and User.objects.filter(id=int(assignee_input)).exists():
+            assigned_investigator = User.objects.get(id=int(assignee_input))
+            assigned_email = assigned_investigator.email
+        elif '@' in str(assignee_input):
+            user_match = User.objects.filter(email__iexact=assignee_input).first()
+            if user_match:
+                assigned_investigator = user_match
+                assigned_email = user_match.email
+            else:
+                assigned_email = assignee_input
                 
     project = Project.objects.create(
         project_code=project_code,
@@ -199,11 +210,44 @@ def api_add_project(request):
         scheduled_completion=scheduled_completion,
         status=status,
         assigned_investigator=assigned_investigator,
+        assigned_email=assigned_email,
         project_investigator=project_investigator,
         project_coordinator=project_coordinator,
         implementing_agencies=implementing_agencies,
         created_by=request.user
     )
+
+    if assigned_email:
+        subject = f"New Project Assignment: {project.title}"
+        message = (
+            f"Hello,\n\n"
+            f"You have been assigned to the project '{project.title}' ({project.project_code}).\n"
+            f"Please log in or sign up on the Drishti portal using this email to view the task details.\n\n"
+            f"Project Link: http://localhost:5173/project/{project.id}\n\n"
+            f"Regards,\nDrishti Team"
+        )
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [assigned_email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print(f"Email failed: {e}")
+
+    # Process uploaded documents
+    docs = request.FILES.getlist('docs')
+    if docs:
+        from dashboard.ekta_models import SupportingDocument
+        for doc in docs:
+            SupportingDocument.objects.create(
+                project=project,
+                uploaded_by=request.user,
+                file=doc
+            )
+
     return Response({'success': True, 'project_id': project.id})
 
 @api_view(['POST'])

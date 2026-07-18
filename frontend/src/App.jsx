@@ -18,7 +18,7 @@ const getMilestonesForProject = (project) => {
   // No project selected → generic idle state
   if (!project) {
     return [
-      { label: 'Task Initiated',  status: 'active',    icon: 'bi-play-circle',    color: '#9b4dff', role: 'Coordinator' },
+      { label: 'Task Initiated',  status: 'upcoming',  icon: 'bi-play-circle',    color: '#9b4dff', role: 'Coordinator' },
       { label: 'Report Submitted', status: 'upcoming', icon: 'bi-file-earmark-text', color: '#3b82f6', role: 'Investigator' },
       { label: 'Under Review',    status: 'upcoming',  icon: 'bi-search',          color: '#f59e0b', role: 'Manager' },
       { label: 'Decision',        status: 'upcoming',  icon: 'bi-shield-check',    color: '#10b981', role: 'Manager' },
@@ -91,7 +91,8 @@ const TimelineCanvas = ({ project, gradId = 'flowGrad4' }) => {
 
   // Progress: each segment = 33.3%; active node = segment midpoint
   let progressPercent = 0;
-  if (completedCount === 4) progressPercent = 100;
+  if (!project) progressPercent = 0;
+  else if (completedCount === 4) progressPercent = 100;
   else if (completedCount === 3) progressPercent = activeIdx >= 0 ? 88 : 75;
   else if (completedCount === 2) progressPercent = activeIdx >= 0 ? 55 : 50;
   else if (completedCount === 1) progressPercent = activeIdx >= 0 ? 22 : 18;
@@ -235,7 +236,7 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
   const fetchDocs = async () => {
     try {
       const res = await fetch(`http://localhost:8000/api/ekta/documents/${selectedProject.id}/`, {
-        headers: { 'Authorization': `Token ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -257,7 +258,7 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
     try {
       const res = await fetch('http://localhost:8000/api/ekta/upload/', {
         method: 'POST',
-        headers: { 'Authorization': `Token ${token}` },
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formData
       });
       if (res.ok) {
@@ -277,7 +278,7 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
     try {
       await fetch(`http://localhost:8000/api/ekta/documents/${docId}/delete/`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Token ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       fetchDocs();
     } catch (e) {
@@ -297,7 +298,7 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
       const res = await fetch('http://localhost:8000/api/ekta/query/', {
         method: 'POST',
         headers: {
-          'Authorization': `Token ${token}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ question: q, project_id: selectedProject ? selectedProject.id : null })
@@ -470,6 +471,60 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
   );
 };
 
+// ─── Dashboard Stat Cards (Unified for Manager & Investigator) ───────────────
+const DashboardStatCards = ({ projects, isManager }) => {
+  const total = projects.length;
+  const pendingCount = isManager 
+    ? projects.filter(p => ['submitted', 'resubmitted'].includes(p.report_status)).length
+    : projects.filter(p => p.report_status === 'resubmit_requested' || p.status === 'pending').length;
+  const ongoingCount = projects.filter(p => p.status === 'ongoing').length;
+  const completedCount = projects.filter(p => p.status === 'completed').length;
+
+  const cards = [
+    { title: isManager ? 'Total Projects' : 'Assigned Projects', value: total, icon: 'bi-folder-fill', color: 'purple', cssClass: 'card-glow-purple', accent: 'var(--accent-purple)' },
+    { title: isManager ? 'Pending Reviews' : 'Pending Actions', value: pendingCount, icon: 'bi-hourglass-split', color: 'yellow', cssClass: 'card-glow-yellow', accent: 'var(--accent-yellow)' },
+    { title: 'Ongoing Tasks', value: ongoingCount, icon: 'bi-activity', color: 'blue', cssClass: 'card-glow-cyan', accent: 'var(--accent-blue)' },
+    { title: 'Completed Tasks', value: completedCount, icon: 'bi-check-circle-fill', color: 'emerald', cssClass: 'card-glow-emerald', accent: 'var(--accent-emerald)' },
+  ];
+
+  return (
+    <div className="row g-4 mb-4">
+      {cards.map((c, i) => {
+        const percent = total === 0 ? 0 : (c.value / total);
+        const strokeOffset = 110 - (110 * percent);
+        return (
+          <div className="col-md-3" key={i}>
+            <div className={`card card-glass ${c.cssClass} h-100`}>
+              <div className="card-body p-3">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="text-muted small fw-bold">{c.title}</span>
+                  <i className={`bi ${c.icon} fs-4`} style={{ color: c.accent }}></i>
+                </div>
+                <h3 className="mb-0 fw-bold">{c.value}</h3>
+                <svg className="mt-3 w-100" height="35" viewBox="0 0 120 35">
+                  {/* Subtle track */}
+                  <path d="M 5 25 L 115 25" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="4" strokeLinecap="round" />
+                  {/* Fill relative to total projects */}
+                  <path 
+                    d="M 5 25 L 115 25" 
+                    fill="none" 
+                    stroke={c.accent} 
+                    strokeWidth="4" 
+                    strokeLinecap="round" 
+                    strokeDasharray="110"
+                    strokeDashoffset={strokeOffset}
+                    style={{ transition: 'stroke-dashoffset 1s ease-out' }}
+                    filter={`drop-shadow(0px 0px 6px ${c.accent}88)`}
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token') || '');
@@ -516,6 +571,7 @@ function App() {
   const [piName, setPiName] = useState('');
   const [pcName, setPcName] = useState('');
   const [implAgencies, setImplAgencies] = useState('');
+  const [projectDocs, setProjectDocs] = useState([]);
   const [chatThreads, setChatThreads] = useState([]);
   const [activeThreadUser, setActiveThreadUser] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
@@ -609,7 +665,7 @@ function App() {
       const data = await res.json();
       if (res.ok) {
         if (currentView === 'login') {
-          saveAuth(data.token, data.username, data.is_staff);
+          saveAuth(data.jwt_access, data.username, data.is_staff);
         } else {
           setAuthSuccess('Registration successful! You can now log in.');
           setCurrentView('login');
@@ -628,7 +684,7 @@ function App() {
   const fetchProjects = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/projects/`, {
-        headers: { 'Authorization': `Token ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
       if (res.ok) setProjects(data);
@@ -640,7 +696,7 @@ function App() {
   const fetchProjectDetail = async (id) => {
     try {
       const res = await fetch(`${API_BASE}/api/projects/${id}/`, {
-        headers: { 'Authorization': `Token ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
       if (res.ok) {
@@ -654,7 +710,7 @@ function App() {
   const fetchInvestigators = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/investigators/`, {
-        headers: { 'Authorization': `Token ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
       if (res.ok) setInvestigators(data);
@@ -666,7 +722,7 @@ function App() {
   const fetchNotifications = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/notifications/`, {
-        headers: { 'Authorization': `Token ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
       if (res.ok) setNotifications(data);
@@ -679,7 +735,7 @@ function App() {
     try {
       const res = await fetch(`${API_BASE}/api/notifications/${id}/read/`, {
         method: 'POST',
-        headers: { 'Authorization': `Token ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) fetchNotifications();
     } catch (err) {
@@ -704,6 +760,10 @@ function App() {
     formData.append('project_coordinator', pcName);
     formData.append('implementing_agencies', implAgencies);
     formData.append('assigned_investigator', assignedInvestigatorId);
+    
+    Array.from(projectDocs).forEach(file => {
+      formData.append('docs', file);
+    });
 
     console.log("--- SUBMITTING NEW PROJECT PAYLOAD ---");
     for (let [key, value] of formData.entries()) {
@@ -714,7 +774,7 @@ function App() {
       const res = await fetch(`${API_BASE}/api/projects/add/`, {
         method: 'POST',
         headers: {
-          'Authorization': `Token ${token}`
+          'Authorization': `Bearer ${token}`
         },
         body: formData
       });
@@ -734,6 +794,7 @@ function App() {
         setPiName('');
         setPcName('');
         setImplAgencies('');
+        setProjectDocs([]);
       } else {
         const text = await res.text();
         console.error("Backend Error Response Text:", text);
@@ -753,7 +814,7 @@ function App() {
   const fetchChatConversations = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/chat/conversations/`, {
-        headers: { 'Authorization': `Token ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -768,7 +829,7 @@ function App() {
     if (!userId) return;
     try {
       const res = await fetch(`${API_BASE}/api/chat/messages/?with_user_id=${userId}`, {
-        headers: { 'Authorization': `Token ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -782,7 +843,7 @@ function App() {
   const fetchAvailableManagers = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/chat/managers/`, {
-        headers: { 'Authorization': `Token ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -808,7 +869,7 @@ function App() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Token ${token}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           receiver_id: activeThreadUser.id,
@@ -830,7 +891,7 @@ function App() {
       const res = await fetch(`${API_BASE}/api/projects/${id}/delete/`, {
         method: 'POST',
         headers: {
-          'Authorization': `Token ${token}`
+          'Authorization': `Bearer ${token}`
         }
       });
       if (res.ok) {
@@ -853,7 +914,7 @@ function App() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Token ${token}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ status: newStatus })
       });
@@ -885,7 +946,7 @@ function App() {
       const res = await fetch(`${API_BASE}/api/projects/${selectedProject.id}/submit-report/`, {
         method: 'POST',
         headers: {
-          'Authorization': `Token ${token}`
+          'Authorization': `Bearer ${token}`
         },
         body: formData
       });
@@ -915,7 +976,7 @@ function App() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Token ${token}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           action: action,
@@ -1583,7 +1644,7 @@ function App() {
     try {
       const res = await fetch(`${API_BASE}/api/ekta/upload/`, {
         method: 'POST',
-        headers: { 'Authorization': `Token ${token}` },
+        headers: { 'Authorization': `Bearer ${token}` },
         body: fd
       });
       if (res.ok) {
@@ -1742,96 +1803,7 @@ function App() {
               
               {/* Manager Metrics Cards */}
               <div className="col-12 mb-4">
-                <div className="row g-3">
-                  {/* Metric 1 */}
-                  <div className="col-md-3">
-                    <div className="card card-glass card-glow-purple h-100">
-                      <div className="card-body p-3">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                          <span className="text-muted small fw-bold">Total Projects</span>
-                          <i className="bi bi-folder-fill fs-4" style={{ color: 'var(--accent-purple)' }}></i>
-                        </div>
-                        <h3 className="mb-0 fw-bold">{projects.length}</h3>
-                        <svg className="mt-3 w-100" height="35" viewBox="0 0 120 35">
-                          <defs>
-                            <linearGradient id="purpleGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="var(--accent-purple)" stopOpacity="0.4"/>
-                              <stop offset="100%" stopColor="var(--accent-purple)" stopOpacity="0"/>
-                            </linearGradient>
-                          </defs>
-                          <path d="M 0 25 C 20 10, 40 30, 60 15 C 80 5, 100 25, 120 10 L 120 35 L 0 35 Z" fill="url(#purpleGrad)" />
-                          <path d="M 0 25 C 20 10, 40 30, 60 15 C 80 5, 100 25, 120 10" fill="none" stroke="var(--accent-purple)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(168, 85, 247, 0.6))" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                  {/* Metric 2 */}
-                  <div className="col-md-3">
-                    <div className="card card-glass h-100" style={{ boxShadow: '0 0 20px rgba(250, 204, 21, 0.08)' }}>
-                      <div className="card-body p-3">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                          <span className="text-muted small fw-bold">Pending Reviews</span>
-                          <i className="bi bi-hourglass-split fs-4" style={{ color: 'var(--accent-yellow)' }}></i>
-                        </div>
-                        <h3 className="mb-0 fw-bold">{underReviewReports.length}</h3>
-                        <svg className="mt-3 w-100" height="35" viewBox="0 0 120 35">
-                          <defs>
-                            <linearGradient id="yellowGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="var(--accent-yellow)" stopOpacity="0.3"/>
-                              <stop offset="100%" stopColor="var(--accent-yellow)" stopOpacity="0"/>
-                            </linearGradient>
-                          </defs>
-                          <path d="M 0 28 C 30 12, 50 32, 80 15 C 95 8, 110 22, 120 14 L 120 35 L 0 35 Z" fill="url(#yellowGrad)" />
-                          <path d="M 0 28 C 30 12, 50 32, 80 15 C 95 8, 110 22, 120 14" fill="none" stroke="var(--accent-yellow)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(234, 179, 8, 0.6))" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                  {/* Metric 3 */}
-                  <div className="col-md-3">
-                    <div className="card card-glass card-glow-cyan h-100">
-                      <div className="card-body p-3">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                          <span className="text-muted small fw-bold">Ongoing Tasks</span>
-                          <i className="bi bi-activity fs-4" style={{ color: 'var(--accent-blue)' }}></i>
-                        </div>
-                        <h3 className="mb-0 fw-bold">{projects.filter(p => p.status === 'ongoing').length}</h3>
-                        <svg className="mt-3 w-100" height="35" viewBox="0 0 120 35">
-                          <defs>
-                            <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="var(--accent-blue)" stopOpacity="0.4"/>
-                              <stop offset="100%" stopColor="var(--accent-blue)" stopOpacity="0"/>
-                            </linearGradient>
-                          </defs>
-                          <path d="M 0 20 C 25 32, 50 8, 75 22 C 95 32, 110 12, 120 18 L 120 35 L 0 35 Z" fill="url(#blueGrad)" />
-                          <path d="M 0 20 C 25 32, 50 8, 75 22 C 95 32, 110 12, 120 18" fill="none" stroke="var(--accent-blue)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(59, 130, 246, 0.6))" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                  {/* Metric 4 */}
-                  <div className="col-md-3">
-                    <div className="card card-glass h-100" style={{ boxShadow: '0 0 20px rgba(74, 222, 128, 0.08)' }}>
-                      <div className="card-body p-3">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                          <span className="text-muted small fw-bold">Completed Tasks</span>
-                          <i className="bi bi-patch-check-fill fs-4" style={{ color: 'var(--accent-green)' }}></i>
-                        </div>
-                        <h3 className="mb-0 fw-bold">{projects.filter(p => p.status === 'completed').length}</h3>
-                        <svg className="mt-3 w-100" height="35" viewBox="0 0 120 35">
-                          <defs>
-                            <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="var(--accent-mint)" stopOpacity="0.4"/>
-                              <stop offset="100%" stopColor="var(--accent-mint)" stopOpacity="0"/>
-                            </linearGradient>
-                          </defs>
-                          <path d="M 0 30 C 20 15, 45 10, 70 25 C 90 35, 105 15, 120 10 L 120 35 L 0 35 Z" fill="url(#greenGrad)" />
-                          <path d="M 0 30 C 20 15, 45 10, 70 25 C 90 35, 105 15, 120 10" fill="none" stroke="var(--accent-mint)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(16, 185, 129, 0.6))" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <DashboardStatCards projects={projects} isManager={true} />
               </div>
 
               {/* Left Hand Options Panel & List */}              <div className="col-lg-8 mb-4">
@@ -2052,50 +2024,103 @@ function App() {
                       <h6 className="mb-0 fw-bold"><i className="bi bi-clock-history me-2 text-info" style={{ color: 'var(--accent-blue)' }}></i> Project Timelines Monitor</h6>
                     </div>
                     <div className="card-body p-4">
-                      {/* Timeline scale header row */}
-                      <div className="timeline-grid border-bottom pb-2 mb-3">
-                        <div className="fw-bold small text-muted text-uppercase">Projects</div>
-                        <div className="timeline-axis-label">May 01</div>
-                        <div className="timeline-axis-label">May 02</div>
-                        <div className="timeline-axis-label">May 03</div>
-                        <div className="timeline-axis-label">May 04</div>
-                        <div className="timeline-axis-label">May 05</div>
-                        <div className="timeline-axis-label">May 06</div>
-                        <div className="timeline-axis-label">May 07</div>
-                        <div className="timeline-axis-label">May 08</div>
-                        <div className="timeline-axis-label">May 09</div>
-                        <div className="timeline-axis-label">May 10</div>
-                      </div>
+                      {/* Timeline scale header & rows rendered dynamically */}
+                      {(() => {
+                        // Show all projects on the timeline
+                        const timelineProjects = projects;
+                        let minDate = new Date();
+                        let maxDate = new Date();
+                        if (timelineProjects.length > 0) {
+                          const startTimes = timelineProjects.map(p => {
+                            const d = new Date(p.start_date);
+                            return isNaN(d) ? new Date().getTime() : d.getTime();
+                          });
+                          const endTimes = timelineProjects.map(p => {
+                            let d = new Date(p.actual_completion || p.scheduled_completion);
+                            return isNaN(d) ? new Date().getTime() : d.getTime();
+                          });
+                          minDate = new Date(Math.min(...startTimes));
+                          maxDate = new Date(Math.max(...endTimes));
+                        }
 
-                      {/* Timeline projects rows */}
-                      {projects.filter(p => p.status === 'ongoing').length > 0 ? (
-                        projects.filter(p => p.status === 'ongoing').map((p, idx) => {
-                          const startCol = 2 + (idx % 3);
-                          const colSpan = 4 + (idx % 4);
-                          const colorClass = idx % 3 === 0 ? 'timeline-capsule-purple' : idx % 3 === 1 ? 'timeline-capsule-blue' : 'timeline-capsule-mint';
-                          const initials = p.assigned_investigator ? p.assigned_investigator.substring(0, 2).toUpperCase() : 'UI';
-                          return (
-                            <div key={p.id} className="timeline-grid mb-3">
-                              <div className="text-truncate pe-2">
-                                <strong className="d-block small text-white">{p.project_code}</strong>
-                                <span className="text-muted" style={{ fontSize: '10px' }}>{p.title}</span>
-                              </div>
-                              <div 
-                                className={`timeline-capsule ${colorClass} d-flex justify-content-between align-items-center`}
-                                style={{ gridColumn: `${startCol} / span ${colSpan}` }}
-                              >
-                                <span className="text-truncate">{p.title}</span>
-                                <div className="d-flex align-items-center">
-                                  <div className="timeline-member-dot" title="Assigned Investigator">{initials}</div>
-                                  <div className="timeline-member-dot bg-dark text-muted" title="Project Coordinator">PC</div>
-                                </div>
+                        let totalDuration = maxDate - minDate;
+                        if (totalDuration < 30 * 24 * 60 * 60 * 1000) {
+                            totalDuration = 30 * 24 * 60 * 60 * 1000;
+                            const center = minDate.getTime() + (maxDate.getTime() - minDate.getTime()) / 2;
+                            minDate = new Date(center - totalDuration / 2);
+                            maxDate = new Date(center + totalDuration / 2);
+                        }
+
+                        const pad = totalDuration * 0.05;
+                        const chartStart = new Date(minDate.getTime() - pad);
+                        const chartEnd = new Date(maxDate.getTime() + pad);
+                        const chartDuration = chartEnd - chartStart;
+
+                        const labels = [];
+                        for (let i = 0; i <= 5; i++) {
+                          const d = new Date(chartStart.getTime() + (chartDuration * i / 5));
+                          labels.push(d.toLocaleDateString(undefined, { month: 'short', year: '2-digit' }));
+                        }
+
+                        return (
+                          <div style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'hidden', paddingRight: '5px' }} className="custom-scrollbar">
+                            <div className="timeline-grid border-bottom pb-2 mb-3" style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'rgba(19, 20, 28, 0.95)', backdropFilter: 'blur(5px)' }}>
+                              <div className="fw-bold small text-muted text-uppercase">Projects</div>
+                              <div className="d-flex justify-content-between w-100 position-relative text-muted small">
+                                {labels.map((lbl, idx) => (
+                                  <div key={idx} className="timeline-axis-label" style={{ width: '16.66%' }}>{lbl}</div>
+                                ))}
                               </div>
                             </div>
-                          );
-                        })
-                      ) : (
-                        <div className="text-center py-4 text-muted small">No running projects with timelines to monitor.</div>
-                      )}
+
+                            {timelineProjects.length > 0 ? (
+                              timelineProjects.map((p, idx) => {
+                                // Color coding by status
+                                let colorClass = 'timeline-capsule-purple';
+                                if (p.status === 'completed') colorClass = 'bg-success text-white';
+                                else if (p.status === 'pending' || p.status === 'up_next') colorClass = 'bg-warning text-dark';
+                                else if (idx % 3 === 0) colorClass = 'timeline-capsule-purple';
+                                else if (idx % 3 === 1) colorClass = 'timeline-capsule-blue';
+                                else colorClass = 'timeline-capsule-mint';
+
+                                const initials = p.assigned_investigator ? p.assigned_investigator.substring(0, 2).toUpperCase() : 'UI';
+                                
+                                let pStart = new Date(p.start_date);
+                                if (isNaN(pStart)) pStart = minDate;
+                                let pEnd = new Date(p.actual_completion || p.scheduled_completion);
+                                if (isNaN(pEnd)) pEnd = maxDate;
+
+                                const startPct = Math.max(0, (pStart - chartStart) / chartDuration) * 100;
+                                const endPct = Math.min(1, (pEnd - chartStart) / chartDuration) * 100;
+                                const widthPct = Math.max(5, endPct - startPct); // Ensure it's wide enough to be visible
+                                
+                                return (
+                                  <div key={p.id} className="timeline-grid mb-3">
+                                    <div className="text-truncate pe-2">
+                                      <strong className="d-block small text-white">{p.project_code}</strong>
+                                      <span className="text-muted" style={{ fontSize: '10px' }}>{p.title}</span>
+                                    </div>
+                                    <div className="w-100 position-relative" style={{ height: '36px' }}>
+                                      <div 
+                                        className={`timeline-capsule ${colorClass} d-flex justify-content-between align-items-center position-absolute`}
+                                        style={{ left: `${startPct}%`, width: `${widthPct}%`, top: '0', bottom: '0', minWidth: '100px' }}
+                                      >
+                                        <span className="text-truncate px-2">{p.title}</span>
+                                        <div className="d-flex align-items-center pe-2">
+                                          <div className="timeline-member-dot" title="Assigned Investigator">{initials}</div>
+                                          <div className="timeline-member-dot bg-dark text-muted" title="Project Coordinator">PC</div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              <div className="text-center py-4 text-muted small">No running projects with timelines to monitor.</div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
 
@@ -2327,18 +2352,21 @@ function App() {
                       </div>
 
                       <div className="mb-3">
-                        <label className="form-label small fw-bold">Assign Investigator (Drishti Team User)*</label>
-                        <select 
-                          className="form-select"
+                        <label className="form-label small fw-bold">Assign Investigator (Select User or Type Email)*</label>
+                        <input 
+                          type="text"
+                          className="form-control"
+                          list="investigators-list"
+                          placeholder="Select from list or type external email..."
                           value={assignedInvestigatorId}
                           onChange={(e) => setAssignedInvestigatorId(e.target.value)}
                           required
-                        >
-                          <option value="" disabled>Select investigator...</option>
+                        />
+                        <datalist id="investigators-list">
                           {investigators.map((user) => (
-                            <option key={user.id} value={user.id}>{user.username} ({user.email || 'No email'})</option>
+                            <option key={user.id} value={user.email || user.id}>{user.username}</option>
                           ))}
-                        </select>
+                        </datalist>
                       </div>
 
 
@@ -2352,6 +2380,19 @@ function App() {
                           value={implAgencies}
                           onChange={(e) => setImplAgencies(e.target.value)}
                         />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label small fw-bold">Supporting Documents</label>
+                        <input 
+                          type="file" 
+                          className="form-control" 
+                          multiple
+                          onChange={(e) => setProjectDocs(e.target.files)}
+                        />
+                        <div className="form-text text-muted" style={{ fontSize: '11px' }}>
+                          Upload any relevant documents for this project. They will be processed by Ekta AI.
+                        </div>
                       </div>
 
                       <div className="d-flex justify-content-end gap-2 mt-4">
@@ -2773,74 +2814,7 @@ function App() {
             
             {/* Investigator Metrics Bar */}
             <div className="col-12 mb-4">
-              <div className="row g-3">
-                {/* Metric 1 */}
-                <div className="col-md-4">
-                  <div className="card card-glass card-glow-purple h-100">
-                    <div className="card-body p-3">
-                      <div className="d-flex justify-content-between align-items-center mb-2">
-                        <span className="text-muted small fw-bold">Running Tasks</span>
-                        <i className="bi bi-play-circle-fill fs-4" style={{ color: 'var(--accent-purple)' }}></i>
-                      </div>
-                      <h3 className="mb-0 fw-bold">{runningTasks.length}</h3>
-                      <svg className="mt-3 w-100" height="35" viewBox="0 0 120 35">
-                        <defs>
-                          <linearGradient id="purpleGradInv" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="var(--accent-purple)" stopOpacity="0.4"/>
-                            <stop offset="100%" stopColor="var(--accent-purple)" stopOpacity="0"/>
-                          </linearGradient>
-                        </defs>
-                        <path d="M 0 25 C 20 10, 40 30, 60 15 C 80 5, 100 25, 120 10 L 120 35 L 0 35 Z" fill="url(#purpleGradInv)" />
-                        <path d="M 0 25 C 20 10, 40 30, 60 15 C 80 5, 100 25, 120 10" fill="none" stroke="var(--accent-purple)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(168, 85, 247, 0.6))" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-                {/* Metric 2 */}
-                <div className="col-md-4">
-                  <div className="card card-glass h-100" style={{ boxShadow: '0 0 20px rgba(250, 204, 21, 0.08)' }}>
-                    <div className="card-body p-3">
-                      <div className="d-flex justify-content-between align-items-center mb-2">
-                        <span className="text-muted small fw-bold">Upcoming Tasks</span>
-                        <i className="bi bi-calendar-event-fill fs-4" style={{ color: 'var(--accent-yellow)' }}></i>
-                      </div>
-                      <h3 className="mb-0 fw-bold">{upcomingTasks.length}</h3>
-                      <svg className="mt-3 w-100" height="35" viewBox="0 0 120 35">
-                        <defs>
-                          <linearGradient id="yellowGradInv" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="var(--accent-yellow)" stopOpacity="0.3"/>
-                            <stop offset="100%" stopColor="var(--accent-yellow)" stopOpacity="0"/>
-                          </linearGradient>
-                        </defs>
-                        <path d="M 0 28 C 30 12, 50 32, 80 15 C 95 8, 110 22, 120 14 L 120 35 L 0 35 Z" fill="url(#yellowGradInv)" />
-                        <path d="M 0 28 C 30 12, 50 32, 80 15 C 95 8, 110 22, 120 14" fill="none" stroke="var(--accent-yellow)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(234, 179, 8, 0.6))" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-                {/* Metric 3 */}
-                <div className="col-md-4">
-                  <div className="card card-glass h-100" style={{ boxShadow: '0 0 20px rgba(74, 222, 128, 0.08)' }}>
-                    <div className="card-body p-3">
-                      <div className="d-flex justify-content-between align-items-center mb-2">
-                        <span className="text-muted small fw-bold">Past / Completed Tasks</span>
-                        <i className="bi bi-check-circle-fill fs-4" style={{ color: 'var(--accent-mint)' }}></i>
-                      </div>
-                      <h3 className="mb-0 fw-bold">{pastTasks.length}</h3>
-                      <svg className="mt-3 w-100" height="35" viewBox="0 0 120 35">
-                        <defs>
-                          <linearGradient id="greenGradInv" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="var(--accent-mint)" stopOpacity="0.4"/>
-                            <stop offset="100%" stopColor="var(--accent-mint)" stopOpacity="0"/>
-                          </linearGradient>
-                        </defs>
-                        <path d="M 0 30 C 20 15, 45 10, 70 25 C 90 35, 105 15, 120 10 L 120 35 L 0 35 Z" fill="url(#greenGradInv)" />
-                        <path d="M 0 30 C 20 15, 45 10, 70 25 C 90 35, 105 15, 120 10" fill="none" stroke="var(--accent-mint)" strokeWidth="2" filter="drop-shadow(0px 0px 4px rgba(16, 185, 129, 0.6))" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <DashboardStatCards projects={projects} isManager={false} />
             </div>
 
             {/* Investigator Options and Task List */}

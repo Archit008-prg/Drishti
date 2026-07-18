@@ -17,6 +17,7 @@ class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     message = models.TextField()
     report = models.ForeignKey('Report', on_delete=models.CASCADE, null=True, blank=True)
+    project = models.ForeignKey('Project', on_delete=models.CASCADE, null=True, blank=True)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     notification_type = models.CharField(
@@ -25,7 +26,8 @@ class Notification(models.Model):
             ('report_submitted', 'Report Submitted'),
             ('report_approved', 'Report Approved'),
             ('report_rejected', 'Report Rejected'),
-            ('resubmit_request', 'Resubmission Requested')
+            ('resubmit_request', 'Resubmission Requested'),
+            ('assignment', 'Project Assignment')
         ],
         default='report_submitted'
     )
