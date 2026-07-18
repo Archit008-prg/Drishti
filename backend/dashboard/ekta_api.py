@@ -46,6 +46,18 @@ def _extract_text_from_file(file_obj, filename: str) -> str:
             logger.error(f"Text extraction failed for {filename}: {e}")
             return ""
 
+    if ext == ".docx":
+        try:
+            import docx
+            doc = docx.Document(io.BytesIO(file_obj.read()))
+            full_text = []
+            for para in doc.paragraphs:
+                full_text.append(para.text)
+            return "\n".join(full_text)
+        except Exception as e:
+            logger.error(f"DOCX extraction failed for {filename}: {e}")
+            return ""
+
     return ""  # unsupported type
 
 

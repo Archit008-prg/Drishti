@@ -811,6 +811,68 @@ function App() {
       alert(`Network/Fetch Error: ${err.message}`);
     }
   };
+
+  const handleUpdateProject = async (e) => {
+    e.preventDefault();
+    const payload = {
+      title: projectTitle,
+      description: projectDesc,
+      principal_agency: principalAgency,
+      budget_amount: budgetAmount,
+      budget_unit: budgetUnit,
+      start_date: startDate,
+      scheduled_completion: scheduledCompletion,
+      status: projectStatus,
+      project_investigator: piName,
+      project_coordinator: pcName,
+      implementing_agencies: implAgencies,
+      assigned_investigator: assignedInvestigatorId
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/api/projects/${selectedProject.id}/update/`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        alert('Project updated successfully!');
+        setManagerTab('projects');
+        fetchProjects();
+        fetchProjectDetail(selectedProject.id); // refresh the details sidebar
+      } else {
+        const data = await res.json();
+        alert(`Error: ${data.error || 'Failed to update project'}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Network error');
+    }
+  };
+
+  const handleEditProjectClick = (p) => {
+    setProjectCode(p.project_code || '');
+    setProjectType(p.project_type || 'S&T');
+    setProjectTitle(p.title || '');
+    setProjectDesc(p.description || '');
+    setPrincipalAgency(p.principal_agency || '');
+    setBudgetAmount(p.budget_amount || '');
+    setBudgetUnit(p.budget_unit || 'lakhs');
+    setStartDate(p.start_date || '');
+    setScheduledCompletion(p.scheduled_completion || '');
+    setProjectStatus(p.status || 'ongoing');
+    setAssignedInvestigatorId(p.assigned_investigator || '');
+    setPiName(p.project_investigator || '');
+    setPcName(p.project_coordinator || '');
+    setImplAgencies(p.implementing_agencies || '');
+    setProjectDocs([]); // Reset docs for update (we don't prefill existing docs into a file input)
+    setSelectedProject(p);
+    setManagerTab('edit-project');
+  };
+
   const fetchChatConversations = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/chat/conversations/`, {
@@ -2198,14 +2260,16 @@ function App() {
               </>
             )}
 
-              {/* View 2: Add Project */}
-              {managerTab === 'add-project' && (
+              {/* View 2: Add / Edit Project */}
+              {['add-project', 'edit-project'].includes(managerTab) && (
                 <div className="card card-glass mb-4">
                   <div className="card-header card-glass-header py-3">
-                    <h5 className="mb-0 fw-bold"><i className="bi bi-folder-plus"></i> Create & Assign New Project</h5>
+                    <h5 className="mb-0 fw-bold">
+                      <i className="bi bi-folder-plus"></i> {managerTab === 'edit-project' ? 'Edit Project Details' : 'Create & Assign New Project'}
+                    </h5>
                   </div>
                   <div className="card-body">
-                    <form onSubmit={handleCreateProject}>
+                    <form onSubmit={managerTab === 'edit-project' ? handleUpdateProject : handleCreateProject}>
                       <div className="row mb-3">
                         <div className="col-md-4">
                           <label className="form-label small fw-bold">Project Code*</label>
@@ -2216,6 +2280,7 @@ function App() {
                             value={projectCode}
                             onChange={(e) => setProjectCode(e.target.value)}
                             required 
+                            disabled={managerTab === 'edit-project'} // Cannot edit project code once created
                           />
                         </div>
                         <div className="col-md-4">
@@ -2397,7 +2462,9 @@ function App() {
 
                       <div className="d-flex justify-content-end gap-2 mt-4">
                         <button type="button" className="btn btn-glass" onClick={() => setManagerTab('projects')}>Cancel</button>
-                        <button type="submit" className="btn btn-primary-glow">Create Project</button>
+                        <button type="submit" className="btn btn-primary-glow">
+                          {managerTab === 'edit-project' ? 'Update Project' : 'Create Project'}
+                        </button>
                       </div>
                     </form>
                   </div>
@@ -2634,7 +2701,12 @@ function App() {
                 <div className="card card-glass mb-4">
                   <div className="card-header card-glass-header d-flex justify-content-between align-items-center py-3">
                     <h5 className="mb-0 fw-bold"><i className="bi bi-info-circle"></i> Project Details</h5>
-                    <button type="button" className="btn-close btn-close-white" onClick={() => setSelectedProject(null)}></button>
+                    <div>
+                      <button type="button" className="btn btn-sm btn-outline-light me-2" onClick={() => handleEditProjectClick(selectedProject)}>
+                        <i className="bi bi-pencil-square"></i> Edit
+                      </button>
+                      <button type="button" className="btn-close btn-close-white" onClick={() => setSelectedProject(null)}></button>
+                    </div>
                   </div>
                   <div className="card-body">
                     <h4 className="fw-bold">{selectedProject.title}</h4>
@@ -3141,18 +3213,21 @@ function App() {
                           <p className="small mt-1 mb-0">{selectedProject.description}</p>
                         </li>
                       )}
-                      {selectedProject.guideline_document_url && (
+                      {selectedProject.supporting_documents && selectedProject.supporting_documents.length > 0 && (
                         <li className="list-group-item ps-0">
-                          <strong>Guideline Document:</strong>
-                          <div className="mt-1">
-                            <a 
-                              href={`${API_BASE}${selectedProject.guideline_document_url}`} 
-                              target="_blank" 
-                              rel="noreferrer" 
-                              className="btn btn-sm btn-cyan-glow"
-                            >
-                              <i className="bi bi-file-earmark-arrow-down"></i> View/Download Guidelines
-                            </a>
+                          <strong>Supporting Documents:</strong>
+                          <div className="mt-2 d-flex flex-wrap gap-2">
+                            {selectedProject.supporting_documents.map(doc => (
+                              <a 
+                                key={doc.id}
+                                href={`${API_BASE}${doc.url}`} 
+                                target="_blank" 
+                                rel="noreferrer" 
+                                className="btn btn-sm btn-cyan-glow"
+                              >
+                                <i className="bi bi-file-earmark-arrow-down"></i> {doc.filename}
+                              </a>
+                            ))}
                           </div>
                         </li>
                       )}

@@ -126,6 +126,14 @@ def api_project_detail(request, project_id):
             'filename': latest_report.filename
         }
         
+    docs_data = []
+    for d in project.supporting_documents.all():
+        docs_data.append({
+            'id': d.id,
+            'filename': d.file.name.split('/')[-1],
+            'url': d.file.url
+        })
+        
     data = {
         'id': project.id,
         'project_code': project.project_code,
@@ -144,7 +152,8 @@ def api_project_detail(request, project_id):
         'assigned_investigator': project.assigned_investigator.username if project.assigned_investigator else None,
         'assigned_email': project.assigned_email,
         'guideline_document_url': None,
-        'report': report_data
+        'report': report_data,
+        'supporting_documents': docs_data
     }
     return Response(data)
 
@@ -241,12 +250,22 @@ def api_add_project(request):
     docs = request.FILES.getlist('docs')
     if docs:
         from dashboard.ekta_models import SupportingDocument
+        from dashboard import ekta_api, ekta_rag
         for doc in docs:
-            SupportingDocument.objects.create(
+            saved_doc = SupportingDocument.objects.create(
                 project=project,
                 uploaded_by=request.user,
                 file=doc
             )
+            # Index into Ekta RAG immediately
+            try:
+                # Need to read the file again after saving, so we reset the pointer
+                saved_doc.file.seek(0)
+                text = ekta_api._extract_text_from_file(saved_doc.file, saved_doc.file.name)
+                if text.strip():
+                    ekta_rag.index_document(project.id, saved_doc.id, saved_doc.file.name, text)
+            except Exception as e:
+                print(f"Error indexing doc: {e}")
 
     return Response({'success': True, 'project_id': project.id})
 
