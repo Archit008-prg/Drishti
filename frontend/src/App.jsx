@@ -414,34 +414,48 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
             {messages.map((m, i) => (
               <div key={i} className={`d-flex mb-4 ${m.sender === 'user' ? 'justify-content-end' : 'justify-content-start'}`}>
                 {m.sender === 'ekta' && (
-                  <div className="me-3 rounded-circle bg-violet-600 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '32px', height: '32px', marginTop: '4px' }}>
-                    <i className="bi bi-robot text-white" style={{ fontSize: '14px' }}></i>
+                  <div className="me-3 position-relative flex-shrink-0" style={{ width: '38px', height: '38px', marginTop: '2px' }}>
+                    <div className="rounded-circle d-flex align-items-center justify-content-center w-100 h-100 position-relative z-1" style={{ background: 'linear-gradient(135deg, #1e1e2d 0%, #2d2b45 100%)', border: '1px solid rgba(139,92,246,0.5)' }}>
+                      <i className="bi bi-robot text-violet-300" style={{ fontSize: '18px' }}></i>
+                    </div>
+                    <div className="position-absolute top-50 start-50 translate-middle rounded-circle" style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #8B5CF6 0%, #ec4899 100%)', filter: 'blur(8px)', opacity: 0.5, zIndex: 0 }}></div>
                   </div>
                 )}
                 <div 
-                  className={`p-3 p-md-4 rounded-4 ${m.sender === 'user' ? 'text-white' : 'text-white'}`}
+                  className={`p-3 p-md-4 rounded-4 position-relative ${m.sender === 'user' ? 'text-white' : 'text-white'}`}
                   style={{ 
-                    maxWidth: '85%', 
-                    borderBottomRightRadius: m.sender === 'user' ? '4px' : '1rem',
-                    borderTopLeftRadius: m.sender === 'ekta' ? '4px' : '1rem',
-                    background: m.sender === 'user' ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : 'rgba(255,255,255,0.06)',
-                    border: m.sender === 'user' ? 'none' : '1px solid rgba(255,255,255,0.08)',
-                    boxShadow: m.sender === 'user' ? '0 4px 15px rgba(99, 102, 241, 0.3)' : '0 4px 15px rgba(0,0,0,0.1)',
+                    maxWidth: '80%', 
+                    borderBottomRightRadius: m.sender === 'user' ? '4px' : '1.2rem',
+                    borderTopLeftRadius: m.sender === 'ekta' ? '4px' : '1.2rem',
+                    borderBottomLeftRadius: '1.2rem',
+                    borderTopRightRadius: '1.2rem',
+                    background: m.sender === 'user' ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : 'rgba(25, 25, 35, 0.7)',
+                    backdropFilter: m.sender === 'ekta' ? 'blur(10px)' : 'none',
+                    border: m.sender === 'user' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(139,92,246,0.2)',
+                    boxShadow: m.sender === 'user' ? '0 8px 25px rgba(99, 102, 241, 0.4)' : '0 8px 25px rgba(0,0,0,0.2)',
                   }}
                 >
-                  <p className="mb-0" style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6', fontSize: '14px', letterSpacing: '0.2px' }}>{m.text}</p>
+                  <p className="mb-0" style={{ whiteSpace: 'pre-wrap', lineHeight: '1.7', fontSize: '14.5px', letterSpacing: '0.3px', fontWeight: '400', fontFamily: 'Inter, system-ui, sans-serif' }}>{m.text}</p>
                   
                   {m.sender === 'ekta' && m.in_scope === false && (
-                    <div className="mt-3 pt-3 border-top border-white-10">
-                      <span className="text-warning" style={{ fontSize: '11px', fontWeight: '500' }}><i className="bi bi-exclamation-triangle-fill me-2"></i>Out of scope</span>
+                    <div className="mt-3 pt-3 border-top" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                      <span className="badge bg-warning text-dark px-2 py-1 shadow-sm" style={{ fontSize: '11px', fontWeight: '600', borderRadius: '6px' }}><i className="bi bi-exclamation-triangle-fill me-1"></i> Out of scope</span>
                     </div>
                   )}
                   {m.sender === 'ekta' && m.sources && m.sources.length > 0 && (
-                    <div className="mt-3 pt-3 border-top border-white-10">
-                      <span className="text-white-50" style={{ fontSize: '11px', lineHeight: '1.4', display: 'block' }}><i className="bi bi-file-earmark-text me-2"></i>Sources: <span className="text-white-75">{m.sources.join(', ')}</span></span>
+                    <div className="mt-3 pt-3 border-top" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                      <span className="text-white-50 d-flex align-items-center gap-2" style={{ fontSize: '11.5px', lineHeight: '1.4' }}>
+                        <i className="bi bi-file-earmark-text text-violet-400"></i>
+                        <span>Sources: <span className="text-white-75 fw-semibold">{m.sources.join(', ')}</span></span>
+                      </span>
                     </div>
                   )}
                 </div>
+                {m.sender === 'user' && (
+                  <div className="ms-3 rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 bg-white-10 shadow" style={{ width: '38px', height: '38px', marginTop: '2px', border: '1px solid rgba(255,255,255,0.2)' }}>
+                    <i className="bi bi-person-fill text-white" style={{ fontSize: '18px' }}></i>
+                  </div>
+                )}
               </div>
             ))}
             {isLoading && (
@@ -467,36 +481,40 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
                 </span>
               </div>
             )}
-            <form onSubmit={handleSend} className="d-flex gap-2 align-items-center position-relative">
+            <form onSubmit={handleSend} className="d-flex gap-3 align-items-center position-relative">
+              {selectedProject && (
+                <label className="btn btn-glass rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style={{ width: '52px', height: '52px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.03)', transition: 'all 0.3s' }} title="Attach file">
+                  <i className="bi bi-paperclip fs-4 text-violet-300"></i>
+                  <input 
+                    type="file" 
+                    className="d-none"
+                    onChange={e => setUploadFile(e.target.files[0])}
+                    accept=".pdf,.txt,.md,.doc,.docx,.png,.jpg,.jpeg"
+                  />
+                </label>
+              )}
               <div className="position-relative flex-fill d-flex align-items-center">
-                {selectedProject && (
-                  <label className="position-absolute start-0 ms-2 btn btn-link text-white-50 p-2 d-flex align-items-center justify-content-center" style={{ zIndex: 5, borderRadius: '50%', cursor: 'pointer' }} title="Attach file">
-                    <i className="bi bi-paperclip fs-5"></i>
-                    <input 
-                      type="file" 
-                      className="d-none"
-                      onChange={e => setUploadFile(e.target.files[0])}
-                      accept=".pdf,.txt,.md,.doc,.docx,.png,.jpg,.jpeg"
-                    />
-                  </label>
-                )}
                 <input 
                   type="text" 
-                  className="form-control glass-input text-white flex-fill py-3 pe-4 rounded-pill" 
+                  className="form-control glass-input text-white flex-fill py-3 px-4 rounded-pill shadow-sm" 
                   placeholder={selectedProject ? "Message Ekta AI or paste a file (Ctrl+V)..." : "Ask Ekta about Drishti..."}
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   disabled={isLoading || uploading}
-                  style={{ fontSize: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', paddingLeft: selectedProject ? '50px' : '24px' }}
+                  style={{ fontSize: '15.5px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(139,92,246,0.3)', transition: 'all 0.3s' }}
+                  onFocus={(e) => e.target.style.boxShadow = '0 0 15px rgba(139,92,246,0.25)'}
+                  onBlur={(e) => e.target.style.boxShadow = 'none'}
                 />
               </div>
               <button 
                 type="submit" 
-                className="btn btn-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 ms-2"
+                className="btn btn-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow"
                 disabled={isLoading || !input.trim() || uploading}
-                style={{ width: '52px', height: '52px', background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', border: 'none', boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)' }}
+                style={{ width: '52px', height: '52px', background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', border: 'none', boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)', transition: 'all 0.2s transform' }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
               >
-                <i className="bi bi-send-fill fs-5"></i>
+                <i className="bi bi-arrow-up-short fs-3 fw-bold"></i>
               </button>
             </form>
           </div>
