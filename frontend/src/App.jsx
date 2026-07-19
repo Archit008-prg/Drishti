@@ -1124,17 +1124,17 @@ function App() {
           <>
             {/* Main sweeping beam as drawn by user on left side */}
             <div className="beam-container" style={{
-              position: 'absolute', top: '20%', left: '-25%',
-              width: '130%', height: '130%',
-              background: 'conic-gradient(from 150deg at 20% 50%, transparent 0deg, rgba(76,29,149,0.9) 6deg, rgba(155,77,255,1) 12deg, transparent 18deg, transparent 40deg, rgba(59,7,100,0.85) 50deg, rgba(124,58,237,0.95) 54deg, transparent 60deg)',
-              opacity: 0.9,
+              position: 'absolute', top: '5%', left: '-15%',
+              width: '120%', height: '120%',
+              background: 'conic-gradient(from 200deg at 25% 55%, transparent 0deg, #4c1d95 8deg, #7c3aed 14deg, transparent 20deg, transparent 40deg, #3b0764 50deg, #5b21b6 54deg, transparent 60deg)',
+              opacity: 0.7,
             }} />
-            {/* Secondary smaller beam below/above it */}
-            <div className="deco-beam-1" style={{
-              position: 'absolute', top: '45%', left: '-10%',
-              width: '80%', height: '80%',
-              background: 'conic-gradient(from 165deg at 10% 60%, transparent 0deg, rgba(91,33,182,0.7) 4deg, rgba(139,92,246,0.8) 8deg, transparent 12deg)',
-              opacity: 0.65,
+            {/* Secondary smaller beam above the footer */}
+            <div className="beam-container" style={{
+              position: 'absolute', top: '50%', left: '0%',
+              width: '90%', height: '90%',
+              background: 'conic-gradient(from 200deg at 25% 55%, transparent 0deg, #4c1d95 8deg, #7c3aed 14deg, transparent 20deg, transparent 40deg, #3b0764 50deg, #5b21b6 54deg, transparent 60deg)',
+              opacity: 0.25,
             }} />
           </>
         )}
