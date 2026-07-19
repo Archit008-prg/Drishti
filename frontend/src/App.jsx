@@ -1206,49 +1206,7 @@ function App() {
         `}</style>
 
         {/* Animated background light-beam layer */}
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-          {/* Base dark — spans full page */}
-          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 90% 45% at 50% 15%, #1a0533 0%, #07030f 60%)' }} />
-          {/* Mid-page subtle purple bridge */}
-          <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translateX(-50%)', width: '80%', height: '40%', background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(76,29,149,0.12) 0%, transparent 70%)' }} />
-          {/* Footer region glow — mirrors hero glow at bottom */}
-          <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '55%', background: 'radial-gradient(ellipse 80% 60% at 30% 90%, rgba(109,40,217,0.22) 0%, transparent 60%)' }} />
-          <div style={{ position: 'absolute', bottom: 0, right: '-10%', width: '60%', height: '45%', background: 'radial-gradient(ellipse 60% 50% at 70% 80%, rgba(76,29,149,0.15) 0%, transparent 65%)' }} />
-          {/* Animated beam */}
-          <div className="beam-container" style={{
-            position: 'absolute', top: '-20%', left: '-10%',
-            width: '120%', height: '120%',
-            background: 'conic-gradient(from 200deg at 25% 55%, transparent 0deg, #4c1d95 8deg, #7c3aed 14deg, transparent 20deg, transparent 40deg, #3b0764 50deg, #5b21b6 54deg, transparent 60deg)',
-            opacity: 0.55,
-          }} />
-          {/* Secondary softer glow */}
-          <div style={{
-            position: 'absolute', top: 0, left: '-15%',
-            width: '70%', height: '100%',
-            background: 'radial-gradient(ellipse 60% 80% at 20% 50%, rgba(109,40,217,0.3) 0%, transparent 65%)',
-            animation: 'beamDrift 18s ease-in-out infinite',
-          }} />
-          {/* Grain overlay */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E")`,
-            opacity: 0.045,
-          }} />
-          {/* ── Deco Beam 1: Bottom-left spotlight ray ── */}
-          <div className="deco-beam-1" style={{
-            position: 'absolute', bottom: '22%', left: '-5%',
-            width: '55%', height: '60%',
-            background: 'conic-gradient(from 320deg at 10% 90%, transparent 0deg, #5b21b6 6deg, #7c3aed 10deg, transparent 15deg)',
-            pointerEvents: 'none',
-          }} />
-          {/* ── Deco Beam 2: Right-side slim ray ── */}
-          <div className="deco-beam-2" style={{
-            position: 'absolute', top: '38%', right: '-8%',
-            width: '55%', height: '55%',
-            background: 'conic-gradient(from 155deg at 90% 30%, transparent 0deg, #4c1d95 5deg, #6d28d9 9deg, transparent 14deg)',
-            pointerEvents: 'none',
-          }} />
-        </div>
+        <BackgroundBeams />
 
         <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
 
@@ -1446,71 +1404,71 @@ function App() {
               <span style={{ color: '#a78bfa', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Voices from the field</span>
               <h2 style={{ color: '#fff', fontWeight: 800, fontSize: 'clamp(20px,3vw,32px)', margin: '10px 0 0' }}>Trusted by India's Top Research Institutions</h2>
             </div>
-            {/* Row 1 — scrolls LEFT */}
-            {(() => {
-              const row1 = [
-                { quote: 'Drishti cut our quarterly audit preparation time from 3 weeks to 2 days. Ekta AI alone is worth the switch.', name: 'Dr. Priya Mehta', org: 'DRDO', role: 'Principal Investigator', initials: 'PM', color: '#a78bfa' },
-                { quote: 'The timeline monitor gives us instant visibility across all running satellite projects. A game-changer for our lab.', name: 'V. Krishnamurthy', org: 'ISRO', role: 'Programme Director', initials: 'VK', color: '#60a5fa' },
-                { quote: 'Report submissions used to take three rounds of emails. Now it\'s one upload, one click, and the manager sees it instantly.', name: 'Anjali Bose', org: 'CMPDI', role: 'Senior Analyst', initials: 'AB', color: '#34d399' },
-                { quote: 'We manage 40+ concurrent projects across divisions. Drishti\'s role-based views mean nobody sees what they shouldn\'t.', name: 'Rajan Nair', org: 'BARC', role: 'Project Manager', initials: 'RN', color: '#fbbf24' },
-                { quote: 'Ekta AI answered my compliance question in 4 seconds — it referenced the exact clause from the document I uploaded.', name: 'Prof. Sujata Desai', org: 'IIT Bombay', role: 'Research Coordinator', initials: 'SD', color: '#f472b6' },
-              ];
-              const doubled = [...row1, ...row1];
-              return (
-                <div style={{ overflow: 'hidden', marginBottom: 16 }}>
-                  <div className="marquee-track marquee-track-left" style={{ display: 'flex' }}>
-                    {doubled.map((r, i) => (
-                      <div key={i} className="review-card">
-                        <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
-                          {[1,2,3,4,5].map(s => <i key={s} className="bi bi-star-fill" style={{ color: '#fbbf24', fontSize: 11 }}></i>)}
-                        </div>
-                        <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13.5, lineHeight: 1.72, marginBottom: 18, fontStyle: 'italic' }}>"{r.quote}"</p>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${r.color}25`, border: `1.5px solid ${r.color}60`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: r.color, fontWeight: 800, fontSize: 12, flexShrink: 0 }}>{r.initials}</div>
-                          <div>
-                            <div style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>{r.name}</div>
-                            <div style={{ color: r.color, fontSize: 11, fontWeight: 600 }}>{r.org} &nbsp;·&nbsp; <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 400 }}>{r.role}</span></div>
-                          </div>
+          {/* Row 1 — scrolls LEFT */}
+          {(() => {
+            const row1 = [
+              { quote: 'Drishti cut our quarterly audit preparation time from 3 weeks to 2 days. Ekta AI alone is worth the switch.', name: 'Dr. Priya Mehta', org: 'DRDO', role: 'Principal Investigator', initials: 'PM', color: '#a78bfa', rating: 5 },
+              { quote: 'The timeline monitor gives us instant visibility across all running satellite projects. A game-changer for our lab.', name: 'V. Krishnamurthy', org: 'ISRO', role: 'Programme Director', initials: 'VK', color: '#60a5fa', rating: 4 },
+              { quote: 'Report submissions used to take three rounds of emails. Now it\'s one upload, one click, and the manager sees it instantly.', name: 'Anjali Bose', org: 'CMPDI', role: 'Senior Analyst', initials: 'AB', color: '#34d399', rating: 5 },
+              { quote: 'We manage 40+ concurrent projects across divisions. Drishti\'s role-based views mean nobody sees what they shouldn\'t.', name: 'Rajan Nair', org: 'BARC', role: 'Project Manager', initials: 'RN', color: '#fbbf24', rating: 4 },
+              { quote: 'Ekta AI answered my compliance question in 4 seconds — it referenced the exact clause from the document I uploaded.', name: 'Prof. Sujata Desai', org: 'IIT Bombay', role: 'Research Coordinator', initials: 'SD', color: '#f472b6', rating: 5 },
+            ];
+            const doubled = [...row1, ...row1];
+            return (
+              <div style={{ overflow: 'hidden', marginBottom: 16 }}>
+                <div className="marquee-track marquee-track-left" style={{ display: 'flex' }}>
+                  {doubled.map((r, i) => (
+                    <div key={i} className="review-card">
+                      <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
+                        {[1, 2, 3, 4, 5].map(s => <i key={s} className={`bi ${s <= r.rating ? 'bi-star-fill' : 'bi-star'}`} style={{ color: '#fbbf24', fontSize: 11 }}></i>)}
+                      </div>
+                      <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13.5, lineHeight: 1.72, marginBottom: 18, fontStyle: 'italic' }}>"{r.quote}"</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${r.color}25`, border: `1.5px solid ${r.color}60`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: r.color, fontWeight: 800, fontSize: 12, flexShrink: 0 }}>{r.initials}</div>
+                        <div>
+                          <div style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>{r.name}</div>
+                          <div style={{ color: r.color, fontSize: 11, fontWeight: 600 }}>{r.org} &nbsp;·&nbsp; <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 400 }}>{r.role}</span></div>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
-              );
-            })()}
-            {/* Row 2 — scrolls RIGHT */}
-            {(() => {
-              const row2 = [
-                { quote: 'Finally a platform that speaks the language of government R&D. Compliance, timelines, and AI — all in one place.', name: 'Arjun Kulkarni', org: 'BARC', role: 'Project Manager', initials: 'AK', color: '#34d399' },
-                { quote: 'The encrypted desk feature is brilliant. Sensitive project communications stay within the platform — no WhatsApp leaks.', name: 'Lt. Col. Harish Rao', org: 'DRDO', role: 'Defence Scientist', initials: 'HR', color: '#a78bfa' },
-                { quote: 'We piloted Drishti on 5 CSIR-funded projects. Zero document mis-filing. The AI assistant alone saved 20+ hours.', name: 'Dr. Meera Lal', org: 'CSIR', role: 'Lab Director', initials: 'ML', color: '#60a5fa' },
-                { quote: 'Setting up a new project used to take a day of emails and spreadsheets. With Drishti it\'s 10 minutes, start to finish.', name: 'Kiran Patel', org: 'CMPDI', role: 'Operations Lead', initials: 'KP', color: '#fbbf24' },
-                { quote: 'Ekta\'s RAG approach means it actually understands our documents. It doesn\'t just search — it reasons.', name: 'Prof. Amita Singh', org: 'IIT Delhi', role: 'AI Research Lead', initials: 'AS', color: '#f472b6' },
-              ];
-              const doubled = [...row2, ...row2];
-              return (
-                <div style={{ overflow: 'hidden' }}>
-                  <div className="marquee-track marquee-track-right" style={{ display: 'flex' }}>
-                    {doubled.map((r, i) => (
-                      <div key={i} className="review-card">
-                        <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
-                          {[1,2,3,4,5].map(s => <i key={s} className="bi bi-star-fill" style={{ color: '#fbbf24', fontSize: 11 }}></i>)}
-                        </div>
-                        <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13.5, lineHeight: 1.72, marginBottom: 18, fontStyle: 'italic' }}>"{r.quote}"</p>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${r.color}25`, border: `1.5px solid ${r.color}60`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: r.color, fontWeight: 800, fontSize: 12, flexShrink: 0 }}>{r.initials}</div>
-                          <div>
-                            <div style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>{r.name}</div>
-                            <div style={{ color: r.color, fontSize: 11, fontWeight: 600 }}>{r.org} &nbsp;·&nbsp; <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 400 }}>{r.role}</span></div>
-                          </div>
+              </div>
+            );
+          })()}
+          {/* Row 2 — scrolls RIGHT */}
+          {(() => {
+            const row2 = [
+              { quote: 'Finally a platform that speaks the language of government R&D. Compliance, timelines, and AI — all in one place.', name: 'Arjun Kulkarni', org: 'BARC', role: 'Project Manager', initials: 'AK', color: '#34d399', rating: 5 },
+              { quote: 'The encrypted desk feature is brilliant. Sensitive project communications stay within the platform.', name: 'Lt. Col. Harish Rao', org: 'DRDO', role: 'Defence Scientist', initials: 'HR', color: '#a78bfa', rating: 4 },
+              { quote: 'We piloted Drishti on 5 CSIR-funded projects. Zero document mis-filing. The AI assistant alone saved 20+ hours.', name: 'Dr. Meera Lal', org: 'CSIR', role: 'Lab Director', initials: 'ML', color: '#60a5fa', rating: 5 },
+              { quote: 'Setting up a new project used to take a day. With Drishti it\'s 10 minutes, start to finish. Some UI quirks but great.', name: 'Kiran Patel', org: 'CMPDI', role: 'Operations Lead', initials: 'KP', color: '#fbbf24', rating: 3 },
+              { quote: 'Ekta\'s RAG approach means it actually understands our documents. It doesn\'t just search — it reasons.', name: 'Prof. Amita Singh', org: 'IIT Delhi', role: 'AI Research Lead', initials: 'AS', color: '#f472b6', rating: 5 },
+            ];
+            const doubled = [...row2, ...row2];
+            return (
+              <div style={{ overflow: 'hidden' }}>
+                <div className="marquee-track marquee-track-right" style={{ display: 'flex' }}>
+                  {doubled.map((r, i) => (
+                    <div key={i} className="review-card">
+                      <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
+                        {[1, 2, 3, 4, 5].map(s => <i key={s} className={`bi ${s <= r.rating ? 'bi-star-fill' : 'bi-star'}`} style={{ color: '#fbbf24', fontSize: 11 }}></i>)}
+                      </div>
+                      <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13.5, lineHeight: 1.72, marginBottom: 18, fontStyle: 'italic' }}>"{r.quote}"</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${r.color}25`, border: `1.5px solid ${r.color}60`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: r.color, fontWeight: 800, fontSize: 12, flexShrink: 0 }}>{r.initials}</div>
+                        <div>
+                          <div style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>{r.name}</div>
+                          <div style={{ color: r.color, fontSize: 11, fontWeight: 600 }}>{r.org} &nbsp;·&nbsp; <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 400 }}>{r.role}</span></div>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
-              );
-            })()}
-          </section>
+              </div>
+            );
+          })()}
+        </section>
 
 
           <section style={{ padding: '80px clamp(24px,5vw,64px)', textAlign: 'center' }}>
@@ -1689,12 +1647,67 @@ function App() {
     );
   }
 
+  // ── SHARED BACKGROUND BEAMS ──────────────────────────────────────
+  const BackgroundBeams = () => (
+    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      {/* Base dark — spans full page */}
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 90% 45% at 50% 15%, #1a0533 0%, #07030f 60%)' }} />
+      {/* Mid-page subtle purple bridge */}
+      <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translateX(-50%)', width: '80%', height: '40%', background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(76,29,149,0.12) 0%, transparent 70%)' }} />
+      {/* Footer region glow — mirrors hero glow at bottom */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '55%', background: 'radial-gradient(ellipse 80% 60% at 30% 90%, rgba(109,40,217,0.22) 0%, transparent 60%)' }} />
+      <div style={{ position: 'absolute', bottom: 0, right: '-10%', width: '60%', height: '45%', background: 'radial-gradient(ellipse 60% 50% at 70% 80%, rgba(76,29,149,0.15) 0%, transparent 65%)' }} />
+
+      {/* ── Sharp Double Beams (like the screenshot) ── */}
+      {/* Beam 1: Top left sweeping */}
+      <div className="beam-container" style={{
+        position: 'absolute', top: '-20%', left: '-10%',
+        width: '120%', height: '120%',
+        background: 'conic-gradient(from 200deg at 25% 55%, transparent 0deg, #4c1d95 8deg, #9b4dff 14deg, transparent 20deg, transparent 40deg, #3b0764 50deg, #6d28d9 54deg, transparent 60deg)',
+        opacity: 0.7,
+      }} />
+      
+      {/* Beam 2: Middle right static sharp beam */}
+      <div style={{
+        position: 'absolute', top: '0', right: '-20%',
+        width: '100%', height: '100%',
+        background: 'conic-gradient(from 140deg at 70% 30%, transparent 0deg, rgba(76,29,149,0.8) 4deg, rgba(124,58,237,1) 8deg, transparent 12deg, transparent 25deg, rgba(59,7,100,0.8) 35deg, rgba(109,40,217,0.9) 39deg, transparent 45deg)',
+        opacity: 0.65,
+        transform: 'rotate(-10deg)',
+      }} />
+
+      {/* Beam 3: Bottom left drifting beam */}
+      <div className="deco-beam-1" style={{
+        position: 'absolute', bottom: '-20%', left: '-15%',
+        width: '100%', height: '100%',
+        background: 'conic-gradient(from 320deg at 20% 80%, transparent 0deg, rgba(76,29,149,0.7) 4deg, rgba(139,92,246,0.9) 8deg, transparent 12deg, transparent 20deg, rgba(91,33,182,0.8) 28deg, rgba(124,58,237,0.9) 32deg, transparent 38deg)',
+        opacity: 0.6,
+      }} />
+
+      {/* Secondary softer glow */}
+      <div style={{
+        position: 'absolute', top: 0, left: '-15%',
+        width: '70%', height: '100%',
+        background: 'radial-gradient(ellipse 60% 80% at 20% 50%, rgba(109,40,217,0.3) 0%, transparent 65%)',
+        animation: 'beamDrift 18s ease-in-out infinite',
+      }} />
+      {/* Grain overlay */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E")`,
+        opacity: 0.045,
+      }} />
+    </div>
+  );
+
   // ── SHARED INNER PAGE LAYOUT WRAPPER ──────────────────────────────────────
   const InnerPageShell = ({ children }) => {
     return (
-      <div style={{ background: 'linear-gradient(180deg, #07030f 0%, #0d0420 35%, #07030f 65%, #0d0420 100%)', minHeight: '100vh', fontFamily: 'Inter, sans-serif', color: '#fff' }}>
-        {/* Navbar */}
-        <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px clamp(24px, 5vw, 64px)', gap: 24, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ background: '#07030f', minHeight: '100vh', fontFamily: 'Inter, sans-serif', color: '#fff', position: 'relative', overflow: 'hidden' }}>
+        <BackgroundBeams />
+        <div style={{ position: 'relative', zIndex: 10 }}>
+          {/* Navbar */}
+          <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px clamp(24px, 5vw, 64px)', gap: 24, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
             <button onClick={() => setCurrentView('home')} style={{ background: 'none', border: 0, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 2 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1718,6 +1731,7 @@ function App() {
           </div>
         </nav>
         {children}
+        </div>
       </div>
     );
   };
@@ -1771,6 +1785,7 @@ function App() {
             <h1 style={{ color: '#fff', fontWeight: 900, fontSize: 'clamp(32px,5vw,52px)', margin: '16px 0 16px', letterSpacing: '-0.03em' }}>How Drishti Works</h1>
             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 16, maxWidth: 520, margin: '0 auto' }}>A guided walkthrough of the full project lifecycle on the platform.</p>
           </div>
+          {/* How It Works loop */}
           {[
             { step: '01', color: '#a78bfa', icon: 'bi-person-plus', title: 'Sign Up & Choose Your Role', body: 'Create an account in under 30 seconds. Choose Manager (to create and oversee projects) or Investigator (to execute and report). Your entire UI adapts to your role.', badge: 'Setup' },
             { step: '02', color: '#60a5fa', icon: 'bi-folder-plus', title: 'Manager Creates a Project', body: 'Define the project code, title, agency, budget, timeline, and assign an investigator by username or email. Upload supporting reference documents (PDF, DOCX, TXT) — Ekta AI indexes them instantly.', badge: 'Manager Action' },
@@ -1779,9 +1794,13 @@ function App() {
             { step: '05', color: '#f472b6', icon: 'bi-robot', title: 'Ask Ekta AI Anything', body: 'Both managers and investigators can use Ekta AI scoped to a specific project. Ask "what was the approved budget?" or "summarise the submitted report" — Ekta retrieves answers from your actual indexed documents.', badge: 'AI Layer' },
             { step: '06', color: '#a78bfa', icon: 'bi-check2-circle', title: 'Manager Reviews & Approves', body: "The manager inspects the submitted PDF, reads Ekta's AI summary, adds review notes, and either approves the report or requests a revision. The investigator sees the feedback instantly.", badge: 'Closure' },
           ].map(({ step, color, icon, title, body, badge }, idx) => (
-            <div key={step} style={{ display: 'flex', gap: 28, marginBottom: 48, alignItems: 'flex-start' }}>
+            <div key={step} style={{ display: 'flex', gap: 28, marginBottom: 48, alignItems: 'flex-start', transition: 'transform 0.3s', cursor: 'default' }}
+                 onMouseEnter={e => e.currentTarget.style.transform = 'translateX(10px)'}
+                 onMouseLeave={e => e.currentTarget.style.transform = 'translateX(0px)'}>
               <div style={{ flexShrink: 0 }}>
-                <div style={{ width: 56, height: 56, borderRadius: '50%', background: `${color}18`, border: `2px solid ${color}60`, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                <div style={{ width: 56, height: 56, borderRadius: '50%', background: `${color}18`, border: `2px solid ${color}60`, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', transition: 'box-shadow 0.3s' }}
+                     onMouseEnter={e => e.currentTarget.style.boxShadow = `0 0 20px ${color}40`}
+                     onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
                   <i className={`bi ${icon}`} style={{ fontSize: 22, color }}></i>
                   <span style={{ position: 'absolute', top: -10, right: -12, background: color, color: '#000', fontSize: 9, fontWeight: 900, borderRadius: 20, padding: '2px 7px' }}>{step}</span>
                 </div>
@@ -1821,7 +1840,9 @@ function App() {
                 points: ['Personal dashboard for running tasks', 'Upcoming & completed task tracker', 'Submit PDF progress reports securely', 'Use Ekta AI on assigned project documents', 'View manager feedback in real time', 'Receive project alerts via email'],
               },
             ].map(({ role, icon, color, points }) => (
-              <div key={role} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 20, padding: '36px 32px', border: `1px solid ${color}30` }}>
+              <div key={role} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 20, padding: '36px 32px', border: `1px solid ${color}30`, transition: 'transform 0.3s, box-shadow 0.3s' }}
+                   onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = `0 12px 40px ${color}20`; }}
+                   onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
                   <div style={{ width: 52, height: 52, borderRadius: '50%', background: `${color}18`, border: `2px solid ${color}60`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <i className={`bi ${icon}`} style={{ fontSize: 22, color }}></i>
