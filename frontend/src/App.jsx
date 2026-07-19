@@ -1107,57 +1107,81 @@ function App() {
   const underReviewReports = projects.filter(p => p.report_status === 'submitted');
 
   // ── SHARED BACKGROUND BEAMS ──────────────────────────────────────
-  const BackgroundBeams = () => (
-    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      {/* Base dark — spans full page */}
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 90% 45% at 50% 15%, #1a0533 0%, #07030f 60%)' }} />
-      {/* Mid-page subtle purple bridge */}
-      <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translateX(-50%)', width: '80%', height: '40%', background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(76,29,149,0.12) 0%, transparent 70%)' }} />
-      {/* Footer region glow — mirrors hero glow at bottom */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '55%', background: 'radial-gradient(ellipse 80% 60% at 30% 90%, rgba(109,40,217,0.22) 0%, transparent 60%)' }} />
-      <div style={{ position: 'absolute', bottom: 0, right: '-10%', width: '60%', height: '45%', background: 'radial-gradient(ellipse 60% 50% at 70% 80%, rgba(76,29,149,0.15) 0%, transparent 65%)' }} />
+  const BackgroundBeams = () => {
+    return (
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+        {/* Base dark — spans full page */}
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 90% 45% at 50% 15%, #1a0533 0%, #07030f 60%)' }} />
+        {/* Mid-page subtle purple bridge */}
+        <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translateX(-50%)', width: '80%', height: '40%', background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(76,29,149,0.12) 0%, transparent 70%)' }} />
+        {/* Footer region glow — mirrors hero glow at bottom */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '55%', background: 'radial-gradient(ellipse 80% 60% at 30% 90%, rgba(109,40,217,0.22) 0%, transparent 60%)' }} />
+        <div style={{ position: 'absolute', bottom: 0, right: '-10%', width: '60%', height: '45%', background: 'radial-gradient(ellipse 60% 50% at 70% 80%, rgba(76,29,149,0.15) 0%, transparent 65%)' }} />
 
-      {/* ── Sharp Double Beams (like the screenshot) ── */}
-      {/* Beam 1: Top left sweeping */}
-      <div className="beam-container" style={{
-        position: 'absolute', top: '-20%', left: '-10%',
-        width: '120%', height: '120%',
-        background: 'conic-gradient(from 200deg at 25% 55%, transparent 0deg, #4c1d95 8deg, #9b4dff 14deg, transparent 20deg, transparent 40deg, #3b0764 50deg, #6d28d9 54deg, transparent 60deg)',
-        opacity: 0.7,
-      }} />
-      
-      {/* Beam 2: Middle right static sharp beam */}
-      <div style={{
-        position: 'absolute', top: '0', right: '-20%',
-        width: '100%', height: '100%',
-        background: 'conic-gradient(from 140deg at 70% 30%, transparent 0deg, rgba(76,29,149,0.8) 4deg, rgba(124,58,237,1) 8deg, transparent 12deg, transparent 25deg, rgba(59,7,100,0.8) 35deg, rgba(109,40,217,0.9) 39deg, transparent 45deg)',
-        opacity: 0.65,
-        transform: 'rotate(-10deg)',
-      }} />
+        {/* ── Page-Specific Sharp Double Beams ── */}
+        
+        {currentView === 'home' && (
+          <div className="beam-container" style={{
+            position: 'absolute', top: '45%', left: '-10%',
+            width: '120%', height: '120%',
+            background: 'conic-gradient(from 185deg at 20% 40%, transparent 0deg, #4c1d95 6deg, #9b4dff 10deg, transparent 15deg, transparent 35deg, #3b0764 45deg, #7c3aed 49deg, transparent 55deg)',
+            opacity: 0.85,
+          }} />
+        )}
 
-      {/* Beam 3: Bottom left drifting beam */}
-      <div className="deco-beam-1" style={{
-        position: 'absolute', bottom: '-20%', left: '-15%',
-        width: '100%', height: '100%',
-        background: 'conic-gradient(from 320deg at 20% 80%, transparent 0deg, rgba(76,29,149,0.7) 4deg, rgba(139,92,246,0.9) 8deg, transparent 12deg, transparent 20deg, rgba(91,33,182,0.8) 28deg, rgba(124,58,237,0.9) 32deg, transparent 38deg)',
-        opacity: 0.6,
-      }} />
+        {currentView === 'features' && (
+          <div className="deco-beam-1" style={{
+            position: 'absolute', top: '-10%', right: '-20%',
+            width: '100%', height: '100%',
+            background: 'conic-gradient(from 130deg at 80% 30%, transparent 0deg, rgba(124,58,237,0.85) 4deg, rgba(167,139,250,1) 7deg, transparent 12deg)',
+            opacity: 0.7,
+            transform: 'rotate(-5deg)',
+          }} />
+        )}
 
-      {/* Secondary softer glow */}
-      <div style={{
-        position: 'absolute', top: 0, left: '-15%',
-        width: '70%', height: '100%',
-        background: 'radial-gradient(ellipse 60% 80% at 20% 50%, rgba(109,40,217,0.3) 0%, transparent 65%)',
-        animation: 'beamDrift 18s ease-in-out infinite',
-      }} />
-      {/* Grain overlay */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E")`,
-        opacity: 0.045,
-      }} />
-    </div>
-  );
+        {currentView === 'how-it-works' && (
+          <div className="beam-container" style={{
+            position: 'absolute', top: '-30%', left: '-25%',
+            width: '120%', height: '120%',
+            background: 'conic-gradient(from 220deg at 30% 30%, transparent 0deg, rgba(76,29,149,0.8) 5deg, rgba(139,92,246,0.95) 9deg, transparent 16deg)',
+            opacity: 0.65,
+          }} />
+        )}
+
+        {currentView === 'for-teams' && (
+          <div className="deco-beam-2" style={{
+            position: 'absolute', bottom: '-20%', left: '10%',
+            width: '100%', height: '100%',
+            background: 'conic-gradient(from 340deg at 40% 80%, transparent 0deg, rgba(91,33,182,0.8) 4deg, rgba(124,58,237,1) 8deg, transparent 13deg)',
+            opacity: 0.75,
+          }} />
+        )}
+
+        {currentView === 'contact' && (
+          <div className="beam-container" style={{
+            position: 'absolute', top: '-40%', left: '0%',
+            width: '100%', height: '150%',
+            background: 'conic-gradient(from 170deg at 50% 20%, transparent 0deg, rgba(76,29,149,0.6) 3deg, rgba(167,139,250,0.8) 6deg, transparent 10deg, transparent 20deg, rgba(59,7,100,0.7) 25deg, rgba(139,92,246,0.85) 28deg, transparent 33deg)',
+            opacity: 0.6,
+          }} />
+        )}
+
+        {/* Secondary softer glow shared everywhere */}
+        <div style={{
+          position: 'absolute', top: 0, left: '-15%',
+          width: '70%', height: '100%',
+          background: 'radial-gradient(ellipse 60% 80% at 20% 50%, rgba(109,40,217,0.2) 0%, transparent 65%)',
+          animation: 'beamDrift 18s ease-in-out infinite',
+        }} />
+        {/* Grain overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E")`,
+          opacity: 0.045,
+        }} />
+      </div>
+    );
+  };
 
   // ── SHARED INNER PAGE LAYOUT WRAPPER ──────────────────────────────────────
   const InnerPageShell = ({ children }) => {
