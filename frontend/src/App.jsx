@@ -527,9 +527,20 @@ const DashboardStatCards = ({ projects, isManager }) => {
 };
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem('token') || '');
-  const [username, setUsername] = useState(localStorage.getItem('username') || '');
-  const [isStaff, setIsStaff] = useState(localStorage.getItem('isStaff') === 'true');
+  // ─── Auth state — stored in sessionStorage (per-tab, auto-cleared on close)
+  // This isolates Manager and Investigator tabs from each other.
+  const [token, setToken] = useState(() => {
+    const stored = sessionStorage.getItem('token');
+    const expiry = sessionStorage.getItem('tokenExpiry');
+    // If the token has expired, clear and return empty
+    if (stored && expiry && Date.now() > parseInt(expiry)) {
+      sessionStorage.clear();
+      return '';
+    }
+    return stored || '';
+  });
+  const [username, setUsername] = useState(() => sessionStorage.getItem('username') || '');
+  const [isStaff, setIsStaff] = useState(() => sessionStorage.getItem('isStaff') === 'true');
   
   // Navigation Routing State
   // 'home', 'auth-select', 'login', 'signup', 'dashboard'
@@ -625,9 +636,13 @@ function App() {
     setToken(token);
     setUsername(username);
     setIsStaff(isStaff);
-    localStorage.setItem('token', token);
-    localStorage.setItem('username', username);
-    localStorage.setItem('isStaff', isStaff ? 'true' : 'false');
+    // Use sessionStorage so each browser tab is fully isolated.
+    // A Manager tab and Investigator tab cannot affect each other.
+    const expiryTime = Date.now() + (8 * 60 * 60 * 1000); // 8 hours from now
+    sessionStorage.setItem('token', token);
+    sessionStorage.setItem('username', username);
+    sessionStorage.setItem('isStaff', isStaff ? 'true' : 'false');
+    sessionStorage.setItem('tokenExpiry', expiryTime.toString());
     setCurrentView('dashboard');
   };
 
@@ -637,7 +652,8 @@ function App() {
     setIsStaff(false);
     setSelectedProject(null);
     setProjects([]);
-    localStorage.clear();
+    // Clear only this tab's session data, not other tabs
+    sessionStorage.clear();
     setCurrentView('home');
   };
 
@@ -681,11 +697,31 @@ function App() {
     }
   };
 
+  // ─── Authenticated fetch helper ────────────────────────────────────────────
+  // Every API call should go through this. If the server returns 401 (token
+  // expired or invalid), the user is automatically logged out and shown the
+  // login screen. This prevents "ghost sessions" where the UI is visible but
+  // all API calls silently fail.
+  const authFetch = async (url, options = {}) => {
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        ...(options.headers || {}),
+      },
+    });
+    if (res.status === 401) {
+      // Token is expired or invalid — force logout immediately
+      logout();
+      return null;
+    }
+    return res;
+  };
+
   const fetchProjects = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/projects/`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await authFetch(`${API_BASE}/api/projects/`);
+      if (!res) return;
       const data = await res.json();
       if (res.ok) setProjects(data);
     } catch (err) {
@@ -695,9 +731,8 @@ function App() {
 
   const fetchProjectDetail = async (id) => {
     try {
-      const res = await fetch(`${API_BASE}/api/projects/${id}/`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await authFetch(`${API_BASE}/api/projects/${id}/`);
+      if (!res) return;
       const data = await res.json();
       if (res.ok) {
         setSelectedProject(data);
@@ -709,9 +744,8 @@ function App() {
 
   const fetchInvestigators = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/investigators/`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await authFetch(`${API_BASE}/api/investigators/`);
+      if (!res) return;
       const data = await res.json();
       if (res.ok) setInvestigators(data);
     } catch (err) {
@@ -721,9 +755,8 @@ function App() {
 
   const fetchNotifications = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/notifications/`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await authFetch(`${API_BASE}/api/notifications/`);
+      if (!res) return;
       const data = await res.json();
       if (res.ok) setNotifications(data);
     } catch (err) {
@@ -733,10 +766,10 @@ function App() {
 
   const markNotificationRead = async (id) => {
     try {
-      const res = await fetch(`${API_BASE}/api/notifications/${id}/read/`, {
+      const res = await authFetch(`${API_BASE}/api/notifications/${id}/read/`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (!res) return;
       if (res.ok) fetchNotifications();
     } catch (err) {
       console.error(err);
