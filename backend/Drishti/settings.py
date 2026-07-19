@@ -203,7 +203,7 @@ REST_FRAMEWORK = {
 
 from datetime import timedelta
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=8),  # Sessions expire after 8 hours of inactivity
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=5),  # Sessions expire after 5 hours of inactivity
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),  # Refresh token valid for 1 day
     'ROTATE_REFRESH_TOKENS': True,       # New refresh token issued on every use
     'BLACKLIST_AFTER_ROTATION': False,   # Keep simple without blacklist app

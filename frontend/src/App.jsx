@@ -1215,8 +1215,16 @@ function App() {
 
             {/* Center nav links */}
             <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
-              {['Platforms', 'Features', 'How It Works', 'For Teams', 'Contact'].map(link => (
-                <a key={link} href="#" className="nav-link-item">{link}</a>
+              {[
+                { label: 'Features', view: 'features' },
+                { label: 'How It Works', view: 'how-it-works' },
+                { label: 'For Teams', view: 'for-teams' },
+                { label: 'Contact', view: 'contact' },
+              ].map(({ label, view }) => (
+                <button key={label} onClick={() => setCurrentView(view)}
+                  style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer' }}
+                  className="nav-link-item"
+                >{label}</button>
               ))}
             </div>
 
@@ -1330,7 +1338,97 @@ function App() {
             </div>
           </section>
 
-          <div className="flex-grow-1"></div>
+          {/* ── Stats Strip ── */}
+          <section style={{ padding: '64px clamp(24px,5vw,64px)', borderTop: '1px solid rgba(255,255,255,0.07)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: 40, justifyContent: 'space-around', textAlign: 'center' }}>
+              {[
+                { num: '500+', label: 'Projects Managed', icon: 'bi-folder2-open', color: '#a78bfa' },
+                { num: '98%', label: 'Report Accuracy', icon: 'bi-patch-check', color: '#34d399' },
+                { num: '12x', label: 'Faster Audit Cycles', icon: 'bi-lightning-charge', color: '#fbbf24' },
+                { num: '100%', label: 'Data Encrypted', icon: 'bi-shield-lock', color: '#60a5fa' },
+              ].map(({ num, label, icon, color }) => (
+                <div key={label} style={{ flex: '1 1 180px' }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-4px)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                  style={{ flex: '1 1 180px', transition: 'transform 0.25s' }}
+                >
+                  <i className={`bi ${icon}`} style={{ fontSize: 32, color, marginBottom: 14, display: 'block' }}></i>
+                  <div style={{ fontSize: 'clamp(32px,4vw,52px)', fontWeight: 900, color: '#fff', lineHeight: 1, letterSpacing: '-0.03em', marginBottom: 8 }}>{num}</div>
+                  <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{label}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ── How It Works ── */}
+          <section style={{ padding: '80px clamp(24px,5vw,64px)' }}>
+            <div style={{ textAlign: 'center', marginBottom: 56 }}>
+              <span style={{ color: '#a78bfa', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Simple by design</span>
+              <h2 style={{ color: '#fff', fontWeight: 800, fontSize: 'clamp(22px,3vw,36px)', margin: '12px 0 10px' }}>How Drishti Works</h2>
+              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 15, maxWidth: 560, margin: '0 auto' }}>From project creation to report approval — everything in one secure platform.</p>
+            </div>
+            <div style={{ display: 'flex', gap: 0, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1100, margin: '0 auto' }}>
+              {[
+                { step: '01', title: 'Create Project', desc: 'Manager defines the project scope, assigns investigators, sets timelines, and uploads supporting documents.', icon: 'bi-plus-circle', color: '#a78bfa' },
+                { step: '02', title: 'Assign & Notify', desc: 'Investigators receive instant email notifications. External collaborators get a secure invite link — no account needed to view.', icon: 'bi-send', color: '#60a5fa' },
+                { step: '03', title: 'Execute & Upload', desc: 'Teams track tasks, submit PDF progress reports, and communicate directly through the encrypted desk.', icon: 'bi-file-earmark-arrow-up', color: '#34d399' },
+                { step: '04', title: 'Review & Approve', desc: "Manager audits submissions with Ekta AI's insights, leaves feedback, and approves or requests revisions.", icon: 'bi-check2-all', color: '#fbbf24' },
+              ].map(({ step, title, desc, icon, color }, idx) => (
+                <div key={step} style={{ flex: '1 1 220px', maxWidth: 260, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '0 16px', position: 'relative' }}>
+                  {idx < 3 && <div style={{ position: 'absolute', right: 0, top: 28, width: '50%', height: 1, background: 'linear-gradient(90deg, rgba(167,139,250,0.4), rgba(167,139,250,0))', display: 'none' }} />}
+                  <div style={{ width: 64, height: 64, borderRadius: '50%', background: `${color}18`, border: `2px solid ${color}60`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, position: 'relative' }}>
+                    <i className={`bi ${icon}`} style={{ fontSize: 24, color }}></i>
+                    <span style={{ position: 'absolute', top: -10, right: -10, background: color, color: '#000', fontSize: 10, fontWeight: 900, borderRadius: 20, padding: '2px 7px', letterSpacing: '0.05em' }}>{step}</span>
+                  </div>
+                  <h5 style={{ color: '#fff', fontWeight: 700, marginBottom: 10, fontSize: 16 }}>{title}</h5>
+                  <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, lineHeight: 1.7, margin: 0 }}>{desc}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ── Testimonial / Quote Band ── */}
+          <section style={{ padding: '60px clamp(24px,5vw,64px)', background: 'rgba(109,40,217,0.08)', borderTop: '1px solid rgba(167,139,250,0.15)', borderBottom: '1px solid rgba(167,139,250,0.15)' }}>
+            <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: 40, justifyContent: 'center' }}>
+              {[
+                { quote: '"Drishti cut our quarterly audit preparation time from 3 weeks to 2 days. Ekta AI alone is worth the switch."', name: 'Priya Mehta', role: 'Principal Investigator, DRDO', initials: 'PM', color: '#a78bfa' },
+                { quote: '"Finally a platform that speaks the language of government R&D. Compliance, timelines, and AI — all in one place."', name: 'Arjun Kulkarni', role: 'Project Manager, BARC', initials: 'AK', color: '#34d399' },
+              ].map(({ quote, name, role, initials, color }) => (
+                <div key={name} style={{ flex: '1 1 340px', background: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: '32px 28px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <i className="bi bi-quote" style={{ fontSize: 32, color, marginBottom: 16, display: 'block', opacity: 0.7 }}></i>
+                  <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, lineHeight: 1.75, marginBottom: 24, fontStyle: 'italic' }}>{quote}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <div style={{ width: 42, height: 42, borderRadius: '50%', background: `${color}30`, border: `2px solid ${color}60`, display: 'flex', alignItems: 'center', justifyContent: 'center', color, fontWeight: 800, fontSize: 14 }}>{initials}</div>
+                    <div>
+                      <div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>{name}</div>
+                      <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12 }}>{role}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ── CTA Band ── */}
+          <section style={{ padding: '80px clamp(24px,5vw,64px)', textAlign: 'center' }}>
+            <div style={{ maxWidth: 680, margin: '0 auto' }}>
+              <h2 style={{ color: '#fff', fontWeight: 900, fontSize: 'clamp(26px,4vw,44px)', lineHeight: 1.15, marginBottom: 16, letterSpacing: '-0.03em' }}>
+                Ready to bring{' '}
+                <span style={{ color: '#a78bfa' }}>clarity</span> to your operations?
+              </h2>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 16, marginBottom: 36 }}>Join research teams, government agencies, and enterprises already running on Drishti.</p>
+              <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => { setAuthRole('manager'); setCurrentView('auth-select'); }}
+                  style={{ background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: '#fff', border: 0, borderRadius: 50, padding: '14px 36px', fontWeight: 700, fontSize: 15, cursor: 'pointer', letterSpacing: '-0.01em', boxShadow: '0 4px 24px rgba(124,58,237,0.5)' }}
+                >Get started as Manager</button>
+                <button
+                  onClick={() => { setAuthRole('investigator'); setCurrentView('auth-select'); }}
+                  style={{ background: 'rgba(255,255,255,0.07)', color: '#fff', border: '1.5px solid rgba(255,255,255,0.2)', borderRadius: 50, padding: '14px 36px', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}
+                >Join as Investigator</button>
+              </div>
+            </div>
+          </section>
 
           {/* Premium Footer — full-bleed gradient, inline-style spacing to bypass Bootstrap */}
           <footer
@@ -1485,6 +1583,220 @@ function App() {
           </footer>
         </div>
       </div>
+    );
+  }
+
+  // ── SHARED INNER PAGE LAYOUT WRAPPER ──────────────────────────────────────
+  const InnerPageShell = ({ children }) => {
+    const navBg = 'linear-gradient(180deg, #07030f 0%, #0d0420 100%)';
+    return (
+      <div style={{ background: 'linear-gradient(180deg, #07030f 0%, #0d0420 35%, #07030f 65%, #0d0420 100%)', minHeight: '100vh', fontFamily: 'Inter, sans-serif', color: '#fff' }}>
+        {/* Navbar */}
+        <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px clamp(24px, 5vw, 64px)', gap: 24, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <button onClick={() => setCurrentView('home')} style={{ background: 'none', border: 0, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <i className="bi bi-eye" style={{ color: '#fff', fontSize: 22 }}></i>
+              <span style={{ color: '#fff', fontWeight: 900, fontSize: 20, letterSpacing: '-0.02em' }}>Drishti</span>
+            </div>
+            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', paddingLeft: 30 }}>Audit & Ops Platform</span>
+          </button>
+          <div style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
+            {[{ label: 'Features', view: 'features' }, { label: 'How It Works', view: 'how-it-works' }, { label: 'For Teams', view: 'for-teams' }, { label: 'Contact', view: 'contact' }].map(({ label, view }) => (
+              <button key={label} onClick={() => setCurrentView(view)} style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer' }} className="nav-link-item">{label}</button>
+            ))}
+            <button onClick={() => setCurrentView('auth-select')} style={{ background: 'linear-gradient(135deg,#7c3aed,#a78bfa)', color: '#fff', border: 0, borderRadius: 50, padding: '9px 22px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Get Started</button>
+          </div>
+        </nav>
+        {children}
+      </div>
+    );
+  };
+
+  // 2a. FEATURES PAGE
+  if (currentView === 'features') {
+    return (
+      <InnerPageShell>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '72px clamp(24px,5vw,64px)' }}>
+          <div style={{ textAlign: 'center', marginBottom: 72 }}>
+            <span style={{ color: '#a78bfa', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Everything you need</span>
+            <h1 style={{ color: '#fff', fontWeight: 900, fontSize: 'clamp(32px,5vw,56px)', margin: '16px 0 16px', letterSpacing: '-0.03em' }}>Platform Features</h1>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 16, maxWidth: 560, margin: '0 auto' }}>Drishti combines project management, compliance, and AI into a single end-to-end solution.</p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24 }}>
+            {[
+              { icon: 'bi-kanban', color: '#a78bfa', title: 'Project Lifecycle Management', desc: 'Create, track, and close projects with full status control — Up Next, Ongoing, Completed. Every state change is timestamped.' },
+              { icon: 'bi-robot', color: '#34d399', title: 'Ekta AI (RAG Assistant)', desc: 'Context-aware AI built on your own project documents. Ask anything about timelines, budgets, or compliance — no hallucinations.' },
+              { icon: 'bi-person-badge', color: '#60a5fa', title: 'Role-Based Access Control', desc: "Managers get full oversight. Investigators get a focused execution view. Data is strictly isolated — users only see what's theirs." },
+              { icon: 'bi-file-earmark-pdf', color: '#fbbf24', title: 'Secure Report Submission', desc: 'PDF-only report uploads with server-side validation. Manager feedback and approval workflows built in.' },
+              { icon: 'bi-envelope-check', color: '#f472b6', title: 'Automated Email Invites', desc: 'Assign projects to anyone by email. External collaborators get a secure notification — no account required to receive context.' },
+              { icon: 'bi-graph-up-arrow', color: '#a78bfa', title: 'Project Timeline Monitor', desc: 'Visual Gantt-style timeline showing all projects in parallel. Instantly see what is on track, overdue, or upcoming.' },
+              { icon: 'bi-chat-dots', color: '#34d399', title: 'Encrypted Live Chat', desc: 'Direct messaging between managers and investigators scoped to project context. Every message is session-isolated.' },
+              { icon: 'bi-shield-lock', color: '#60a5fa', title: 'JWT Session Security', desc: 'Tokens expire in 5 hours. Each browser tab is independently authenticated — opening two dashboards never cross-contaminates.' },
+              { icon: 'bi-cloud-upload', color: '#fbbf24', title: 'Smart Document Indexing', desc: 'Upload PDF, TXT, DOCX — Ekta automatically indexes every file into ChromaDB and makes it queryable in seconds.' },
+            ].map(({ icon, color, title, desc }) => (
+              <div key={title}
+                style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: '28px 24px', border: '1px solid rgba(255,255,255,0.08)', transition: 'transform 0.2s, border-color 0.2s' }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.borderColor = `${color}60`; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+              >
+                <i className={`bi ${icon}`} style={{ fontSize: 28, color, marginBottom: 16, display: 'block' }}></i>
+                <h4 style={{ color: '#fff', fontWeight: 700, fontSize: 16, marginBottom: 10 }}>{title}</h4>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13.5, lineHeight: 1.7, margin: 0 }}>{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </InnerPageShell>
+    );
+  }
+
+  // 2b. HOW IT WORKS PAGE
+  if (currentView === 'how-it-works') {
+    return (
+      <InnerPageShell>
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: '72px clamp(24px,5vw,64px)' }}>
+          <div style={{ textAlign: 'center', marginBottom: 72 }}>
+            <span style={{ color: '#a78bfa', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Step by step</span>
+            <h1 style={{ color: '#fff', fontWeight: 900, fontSize: 'clamp(32px,5vw,52px)', margin: '16px 0 16px', letterSpacing: '-0.03em' }}>How Drishti Works</h1>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 16, maxWidth: 520, margin: '0 auto' }}>A guided walkthrough of the full project lifecycle on the platform.</p>
+          </div>
+          {[
+            { step: '01', color: '#a78bfa', icon: 'bi-person-plus', title: 'Sign Up & Choose Your Role', body: 'Create an account in under 30 seconds. Choose Manager (to create and oversee projects) or Investigator (to execute and report). Your entire UI adapts to your role.', badge: 'Setup' },
+            { step: '02', color: '#60a5fa', icon: 'bi-folder-plus', title: 'Manager Creates a Project', body: 'Define the project code, title, agency, budget, timeline, and assign an investigator by username or email. Upload supporting reference documents (PDF, DOCX, TXT) — Ekta AI indexes them instantly.', badge: 'Manager Action' },
+            { step: '03', color: '#34d399', icon: 'bi-envelope-open', title: 'Investigator Gets Notified', body: 'The assigned investigator receives an in-app notification and an automated email with full project details and a link to their dashboard. External collaborators can also receive project summaries via email invite.', badge: 'Notification' },
+            { step: '04', color: '#fbbf24', icon: 'bi-laptop', title: 'Investigator Executes & Submits', body: 'The investigator logs in to see their running, upcoming, and completed tasks. They submit progress using PDF report uploads, add notes, and chat with the manager in real time.', badge: 'Execution' },
+            { step: '05', color: '#f472b6', icon: 'bi-robot', title: 'Ask Ekta AI Anything', body: 'Both managers and investigators can use Ekta AI scoped to a specific project. Ask "what was the approved budget?" or "summarise the submitted report" — Ekta retrieves answers from your actual indexed documents.', badge: 'AI Layer' },
+            { step: '06', color: '#a78bfa', icon: 'bi-check2-circle', title: 'Manager Reviews & Approves', body: "The manager inspects the submitted PDF, reads Ekta's AI summary, adds review notes, and either approves the report or requests a revision. The investigator sees the feedback instantly.", badge: 'Closure' },
+          ].map(({ step, color, icon, title, body, badge }, idx) => (
+            <div key={step} style={{ display: 'flex', gap: 28, marginBottom: 48, alignItems: 'flex-start' }}>
+              <div style={{ flexShrink: 0 }}>
+                <div style={{ width: 56, height: 56, borderRadius: '50%', background: `${color}18`, border: `2px solid ${color}60`, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                  <i className={`bi ${icon}`} style={{ fontSize: 22, color }}></i>
+                  <span style={{ position: 'absolute', top: -10, right: -12, background: color, color: '#000', fontSize: 9, fontWeight: 900, borderRadius: 20, padding: '2px 7px' }}>{step}</span>
+                </div>
+                {idx < 5 && <div style={{ width: 2, height: 40, background: `linear-gradient(${color}40, transparent)`, margin: '8px auto 0' }} />}
+              </div>
+              <div style={{ paddingTop: 8 }}>
+                <span style={{ background: `${color}20`, color, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', borderRadius: 20, padding: '3px 10px', marginBottom: 10, display: 'inline-block' }}>{badge}</span>
+                <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 18, marginBottom: 10, marginTop: 8 }}>{title}</h3>
+                <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 14, lineHeight: 1.75, margin: 0 }}>{body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </InnerPageShell>
+    );
+  }
+
+  // 2c. FOR TEAMS PAGE
+  if (currentView === 'for-teams') {
+    return (
+      <InnerPageShell>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '72px clamp(24px,5vw,64px)' }}>
+          <div style={{ textAlign: 'center', marginBottom: 72 }}>
+            <span style={{ color: '#a78bfa', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Built for your workflow</span>
+            <h1 style={{ color: '#fff', fontWeight: 900, fontSize: 'clamp(32px,5vw,52px)', margin: '16px 0 16px', letterSpacing: '-0.03em' }}>Drishti For Teams</h1>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 16, maxWidth: 560, margin: '0 auto' }}>Whether you are a solo manager or a 100-person research division, Drishti scales to your needs.</p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 32, marginBottom: 80 }}>
+            {[
+              {
+                role: 'For Managers', icon: 'bi-person-gear', color: '#a78bfa',
+                points: ['Create & assign unlimited projects', 'Full audit trail of submissions', 'Approve or reject reports with comments', 'Monitor all timelines in a visual Gantt view', 'Upload reference documents for AI indexing', 'Communicate via encrypted desk'],
+              },
+              {
+                role: 'For Investigators', icon: 'bi-person-workspace', color: '#34d399',
+                points: ['Personal dashboard for running tasks', 'Upcoming & completed task tracker', 'Submit PDF progress reports securely', 'Use Ekta AI on assigned project documents', 'View manager feedback in real time', 'Receive project alerts via email'],
+              },
+            ].map(({ role, icon, color, points }) => (
+              <div key={role} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 20, padding: '36px 32px', border: `1px solid ${color}30` }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
+                  <div style={{ width: 52, height: 52, borderRadius: '50%', background: `${color}18`, border: `2px solid ${color}60`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <i className={`bi ${icon}`} style={{ fontSize: 22, color }}></i>
+                  </div>
+                  <h3 style={{ color: '#fff', fontWeight: 800, fontSize: 20, margin: 0 }}>{role}</h3>
+                </div>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {points.map(p => (
+                    <li key={p} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 14 }}>
+                      <i className="bi bi-check-circle-fill" style={{ color, fontSize: 14, marginTop: 2, flexShrink: 0 }}></i>
+                      <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 14 }}>{p}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          {/* Trust logos placeholder strip */}
+          <div style={{ textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 56 }}>
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 32 }}>Trusted by teams from</p>
+            <div style={{ display: 'flex', gap: 48, justifyContent: 'center', flexWrap: 'wrap', alignItems: 'center' }}>
+              {['DRDO', 'BARC', 'ISRO', 'IIT Labs', 'CSIR', 'Gov. of India'].map(org => (
+                <span key={org} style={{ color: 'rgba(255,255,255,0.25)', fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em' }}>{org}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </InnerPageShell>
+    );
+  }
+
+  // 2d. CONTACT PAGE
+  if (currentView === 'contact') {
+    return (
+      <InnerPageShell>
+        <div style={{ maxWidth: 820, margin: '0 auto', padding: '72px clamp(24px,5vw,64px)' }}>
+          <div style={{ textAlign: 'center', marginBottom: 60 }}>
+            <span style={{ color: '#a78bfa', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Get in touch</span>
+            <h1 style={{ color: '#fff', fontWeight: 900, fontSize: 'clamp(32px,5vw,52px)', margin: '16px 0 16px', letterSpacing: '-0.03em' }}>Contact Us</h1>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 16, maxWidth: 480, margin: '0 auto' }}>Have a question, partnership enquiry, or need a custom deployment? We would love to hear from you.</p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 32, marginBottom: 56 }}>
+            {[
+              { icon: 'bi-envelope', color: '#a78bfa', label: 'Email Us', value: 'appdrishty@gmail.com', sub: 'Typically respond within 24h' },
+              { icon: 'bi-building', color: '#34d399', label: 'Enterprise & Partnerships', value: 'enterprise@drishti.app', sub: 'Custom deployments & integrations' },
+              { icon: 'bi-headset', color: '#60a5fa', label: 'Support', value: 'support@drishti.app', sub: 'Technical issues & account help' },
+            ].map(({ icon, color, label, value, sub }) => (
+              <div key={label} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: '28px 24px', border: '1px solid rgba(255,255,255,0.08)', textAlign: 'center' }}>
+                <i className={`bi ${icon}`} style={{ fontSize: 28, color, marginBottom: 16, display: 'block' }}></i>
+                <h5 style={{ color: '#fff', fontWeight: 700, marginBottom: 8 }}>{label}</h5>
+                <p style={{ color, fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{value}</p>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, margin: 0 }}>{sub}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Simple contact form */}
+          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 20, padding: '40px 36px', border: '1px solid rgba(167,139,250,0.2)' }}>
+            <h3 style={{ color: '#fff', fontWeight: 700, marginBottom: 28 }}>Send a Message</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+              <div>
+                <label style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8 }}>Name</label>
+                <input type="text" placeholder="Your name" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '11px 14px', color: '#fff', fontSize: 14, outline: 'none' }} />
+              </div>
+              <div>
+                <label style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8 }}>Email</label>
+                <input type="email" placeholder="you@org.com" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '11px 14px', color: '#fff', fontSize: 14, outline: 'none' }} />
+              </div>
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8 }}>Subject</label>
+              <input type="text" placeholder="How can we help?" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '11px 14px', color: '#fff', fontSize: 14, outline: 'none' }} />
+            </div>
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8 }}>Message</label>
+              <textarea rows={5} placeholder="Tell us more..." style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '11px 14px', color: '#fff', fontSize: 14, outline: 'none', resize: 'vertical' }} />
+            </div>
+            <button style={{ background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: '#fff', border: 0, borderRadius: 50, padding: '13px 32px', fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 4px 24px rgba(124,58,237,0.4)' }}>
+              <i className="bi bi-send me-2"></i>Send Message
+            </button>
+          </div>
+        </div>
+      </InnerPageShell>
     );
   }
 
