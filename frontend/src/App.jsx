@@ -2386,12 +2386,15 @@ function App() {
           {isStaff && (
             <div className="row">
               
-              {/* Manager Metrics Cards */}
-              <div className="col-12 mb-4">
-                <DashboardStatCards projects={projects} isManager={true} />
-              </div>
+              {/* Manager Metrics Cards (hidden when using Ekta or Live Chats to maximize space) */}
+              {!['ekta', 'live-chats'].includes(managerTab) && (
+                <div className="col-12 mb-4">
+                  <DashboardStatCards projects={projects} isManager={true} />
+                </div>
+              )}
 
-              {/* Left Hand Options Panel & List */}              <div className="col-lg-8 mb-4">
+              {/* Left Hand Options Panel & List */}
+              <div className={`mb-4 ${['ekta', 'live-chats'].includes(managerTab) ? 'col-12' : 'col-lg-8'}`}>
                 {managerTab === 'projects' && (
                   <>
 
@@ -3236,8 +3239,9 @@ function App() {
             </div>
             
             {/* Manager Sidebar (Project Detail) */}
-            <div className="col-lg-4" style={{ position: 'sticky', top: '20px', alignSelf: 'start' }}>
-              {selectedProject ? (
+            {!['ekta', 'live-chats'].includes(managerTab) && (
+              <div className="col-lg-4" style={{ position: 'sticky', top: '20px', alignSelf: 'start' }}>
+                {selectedProject ? (
                 <div className="card card-glass mb-4">
                   <div className="card-header card-glass-header d-flex justify-content-between align-items-center py-3">
                     <h5 className="mb-0 fw-bold"><i className="bi bi-info-circle"></i> Project Details</h5>
@@ -3414,6 +3418,7 @@ function App() {
                 </div>
               )}
             </div>
+            )}
 
           </div>
         )}
@@ -3424,17 +3429,17 @@ function App() {
         {!isStaff && (
           <div className="row">
             
-            {/* Investigator Metrics Bar (hidden when using Ekta AI to maximize space) */}
-            {investigatorTab !== 'ekta' && (
+            {/* Investigator Metrics Bar (hidden when using Ekta AI or Live Chats to maximize space) */}
+            {!['ekta', 'live-chats'].includes(investigatorTab) && (
               <div className="col-12 mb-4">
                 <DashboardStatCards projects={projects} isManager={false} />
               </div>
             )}
 
             {/* Investigator Options and Task List */}
-            <div className={`mb-4 ${investigatorTab === 'ekta' ? 'col-12' : 'col-lg-8'}`}>
+            <div className={`mb-4 ${['ekta', 'live-chats'].includes(investigatorTab) ? 'col-12' : 'col-lg-8'}`}>
               
-              {['running', 'upcoming', 'past'].includes(investigatorTab) && (
+              {investigatorTab === 'running' && (
                 <>
                   {/* Split layout: Vertical Feature Cards on Left, Large Workflow Timeline Canvas on Right */}
                   <div className="row mb-4">
@@ -3530,58 +3535,158 @@ function App() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Running Tasks Table */}
+                  <div className="card card-glass mb-4">
+                    <div className="card-header card-glass-header py-3">
+                      <h5 className="mb-0 fw-bold"><i className="bi bi-play-circle me-2 text-primary"></i> Running Projects</h5>
+                    </div>
+                    <div className="card-body p-0">
+                      <table className="table table-hover mb-0">
+                        <thead>
+                          <tr>
+                            <th className="ps-3">Code</th>
+                            <th>Title</th>
+                            <th>Agency</th>
+                            <th>Timeline</th>
+                            <th className="pe-3">Report Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {runningTasks.map((p) => (
+                            <tr 
+                              key={p.id} 
+                              style={{ cursor: 'pointer' }}
+                              className={selectedProject?.id === p.id ? 'table-primary' : ''}
+                              onClick={() => fetchProjectDetail(p.id)}
+                            >
+                              <td className="ps-3"><strong>{p.project_code}</strong></td>
+                              <td>{p.title}</td>
+                              <td>{p.principal_agency}</td>
+                              <td>{p.start_date} to {p.scheduled_completion}</td>
+                              <td className="pe-3">
+                                <span className={
+                                  p.report_status === 'approved' ? 'pulse-badge-green' :
+                                  ['submitted', 'resubmitted'].includes(p.report_status) ? 'pulse-badge-yellow' : 'pulse-badge-red'
+                                }>
+                                  {p.report_status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                          {runningTasks.length === 0 && (
+                            <tr>
+                              <td colSpan="5" className="text-center py-4 text-muted">No running projects currently.</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </>
               )}
 
-              {/* Investigator Task Tables */}
-              {['running', 'upcoming', 'past'].includes(investigatorTab) && (
-                <div className="card card-glass mb-4">
-                  <div className="card-header card-glass-header py-3">
-                    <h5 className="mb-0 fw-bold text-capitalize">
-                      {investigatorTab === 'past' ? 'Completed' : investigatorTab} Projects
-                    </h5>
+              {/* Upcoming Tasks - Unique Calendar/Grid Design */}
+              {investigatorTab === 'upcoming' && (
+                <div className="row g-4 mb-4">
+                  <div className="col-12">
+                    <h4 className="fw-bold mb-1"><i className="bi bi-calendar-event text-warning me-2"></i> Upcoming Pipeline</h4>
+                    <p className="text-muted small">Projects scheduled to start soon. Prepare necessary documents.</p>
                   </div>
-                  <div className="card-body p-0">
-                    <table className="table table-hover mb-0">
-                      <thead>
-                        <tr>
-                          <th className="ps-3">Code</th>
-                          <th>Title</th>
-                          <th>Agency</th>
-                          <th>Timeline</th>
-                          <th className="pe-3">Report Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(investigatorTab === 'running' ? runningTasks : investigatorTab === 'upcoming' ? upcomingTasks : pastTasks).map((p) => (
-                          <tr 
-                            key={p.id} 
-                            style={{ cursor: 'pointer' }}
-                            className={selectedProject?.id === p.id ? 'table-primary' : ''}
-                            onClick={() => fetchProjectDetail(p.id)}
-                          >
-                            <td className="ps-3"><strong>{p.project_code}</strong></td>
-                            <td>{p.title}</td>
-                            <td>{p.principal_agency}</td>
-                            <td>{p.start_date} to {p.scheduled_completion}</td>
-                            <td className="pe-3">
-                              <span className={
-                                p.report_status === 'approved' ? 'pulse-badge-green' :
-                                ['submitted', 'resubmitted'].includes(p.report_status) ? 'pulse-badge-yellow' : 'pulse-badge-red'
-                              }>
-                                {p.report_status}
+                  {upcomingTasks.length > 0 ? upcomingTasks.map(p => {
+                    const daysUntil = Math.ceil((new Date(p.start_date) - new Date()) / (1000 * 60 * 60 * 24));
+                    return (
+                      <div className="col-md-6" key={p.id}>
+                        <div 
+                          className={`card card-glass h-100 ${selectedProject?.id === p.id ? 'border-warning' : ''}`} 
+                          style={{ cursor: 'pointer', transition: 'transform 0.2s', borderLeft: '4px solid var(--accent-yellow)' }} 
+                          onClick={() => fetchProjectDetail(p.id)}
+                        >
+                          <div className="card-body">
+                            <div className="d-flex justify-content-between mb-3">
+                              <span className="badge bg-warning bg-opacity-25 text-warning px-2 py-1 rounded-pill">{p.project_code}</span>
+                              <span className={`small fw-bold ${daysUntil <= 7 ? 'text-danger' : 'text-warning'}`}>
+                                <i className="bi bi-clock-history me-1"></i> 
+                                {daysUntil > 0 ? `Starts in ${daysUntil} days` : 'Starts very soon'}
                               </span>
-                            </td>
-                          </tr>
-                        ))}
-                        {(investigatorTab === 'running' ? runningTasks : investigatorTab === 'upcoming' ? upcomingTasks : pastTasks).length === 0 && (
-                          <tr>
-                            <td colSpan="5" className="text-center py-4 text-muted">No projects found in this category.</td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+                            </div>
+                            <h5 className="fw-bold mb-2">{p.title}</h5>
+                            <p className="small text-muted mb-3" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                              {p.description || "No specific details provided yet. Awaiting full project brief."}
+                            </p>
+                            <hr className="border-secondary opacity-25" />
+                            <div className="d-flex align-items-center justify-content-between small">
+                              <span className="text-muted"><i className="bi bi-building me-1"></i> {p.principal_agency}</span>
+                              <span className="fw-bold text-white">₹{p.budget_amount} {p.budget_unit}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }) : (
+                    <div className="col-12 text-center py-5 text-muted">
+                      <div className="bg-dark bg-opacity-25 rounded-circle d-inline-flex p-4 mb-3">
+                        <i className="bi bi-calendar-x fs-1 opacity-50"></i>
+                      </div>
+                      <h5>No Upcoming Projects</h5>
+                      <p className="small">Your schedule is clear. Check back later for new assignments.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Past Tasks - Unique Trophy/Certificate Design */}
+              {investigatorTab === 'past' && (
+                <div className="row g-4 mb-4">
+                  <div className="col-12">
+                    <h4 className="fw-bold mb-1"><i className="bi bi-trophy-fill text-success me-2"></i> Achieved Milestones</h4>
+                    <p className="text-muted small">Successfully completed projects and final reports.</p>
                   </div>
+                  {pastTasks.length > 0 ? pastTasks.map(p => (
+                    <div className="col-md-6" key={p.id}>
+                      <div 
+                        className={`card card-glass h-100 position-relative overflow-hidden ${selectedProject?.id === p.id ? 'border-success' : ''}`} 
+                        style={{ cursor: 'pointer', border: '1px solid rgba(16, 185, 129, 0.3)' }} 
+                        onClick={() => fetchProjectDetail(p.id)}
+                      >
+                        <div className="position-absolute" style={{ top: '-15px', right: '-15px', opacity: 0.05, transform: 'rotate(15deg)' }}>
+                          <i className="bi bi-award-fill text-success" style={{ fontSize: '120px' }}></i>
+                        </div>
+                        <div className="card-body position-relative z-index-1 d-flex flex-column">
+                          <div className="mb-auto">
+                            <div className="d-flex justify-content-between mb-2">
+                              <span className="text-success small fw-bold"><i className="bi bi-check-circle-fill me-1"></i> Completed</span>
+                              <span className="badge bg-dark border border-secondary text-light">{p.project_code}</span>
+                            </div>
+                            <h5 className="fw-bold text-white mb-3">{p.title}</h5>
+                          </div>
+                          
+                          <div className="bg-black bg-opacity-25 rounded p-3 mt-3">
+                            <div className="d-flex justify-content-between mb-2 small">
+                              <span className="text-muted"><i className="bi bi-calendar-check me-1"></i> Ended:</span>
+                              <span className="text-white">{p.actual_completion || p.scheduled_completion}</span>
+                            </div>
+                            <div className="d-flex justify-content-between mb-2 small">
+                              <span className="text-muted"><i className="bi bi-file-earmark-check me-1"></i> Report:</span>
+                              <span className={p.report_status === 'approved' ? 'text-success fw-bold' : 'text-warning fw-bold'}>{p.report_status}</span>
+                            </div>
+                            <div className="d-flex justify-content-between small pt-2 border-top border-secondary border-opacity-25">
+                              <span className="text-muted">Budget Utilized:</span>
+                              <span className="fw-bold text-success">₹{p.budget_amount} {p.budget_unit}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )) : (
+                    <div className="col-12 text-center py-5 text-muted">
+                      <div className="bg-dark bg-opacity-25 rounded-circle d-inline-flex p-4 mb-3">
+                        <i className="bi bi-inbox fs-1 opacity-50"></i>
+                      </div>
+                      <h5>No Completed Projects Yet</h5>
+                      <p className="small">Finish your current active tasks to see them appear here.</p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -3731,7 +3836,7 @@ function App() {
             </div>
 
             {/* Investigator Sidebar Detail Card */}
-            {investigatorTab !== 'ekta' && (
+            {!['ekta', 'live-chats'].includes(investigatorTab) && (
               <div className="col-lg-4">
                 {selectedProject ? (
                 <div className="card card-glass mb-4">
