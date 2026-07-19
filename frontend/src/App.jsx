@@ -208,9 +208,20 @@ const TimelineCanvas = ({ project, gradId = 'flowGrad4' }) => {
   );
 };
 
-// ─── Ekta AI Component ────────────────────────────────────────────────────────
 const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token }) => {
-  const [messages, setMessages] = useState([{ sender: 'ekta', text: 'Hi! I am Ekta. Ask me anything about the documents in this project.' }]);
+  const [chatHistories, setChatHistories] = useState({});
+  const currentChatId = selectedProject ? selectedProject.id : 'system';
+  
+  const messages = chatHistories[currentChatId] || [{ sender: 'ekta', text: 'Hi! I am Ekta. Ask me anything about ' + (selectedProject ? 'the documents in this project.' : 'Drishti, or select a project to ask about its documents.') }];
+
+  const setMessages = (updater) => {
+    setChatHistories(prev => {
+      const currentMsgs = prev[currentChatId] || [{ sender: 'ekta', text: 'Hi! I am Ekta. Ask me anything about ' + (selectedProject ? 'the documents in this project.' : 'Drishti, or select a project to ask about its documents.') }];
+      const nextMsgs = typeof updater === 'function' ? updater(currentMsgs) : updater;
+      return { ...prev, [currentChatId]: nextMsgs };
+    });
+  };
+
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [docs, setDocs] = useState([]);
@@ -229,7 +240,6 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
       fetchDocs();
     } else {
       setDocs([]);
-      setMessages([{ sender: 'ekta', text: 'Hi! I am Ekta. Ask me anything about Drishti, or select a project to ask about its documents.' }]);
     }
   }, [selectedProject, token]);
 

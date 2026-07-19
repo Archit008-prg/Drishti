@@ -46,7 +46,7 @@ def _extract_text_from_file(file_obj, filename: str) -> str:
             logger.error(f"Text extraction failed for {filename}: {e}")
             return ""
 
-    if ext == ".docx":
+    if ext in (".docx", ".doc"):
         try:
             import docx
             doc = docx.Document(io.BytesIO(file_obj.read()))
@@ -56,6 +56,20 @@ def _extract_text_from_file(file_obj, filename: str) -> str:
             return "\n".join(full_text)
         except Exception as e:
             logger.error(f"DOCX extraction failed for {filename}: {e}")
+            return ""
+            
+    if ext in (".png", ".jpg", ".jpeg"):
+        try:
+            import easyocr
+            import numpy as np
+            from PIL import Image
+            reader = easyocr.Reader(['en'], gpu=False, verbose=False)
+            image = Image.open(io.BytesIO(file_obj.read())).convert('RGB')
+            results = reader.readtext(np.array(image))
+            text = " ".join([res[1] for res in results])
+            return text
+        except Exception as e:
+            logger.error(f"Image extraction failed for {filename}: {e}")
             return ""
 
     return ""  # unsupported type
@@ -82,7 +96,7 @@ def api_ekta_upload(request):
     if not file_obj:
         return Response({"error": "No file provided."}, status=400)
 
-    allowed_types = [".pdf", ".txt", ".md"]
+    allowed_types = [".pdf", ".txt", ".md", ".doc", ".docx", ".png", ".jpg", ".jpeg"]
     ext = Path(file_obj.name).suffix.lower()
     if ext not in allowed_types:
         return Response(
