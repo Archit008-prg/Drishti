@@ -3424,13 +3424,15 @@ function App() {
         {!isStaff && (
           <div className="row">
             
-            {/* Investigator Metrics Bar */}
-            <div className="col-12 mb-4">
-              <DashboardStatCards projects={projects} isManager={false} />
-            </div>
+            {/* Investigator Metrics Bar (hidden when using Ekta AI to maximize space) */}
+            {investigatorTab !== 'ekta' && (
+              <div className="col-12 mb-4">
+                <DashboardStatCards projects={projects} isManager={false} />
+              </div>
+            )}
 
             {/* Investigator Options and Task List */}
-            <div className="col-lg-8 mb-4">
+            <div className={`mb-4 ${investigatorTab === 'ekta' ? 'col-12' : 'col-lg-8'}`}>
               
               {['running', 'upcoming', 'past'].includes(investigatorTab) && (
                 <>
@@ -3729,8 +3731,9 @@ function App() {
             </div>
 
             {/* Investigator Sidebar Detail Card */}
-            <div className="col-lg-4">
-              {selectedProject ? (
+            {investigatorTab !== 'ekta' && (
+              <div className="col-lg-4">
+                {selectedProject ? (
                 <div className="card card-glass mb-4">
                   <div className="card-header card-glass-header d-flex justify-content-between align-items-center py-3">
                     <h5 className="mb-0 fw-bold"><i className="bi bi-info-circle"></i> Project Details</h5>
@@ -3867,6 +3870,7 @@ function App() {
                 </div>
               )}
             </div>
+            )}
 
           </div>
         )}

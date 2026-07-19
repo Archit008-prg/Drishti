@@ -352,8 +352,24 @@ def query_ekta(question: str, project_id: int | None = None) -> dict:
         sources.add(doc_name)
 
     context = "\n\n---\n\n".join(context_parts)
+    
+    # Inject project and report status metadata
+    project_metadata = ""
+    if project_id is not None:
+        try:
+            from .models import Project
+            proj = Project.objects.get(id=project_id)
+            latest_report = proj.project_reports.first()
+            status_text = f"Project Status: {proj.get_status_display()}\n"
+            if latest_report:
+                status_text += f"Report Status: {latest_report.get_status_display()}\n"
+                if latest_report.status in ['rejected', 'resubmit_requested'] and latest_report.admin_comment:
+                    status_text += f"Manager Rejection Comment: {latest_report.admin_comment}\n"
+            project_metadata = f"\n\n[PROJECT METADATA]\n{status_text}\n(If the user asks why their report was rejected, explain based on the manager's comment. If no comment is given, analyze the report and manager's provided documents to hypothesize why it might have been rejected and help them improve.)\n"
+        except Exception as e:
+            logger.warning(f"Could not load project metadata for Ekta: {e}")
 
-    user_message = f"CONTEXT:\n{context}\n\nQUESTION: {question}"
+    user_message = f"CONTEXT:\n{context}{project_metadata}\n\nQUESTION: {question}"
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": user_message}
