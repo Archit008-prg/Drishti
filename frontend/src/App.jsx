@@ -229,6 +229,17 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
   const [uploading, setUploading] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Handle Paste for files
+  useEffect(() => {
+    const handlePaste = (e) => {
+      if (e.clipboardData.files && e.clipboardData.files.length > 0) {
+        setUploadFile(e.clipboardData.files[0]);
+      }
+    };
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, []);
+
   // Auto-scroll chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -352,13 +363,22 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
           <div className="card card-glass p-3" style={{ borderLeft: '3px solid #8B5CF6' }}>
             <h6 className="fw-bold mb-3"><i className="bi bi-cloud-arrow-up text-violet-400 me-2"></i>Upload Context</h6>
             <form onSubmit={handleUpload}>
-              <input 
-                type="file" 
-                className="form-control glass-input text-white mb-2" 
-                onChange={e => setUploadFile(e.target.files[0])}
-                accept=".pdf,.txt,.md"
-              />
-              <button type="submit" className="btn btn-primary w-100" disabled={!uploadFile || uploading} style={{ background: '#8B5CF6', border: 'none' }}>
+              <div className="d-flex align-items-center gap-2 mb-3">
+                <label className="btn btn-outline-light d-flex align-items-center justify-content-center p-0" style={{ width: '40px', height: '40px', borderRadius: '50%', cursor: 'pointer', border: '1px dashed rgba(255,255,255,0.3)', flexShrink: 0 }} title="Choose File or Paste Document/Image">
+                  <i className="bi bi-paperclip fs-5 text-violet-400"></i>
+                  <input 
+                    type="file" 
+                    className="d-none"
+                    onChange={e => setUploadFile(e.target.files[0])}
+                    accept=".pdf,.txt,.md,.doc,.docx,.png,.jpg,.jpeg"
+                  />
+                </label>
+                <div className="small text-white-50 text-truncate" style={{ flex: 1, fontSize: '11px' }}>
+                  {uploadFile ? uploadFile.name : "Click icon or paste a file (Ctrl+V)"}
+                </div>
+              </div>
+              <button type="submit" className="btn btn-primary w-100 shadow-sm" disabled={!uploadFile || uploading} style={{ background: '#8B5CF6', border: 'none', transition: 'all 0.2s' }}>
+                {uploading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-upload me-2"></i>}
                 {uploading ? 'Processing...' : 'Add to Knowledge Base'}
               </button>
             </form>
@@ -3324,15 +3344,24 @@ function App() {
                     {/* Quick Document Upload Form */}
                     <div className="bg-dark bg-opacity-35 p-3 rounded border border-secondary border-opacity-20 mt-3">
                       <h6 className="mb-2 fw-bold"><i className="bi bi-cloud-arrow-up text-violet-400 me-2"></i>Upload Reference Docs</h6>
-                      <p className="small text-white-50 mb-3">Add supporting materials (.pdf, .txt, .md) to this project at any time. Ekta AI will read them instantly.</p>
+                      <p className="small text-white-50 mb-3">Add supporting materials (.pdf, .txt, .md, .docx, images) to this project at any time. Ekta AI will read them instantly.</p>
                       <form onSubmit={handleRefUpload}>
-                        <input 
-                          type="file" 
-                          className="form-control form-control-sm glass-input text-white mb-2" 
-                          onChange={e => setRefUploadFile(e.target.files[0])}
-                          accept=".pdf,.txt,.md"
-                        />
-                        <button type="submit" className="btn btn-sm btn-primary w-100" disabled={!refUploadFile || refUploading} style={{ background: '#8B5CF6', border: 'none' }}>
+                        <div className="d-flex align-items-center gap-2 mb-3">
+                          <label className="btn btn-outline-light d-flex align-items-center justify-content-center p-0" style={{ width: '35px', height: '35px', borderRadius: '50%', cursor: 'pointer', border: '1px dashed rgba(255,255,255,0.3)', flexShrink: 0 }} title="Choose File or Paste Document/Image">
+                            <i className="bi bi-paperclip fs-5 text-violet-400"></i>
+                            <input 
+                              type="file" 
+                              className="d-none" 
+                              onChange={e => setRefUploadFile(e.target.files[0])}
+                              accept=".pdf,.txt,.md,.doc,.docx,.png,.jpg,.jpeg"
+                            />
+                          </label>
+                          <div className="small text-white-50 text-truncate" style={{ flex: 1, fontSize: '11px' }}>
+                            {refUploadFile ? refUploadFile.name : "Select or paste file..."}
+                          </div>
+                        </div>
+                        <button type="submit" className="btn btn-sm btn-primary w-100 shadow-sm" disabled={!refUploadFile || refUploading} style={{ background: '#8B5CF6', border: 'none', transition: 'all 0.2s' }}>
+                          {refUploading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-upload me-2"></i>}
                           {refUploading ? 'Uploading...' : 'Upload & Index'}
                         </button>
                       </form>
