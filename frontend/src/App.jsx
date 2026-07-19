@@ -1121,21 +1121,31 @@ function App() {
         {/* ── Page-Specific Sharp Double Beams ── */}
         
         {currentView === 'home' && (
-          <div className="beam-container" style={{
-            position: 'absolute', top: '45%', left: '-10%',
-            width: '120%', height: '120%',
-            background: 'conic-gradient(from 185deg at 20% 40%, transparent 0deg, #4c1d95 6deg, #9b4dff 10deg, transparent 15deg, transparent 35deg, #3b0764 45deg, #7c3aed 49deg, transparent 55deg)',
-            opacity: 0.85,
-          }} />
+          <>
+            {/* Main sweeping beam as drawn by user on left side */}
+            <div className="beam-container" style={{
+              position: 'absolute', top: '20%', left: '-25%',
+              width: '130%', height: '130%',
+              background: 'conic-gradient(from 150deg at 20% 50%, transparent 0deg, rgba(76,29,149,0.9) 6deg, rgba(155,77,255,1) 12deg, transparent 18deg, transparent 40deg, rgba(59,7,100,0.85) 50deg, rgba(124,58,237,0.95) 54deg, transparent 60deg)',
+              opacity: 0.9,
+            }} />
+            {/* Secondary smaller beam below/above it */}
+            <div className="deco-beam-1" style={{
+              position: 'absolute', top: '45%', left: '-10%',
+              width: '80%', height: '80%',
+              background: 'conic-gradient(from 165deg at 10% 60%, transparent 0deg, rgba(91,33,182,0.7) 4deg, rgba(139,92,246,0.8) 8deg, transparent 12deg)',
+              opacity: 0.65,
+            }} />
+          </>
         )}
 
         {currentView === 'features' && (
           <div className="deco-beam-1" style={{
-            position: 'absolute', top: '-10%', right: '-20%',
-            width: '100%', height: '100%',
-            background: 'conic-gradient(from 130deg at 80% 30%, transparent 0deg, rgba(124,58,237,0.85) 4deg, rgba(167,139,250,1) 7deg, transparent 12deg)',
-            opacity: 0.7,
-            transform: 'rotate(-5deg)',
+            position: 'absolute', top: '-5%', right: '-15%',
+            width: '120%', height: '120%',
+            background: 'conic-gradient(from 125deg at 85% 25%, transparent 0deg, rgba(124,58,237,0.8) 6deg, rgba(167,139,250,1) 12deg, transparent 18deg, transparent 35deg, rgba(76,29,149,0.6) 45deg, rgba(139,92,246,0.85) 50deg, transparent 58deg)',
+            opacity: 0.85,
+            transform: 'rotate(-3deg)',
           }} />
         )}
 
@@ -1150,19 +1160,19 @@ function App() {
 
         {currentView === 'for-teams' && (
           <div className="deco-beam-2" style={{
-            position: 'absolute', bottom: '-20%', left: '10%',
+            position: 'absolute', top: '20%', right: '-30%',
             width: '100%', height: '100%',
-            background: 'conic-gradient(from 340deg at 40% 80%, transparent 0deg, rgba(91,33,182,0.8) 4deg, rgba(124,58,237,1) 8deg, transparent 13deg)',
-            opacity: 0.75,
+            background: 'conic-gradient(from 110deg at 90% 40%, transparent 0deg, rgba(67,56,202,0.5) 8deg, rgba(99,102,241,0.65) 15deg, transparent 25deg)',
+            opacity: 0.5,
           }} />
         )}
 
         {currentView === 'contact' && (
           <div className="beam-container" style={{
-            position: 'absolute', top: '-40%', left: '0%',
+            position: 'absolute', top: '10%', left: '-35%',
             width: '100%', height: '150%',
-            background: 'conic-gradient(from 170deg at 50% 20%, transparent 0deg, rgba(76,29,149,0.6) 3deg, rgba(167,139,250,0.8) 6deg, transparent 10deg, transparent 20deg, rgba(59,7,100,0.7) 25deg, rgba(139,92,246,0.85) 28deg, transparent 33deg)',
-            opacity: 0.6,
+            background: 'conic-gradient(from 210deg at 10% 50%, transparent 0deg, rgba(192,38,211,0.3) 6deg, rgba(232,121,249,0.45) 12deg, transparent 22deg)',
+            opacity: 0.45,
           }} />
         )}
 
