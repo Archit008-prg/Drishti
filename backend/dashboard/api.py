@@ -539,7 +539,7 @@ def api_get_managers(request):
     } for m in managers]
     return Response(data)
 
-@api_view(['POST'])
+@api_view(['POST', 'PUT'])
 @permission_classes([IsAuthenticated])
 def api_update_project(request, project_id):
     if not request.user.is_staff:
@@ -584,6 +584,24 @@ def api_update_project(request, project_id):
     implementing_agencies = request.data.get('implementing_agencies')
     if implementing_agencies is not None:
         project.implementing_agencies = implementing_agencies
+        
+    assignee_input = request.data.get('assigned_investigator')
+    if assignee_input is not None:
+        if assignee_input == '':
+            project.assigned_investigator = None
+            project.assigned_email = None
+        elif str(assignee_input).isdigit() and User.objects.filter(id=int(assignee_input)).exists():
+            assigned_investigator = User.objects.get(id=int(assignee_input))
+            project.assigned_investigator = assigned_investigator
+            project.assigned_email = assigned_investigator.email
+        elif '@' in str(assignee_input):
+            user_match = User.objects.filter(email__iexact=assignee_input).first()
+            if user_match:
+                project.assigned_investigator = user_match
+                project.assigned_email = user_match.email
+            else:
+                project.assigned_investigator = None
+                project.assigned_email = assignee_input
         
     project.save()
     return Response({'success': True})
