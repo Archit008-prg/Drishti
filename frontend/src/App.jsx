@@ -1106,6 +1106,95 @@ function App() {
 
   const underReviewReports = projects.filter(p => p.report_status === 'submitted');
 
+  // ── SHARED BACKGROUND BEAMS ──────────────────────────────────────
+  const BackgroundBeams = () => (
+    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      {/* Base dark — spans full page */}
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 90% 45% at 50% 15%, #1a0533 0%, #07030f 60%)' }} />
+      {/* Mid-page subtle purple bridge */}
+      <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translateX(-50%)', width: '80%', height: '40%', background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(76,29,149,0.12) 0%, transparent 70%)' }} />
+      {/* Footer region glow — mirrors hero glow at bottom */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '55%', background: 'radial-gradient(ellipse 80% 60% at 30% 90%, rgba(109,40,217,0.22) 0%, transparent 60%)' }} />
+      <div style={{ position: 'absolute', bottom: 0, right: '-10%', width: '60%', height: '45%', background: 'radial-gradient(ellipse 60% 50% at 70% 80%, rgba(76,29,149,0.15) 0%, transparent 65%)' }} />
+
+      {/* ── Sharp Double Beams (like the screenshot) ── */}
+      {/* Beam 1: Top left sweeping */}
+      <div className="beam-container" style={{
+        position: 'absolute', top: '-20%', left: '-10%',
+        width: '120%', height: '120%',
+        background: 'conic-gradient(from 200deg at 25% 55%, transparent 0deg, #4c1d95 8deg, #9b4dff 14deg, transparent 20deg, transparent 40deg, #3b0764 50deg, #6d28d9 54deg, transparent 60deg)',
+        opacity: 0.7,
+      }} />
+      
+      {/* Beam 2: Middle right static sharp beam */}
+      <div style={{
+        position: 'absolute', top: '0', right: '-20%',
+        width: '100%', height: '100%',
+        background: 'conic-gradient(from 140deg at 70% 30%, transparent 0deg, rgba(76,29,149,0.8) 4deg, rgba(124,58,237,1) 8deg, transparent 12deg, transparent 25deg, rgba(59,7,100,0.8) 35deg, rgba(109,40,217,0.9) 39deg, transparent 45deg)',
+        opacity: 0.65,
+        transform: 'rotate(-10deg)',
+      }} />
+
+      {/* Beam 3: Bottom left drifting beam */}
+      <div className="deco-beam-1" style={{
+        position: 'absolute', bottom: '-20%', left: '-15%',
+        width: '100%', height: '100%',
+        background: 'conic-gradient(from 320deg at 20% 80%, transparent 0deg, rgba(76,29,149,0.7) 4deg, rgba(139,92,246,0.9) 8deg, transparent 12deg, transparent 20deg, rgba(91,33,182,0.8) 28deg, rgba(124,58,237,0.9) 32deg, transparent 38deg)',
+        opacity: 0.6,
+      }} />
+
+      {/* Secondary softer glow */}
+      <div style={{
+        position: 'absolute', top: 0, left: '-15%',
+        width: '70%', height: '100%',
+        background: 'radial-gradient(ellipse 60% 80% at 20% 50%, rgba(109,40,217,0.3) 0%, transparent 65%)',
+        animation: 'beamDrift 18s ease-in-out infinite',
+      }} />
+      {/* Grain overlay */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E")`,
+        opacity: 0.045,
+      }} />
+    </div>
+  );
+
+  // ── SHARED INNER PAGE LAYOUT WRAPPER ──────────────────────────────────────
+  const InnerPageShell = ({ children }) => {
+    return (
+      <div style={{ background: '#07030f', minHeight: '100vh', fontFamily: 'Inter, sans-serif', color: '#fff', position: 'relative', overflow: 'hidden' }}>
+        <BackgroundBeams />
+        <div style={{ position: 'relative', zIndex: 10 }}>
+          {/* Navbar */}
+          <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px clamp(24px, 5vw, 64px)', gap: 24, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+            <button onClick={() => setCurrentView('home')} style={{ background: 'none', border: 0, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <i className="bi bi-eye" style={{ color: '#fff', fontSize: 22 }}></i>
+                <span style={{ color: '#fff', fontWeight: 900, fontSize: 20, letterSpacing: '-0.02em' }}>Drishti</span>
+              </div>
+              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', paddingLeft: 30 }}>Audit & Ops Platform</span>
+            </button>
+            <button onClick={() => setCurrentView('home')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: '6px 14px', cursor: 'pointer', color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#fff'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
+            >
+              <i className="bi bi-arrow-left"></i> Return to Home
+            </button>
+          </div>
+          <div style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
+            {[{ label: 'Features', view: 'features' }, { label: 'How It Works', view: 'how-it-works' }, { label: 'For Teams', view: 'for-teams' }, { label: 'Contact', view: 'contact' }].map(({ label, view }) => (
+              <button key={label} onClick={() => setCurrentView(view)} style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer', color: currentView === view ? '#fff' : 'rgba(255,255,255,0.72)', fontWeight: currentView === view ? 700 : 400 }} className="nav-link-item">{label}</button>
+            ))}
+            <button onClick={() => setCurrentView('auth-select')} style={{ background: 'linear-gradient(135deg,#7c3aed,#a78bfa)', color: '#fff', border: 0, borderRadius: 50, padding: '9px 22px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Get Started</button>
+          </div>
+        </nav>
+        {children}
+        </div>
+      </div>
+    );
+  };
+
   // 1. HOME LANDING VIEW
   if (currentView === 'home') {
     return (
@@ -1647,94 +1736,6 @@ function App() {
     );
   }
 
-  // ── SHARED BACKGROUND BEAMS ──────────────────────────────────────
-  const BackgroundBeams = () => (
-    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      {/* Base dark — spans full page */}
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 90% 45% at 50% 15%, #1a0533 0%, #07030f 60%)' }} />
-      {/* Mid-page subtle purple bridge */}
-      <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translateX(-50%)', width: '80%', height: '40%', background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(76,29,149,0.12) 0%, transparent 70%)' }} />
-      {/* Footer region glow — mirrors hero glow at bottom */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '55%', background: 'radial-gradient(ellipse 80% 60% at 30% 90%, rgba(109,40,217,0.22) 0%, transparent 60%)' }} />
-      <div style={{ position: 'absolute', bottom: 0, right: '-10%', width: '60%', height: '45%', background: 'radial-gradient(ellipse 60% 50% at 70% 80%, rgba(76,29,149,0.15) 0%, transparent 65%)' }} />
-
-      {/* ── Sharp Double Beams (like the screenshot) ── */}
-      {/* Beam 1: Top left sweeping */}
-      <div className="beam-container" style={{
-        position: 'absolute', top: '-20%', left: '-10%',
-        width: '120%', height: '120%',
-        background: 'conic-gradient(from 200deg at 25% 55%, transparent 0deg, #4c1d95 8deg, #9b4dff 14deg, transparent 20deg, transparent 40deg, #3b0764 50deg, #6d28d9 54deg, transparent 60deg)',
-        opacity: 0.7,
-      }} />
-      
-      {/* Beam 2: Middle right static sharp beam */}
-      <div style={{
-        position: 'absolute', top: '0', right: '-20%',
-        width: '100%', height: '100%',
-        background: 'conic-gradient(from 140deg at 70% 30%, transparent 0deg, rgba(76,29,149,0.8) 4deg, rgba(124,58,237,1) 8deg, transparent 12deg, transparent 25deg, rgba(59,7,100,0.8) 35deg, rgba(109,40,217,0.9) 39deg, transparent 45deg)',
-        opacity: 0.65,
-        transform: 'rotate(-10deg)',
-      }} />
-
-      {/* Beam 3: Bottom left drifting beam */}
-      <div className="deco-beam-1" style={{
-        position: 'absolute', bottom: '-20%', left: '-15%',
-        width: '100%', height: '100%',
-        background: 'conic-gradient(from 320deg at 20% 80%, transparent 0deg, rgba(76,29,149,0.7) 4deg, rgba(139,92,246,0.9) 8deg, transparent 12deg, transparent 20deg, rgba(91,33,182,0.8) 28deg, rgba(124,58,237,0.9) 32deg, transparent 38deg)',
-        opacity: 0.6,
-      }} />
-
-      {/* Secondary softer glow */}
-      <div style={{
-        position: 'absolute', top: 0, left: '-15%',
-        width: '70%', height: '100%',
-        background: 'radial-gradient(ellipse 60% 80% at 20% 50%, rgba(109,40,217,0.3) 0%, transparent 65%)',
-        animation: 'beamDrift 18s ease-in-out infinite',
-      }} />
-      {/* Grain overlay */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E")`,
-        opacity: 0.045,
-      }} />
-    </div>
-  );
-
-  // ── SHARED INNER PAGE LAYOUT WRAPPER ──────────────────────────────────────
-  const InnerPageShell = ({ children }) => {
-    return (
-      <div style={{ background: '#07030f', minHeight: '100vh', fontFamily: 'Inter, sans-serif', color: '#fff', position: 'relative', overflow: 'hidden' }}>
-        <BackgroundBeams />
-        <div style={{ position: 'relative', zIndex: 10 }}>
-          {/* Navbar */}
-          <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px clamp(24px, 5vw, 64px)', gap: 24, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-            <button onClick={() => setCurrentView('home')} style={{ background: 'none', border: 0, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <i className="bi bi-eye" style={{ color: '#fff', fontSize: 22 }}></i>
-                <span style={{ color: '#fff', fontWeight: 900, fontSize: 20, letterSpacing: '-0.02em' }}>Drishti</span>
-              </div>
-              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', paddingLeft: 30 }}>Audit & Ops Platform</span>
-            </button>
-            <button onClick={() => setCurrentView('home')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: '6px 14px', cursor: 'pointer', color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#fff'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
-            >
-              <i className="bi bi-arrow-left"></i> Return to Home
-            </button>
-          </div>
-          <div style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
-            {[{ label: 'Features', view: 'features' }, { label: 'How It Works', view: 'how-it-works' }, { label: 'For Teams', view: 'for-teams' }, { label: 'Contact', view: 'contact' }].map(({ label, view }) => (
-              <button key={label} onClick={() => setCurrentView(view)} style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer', color: currentView === view ? '#fff' : 'rgba(255,255,255,0.72)', fontWeight: currentView === view ? 700 : 400 }} className="nav-link-item">{label}</button>
-            ))}
-            <button onClick={() => setCurrentView('auth-select')} style={{ background: 'linear-gradient(135deg,#7c3aed,#a78bfa)', color: '#fff', border: 0, borderRadius: 50, padding: '9px 22px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Get Started</button>
-          </div>
-        </nav>
-        {children}
-        </div>
-      </div>
-    );
-  };
 
   // 2a. FEATURES PAGE
   if (currentView === 'features') {
