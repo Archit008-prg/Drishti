@@ -383,85 +383,87 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
 
       {/* Right Column: Chat Interface */}
       <div className="col-lg-8">
-        <div className="card card-glass h-100 d-flex flex-column">
-          <div className="card-header card-glass-header py-3 d-flex align-items-center">
-            <div className="position-relative me-3">
-              <div className="rounded-circle bg-violet-600 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px', boxShadow: '0 0 15px rgba(139,92,246,0.6)' }}>
-                <i className="bi bi-robot text-white fs-5"></i>
+        <div className="card card-glass h-100 d-flex flex-column border-0" style={{ boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)' }}>
+          <div className="card-header border-bottom border-white-10 py-4 px-4 d-flex align-items-center" style={{ background: 'rgba(255, 255, 255, 0.02)' }}>
+            <div className="position-relative me-4">
+              <div className="rounded-circle bg-violet-600 d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px', boxShadow: '0 0 20px rgba(139,92,246,0.5)' }}>
+                <i className="bi bi-robot text-white fs-4"></i>
               </div>
-              <span className="position-absolute bottom-0 end-0 rounded-circle bg-success" style={{ width: '10px', height: '10px', border: '2px solid #13141c' }}></span>
+              <span className="position-absolute bottom-0 end-0 rounded-circle bg-success" style={{ width: '12px', height: '12px', border: '2px solid #13141c' }}></span>
             </div>
             <div>
-              <h6 className="mb-0 fw-bold">Ekta AI</h6>
-              <span className="text-white-50" style={{ fontSize: '11px' }}>{selectedProject ? `RAG Assistant — ${selectedProject.title}` : 'System Assistant — Drishti Help'}</span>
+              <h5 className="mb-1 fw-bold tracking-tight text-white">Ekta AI</h5>
+              <span className="text-white-50" style={{ fontSize: '13px', fontWeight: '500' }}>{selectedProject ? `RAG Assistant — ${selectedProject.title}` : 'System Assistant — Drishti Help'}</span>
             </div>
           </div>
 
-          <div className="card-body p-4 d-flex flex-column" style={{ overflowY: 'auto', minHeight: '400px' }}>
+          <div className="card-body p-4 p-md-5 d-flex flex-column" style={{ overflowY: 'auto', minHeight: '500px', scrollBehavior: 'smooth' }}>
             {messages.map((m, i) => (
-              <div key={i} className={`d-flex mb-3 ${m.sender === 'user' ? 'justify-content-end' : 'justify-content-start'}`}>
+              <div key={i} className={`d-flex mb-4 ${m.sender === 'user' ? 'justify-content-end' : 'justify-content-start'}`}>
                 {m.sender === 'ekta' && (
-                  <div className="me-2 rounded-circle bg-violet-600 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '28px', height: '28px' }}>
-                    <i className="bi bi-robot text-white" style={{ fontSize: '12px' }}></i>
+                  <div className="me-3 rounded-circle bg-violet-600 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '32px', height: '32px', marginTop: '4px' }}>
+                    <i className="bi bi-robot text-white" style={{ fontSize: '14px' }}></i>
                   </div>
                 )}
                 <div 
-                  className={`p-3 rounded-3 ${m.sender === 'user' ? 'bg-primary text-white' : 'bg-white-10 text-white border border-white-10'}`}
+                  className={`p-3 p-md-4 rounded-4 ${m.sender === 'user' ? 'text-white' : 'text-white'}`}
                   style={{ 
-                    maxWidth: '80%', 
-                    borderBottomRightRadius: m.sender === 'user' ? '4px' : '0.5rem',
-                    borderTopLeftRadius: m.sender === 'ekta' ? '4px' : '0.5rem',
-                    background: m.sender === 'user' ? 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)' : 'rgba(255,255,255,0.05)',
-                    backdropFilter: m.sender === 'user' ? 'none' : 'blur(10px)',
+                    maxWidth: '85%', 
+                    borderBottomRightRadius: m.sender === 'user' ? '4px' : '1rem',
+                    borderTopLeftRadius: m.sender === 'ekta' ? '4px' : '1rem',
+                    background: m.sender === 'user' ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : 'rgba(255,255,255,0.06)',
+                    border: m.sender === 'user' ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: m.sender === 'user' ? '0 4px 15px rgba(99, 102, 241, 0.3)' : '0 4px 15px rgba(0,0,0,0.1)',
                   }}
                 >
-                  <p className="mb-0 small" style={{ whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>{m.text}</p>
+                  <p className="mb-0" style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6', fontSize: '14px', letterSpacing: '0.2px' }}>{m.text}</p>
                   
                   {m.sender === 'ekta' && m.in_scope === false && (
-                    <div className="mt-2 pt-2 border-top border-white-10">
-                      <span className="text-warning" style={{ fontSize: '10px' }}><i className="bi bi-exclamation-triangle me-1"></i>Out of scope</span>
+                    <div className="mt-3 pt-3 border-top border-white-10">
+                      <span className="text-warning" style={{ fontSize: '11px', fontWeight: '500' }}><i className="bi bi-exclamation-triangle-fill me-2"></i>Out of scope</span>
                     </div>
                   )}
                   {m.sender === 'ekta' && m.sources && m.sources.length > 0 && (
-                    <div className="mt-2 pt-2 border-top border-white-10">
-                      <span className="text-white-50" style={{ fontSize: '10px' }}><i className="bi bi-file-earmark-text me-1"></i>Sources: {m.sources.join(', ')}</span>
+                    <div className="mt-3 pt-3 border-top border-white-10">
+                      <span className="text-white-50" style={{ fontSize: '11px', lineHeight: '1.4', display: 'block' }}><i className="bi bi-file-earmark-text me-2"></i>Sources: <span className="text-white-75">{m.sources.join(', ')}</span></span>
                     </div>
                   )}
                 </div>
               </div>
             ))}
             {isLoading && (
-              <div className="d-flex mb-3 justify-content-start">
-                <div className="me-2 rounded-circle bg-violet-600 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '28px', height: '28px' }}>
-                  <i className="bi bi-robot text-white" style={{ fontSize: '12px' }}></i>
+              <div className="d-flex mb-4 justify-content-start align-items-center">
+                <div className="me-3 rounded-circle bg-violet-600 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '32px', height: '32px' }}>
+                  <i className="bi bi-robot text-white" style={{ fontSize: '14px' }}></i>
                 </div>
-                <div className="p-3 rounded-3 bg-white-10 text-white border border-white-10" style={{ borderTopLeftRadius: '4px' }}>
-                  <span className="spinner-grow spinner-grow-sm text-violet-400 me-1" role="status"></span>
-                  <span className="spinner-grow spinner-grow-sm text-violet-400 me-1" role="status" style={{ animationDelay: '0.2s' }}></span>
-                  <span className="spinner-grow spinner-grow-sm text-violet-400" role="status" style={{ animationDelay: '0.4s' }}></span>
+                <div className="p-3 rounded-4 bg-white-10 text-white border border-white-10 d-flex align-items-center gap-2" style={{ borderTopLeftRadius: '4px' }}>
+                  <span className="spinner-grow spinner-grow-sm text-violet-400" role="status"></span>
+                  <span className="spinner-grow spinner-grow-sm text-violet-400" role="status" style={{ animationDelay: '0.15s' }}></span>
+                  <span className="spinner-grow spinner-grow-sm text-violet-400" role="status" style={{ animationDelay: '0.3s' }}></span>
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="card-footer card-glass-footer p-3 border-top border-white-10">
-            <form onSubmit={handleSend} className="d-flex gap-2">
+          <div className="card-footer py-4 px-4 px-md-5 border-top border-white-10" style={{ background: 'rgba(255, 255, 255, 0.02)' }}>
+            <form onSubmit={handleSend} className="d-flex gap-3 align-items-center">
               <input 
                 type="text" 
-                className="form-control glass-input text-white flex-fill" 
-                placeholder={selectedProject ? "Ask Ekta..." : "Ask Ekta about Drishti..."}
+                className="form-control glass-input text-white flex-fill py-3 px-4 rounded-pill" 
+                placeholder={selectedProject ? "Message Ekta AI..." : "Ask Ekta about Drishti..."}
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 disabled={isLoading}
+                style={{ fontSize: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
               />
               <button 
                 type="submit" 
-                className="btn btn-primary d-flex align-items-center justify-content-center"
+                className="btn btn-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
                 disabled={isLoading || !input.trim()}
-                style={{ width: '46px', background: '#8B5CF6', border: 'none' }}
+                style={{ width: '52px', height: '52px', background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', border: 'none', boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)' }}
               >
-                <i className="bi bi-send-fill"></i>
+                <i className="bi bi-send-fill fs-5"></i>
               </button>
             </form>
           </div>
