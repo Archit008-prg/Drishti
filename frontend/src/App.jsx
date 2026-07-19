@@ -268,12 +268,11 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
     }
   };
 
-  const handleUpload = async (e) => {
-    e.preventDefault();
-    if (!uploadFile || !selectedProject) return;
+  const handleUpload = async (fileToUpload) => {
+    if (!fileToUpload || !selectedProject) return;
     setUploading(true);
     const formData = new FormData();
-    formData.append('file', uploadFile);
+    formData.append('file', fileToUpload);
     formData.append('project_id', selectedProject.id);
 
     try {
@@ -287,12 +286,21 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
         fetchDocs();
       } else {
         alert("Upload failed or file type not supported.");
+        setUploadFile(null);
       }
     } catch (e) {
       console.error(e);
+      setUploadFile(null);
     }
     setUploading(false);
   };
+
+  // Auto-upload when a file is pasted/selected
+  useEffect(() => {
+    if (uploadFile && selectedProject) {
+      handleUpload(uploadFile);
+    }
+  }, [uploadFile, selectedProject]);
 
   const handleDeleteDoc = async (docId) => {
     if (!window.confirm("Delete this document?")) return;
@@ -359,31 +367,6 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
           </select>
         </div>
 
-        {selectedProject && isStaff && (
-          <div className="card card-glass p-3" style={{ borderLeft: '3px solid #8B5CF6' }}>
-            <h6 className="fw-bold mb-3"><i className="bi bi-cloud-arrow-up text-violet-400 me-2"></i>Upload Context</h6>
-            <form onSubmit={handleUpload}>
-              <div className="d-flex align-items-center gap-2 mb-3">
-                <label className="btn btn-outline-light d-flex align-items-center justify-content-center p-0" style={{ width: '40px', height: '40px', borderRadius: '50%', cursor: 'pointer', border: '1px dashed rgba(255,255,255,0.3)', flexShrink: 0 }} title="Choose File or Paste Document/Image">
-                  <i className="bi bi-paperclip fs-5 text-violet-400"></i>
-                  <input 
-                    type="file" 
-                    className="d-none"
-                    onChange={e => setUploadFile(e.target.files[0])}
-                    accept=".pdf,.txt,.md,.doc,.docx,.png,.jpg,.jpeg"
-                  />
-                </label>
-                <div className="small text-white-50 text-truncate" style={{ flex: 1, fontSize: '11px' }}>
-                  {uploadFile ? uploadFile.name : "Click icon or paste a file (Ctrl+V)"}
-                </div>
-              </div>
-              <button type="submit" className="btn btn-primary w-100 shadow-sm" disabled={!uploadFile || uploading} style={{ background: '#8B5CF6', border: 'none', transition: 'all 0.2s' }}>
-                {uploading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-upload me-2"></i>}
-                {uploading ? 'Processing...' : 'Add to Knowledge Base'}
-              </button>
-            </form>
-          </div>
-        )}
 
         {selectedProject && (
           <div className="card card-glass p-3 flex-fill overflow-auto" style={{ maxHeight: '400px' }}>
@@ -476,21 +459,41 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="card-footer py-4 px-4 px-md-5 border-top border-white-10" style={{ background: 'rgba(255, 255, 255, 0.02)' }}>
-            <form onSubmit={handleSend} className="d-flex gap-3 align-items-center">
-              <input 
-                type="text" 
-                className="form-control glass-input text-white flex-fill py-3 px-4 rounded-pill" 
-                placeholder={selectedProject ? "Message Ekta AI..." : "Ask Ekta about Drishti..."}
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                disabled={isLoading}
-                style={{ fontSize: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
-              />
+          <div className="card-footer py-4 px-4 px-md-5 border-top border-white-10 position-relative" style={{ background: 'rgba(255, 255, 255, 0.02)' }}>
+            {uploading && (
+              <div className="position-absolute" style={{ top: '-40px', left: '40px', zIndex: 10 }}>
+                <span className="badge bg-primary rounded-pill px-3 py-2 shadow" style={{ background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)' }}>
+                  <span className="spinner-border spinner-border-sm me-2"></span> Uploading {uploadFile?.name}...
+                </span>
+              </div>
+            )}
+            <form onSubmit={handleSend} className="d-flex gap-2 align-items-center position-relative">
+              <div className="position-relative flex-fill d-flex align-items-center">
+                {selectedProject && (
+                  <label className="position-absolute start-0 ms-2 btn btn-link text-white-50 p-2 d-flex align-items-center justify-content-center" style={{ zIndex: 5, borderRadius: '50%', cursor: 'pointer' }} title="Attach file">
+                    <i className="bi bi-paperclip fs-5"></i>
+                    <input 
+                      type="file" 
+                      className="d-none"
+                      onChange={e => setUploadFile(e.target.files[0])}
+                      accept=".pdf,.txt,.md,.doc,.docx,.png,.jpg,.jpeg"
+                    />
+                  </label>
+                )}
+                <input 
+                  type="text" 
+                  className="form-control glass-input text-white flex-fill py-3 pe-4 rounded-pill" 
+                  placeholder={selectedProject ? "Message Ekta AI or paste a file (Ctrl+V)..." : "Ask Ekta about Drishti..."}
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  disabled={isLoading || uploading}
+                  style={{ fontSize: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', paddingLeft: selectedProject ? '50px' : '24px' }}
+                />
+              </div>
               <button 
                 type="submit" 
-                className="btn btn-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                disabled={isLoading || !input.trim()}
+                className="btn btn-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 ms-2"
+                disabled={isLoading || !input.trim() || uploading}
                 style={{ width: '52px', height: '52px', background: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', border: 'none', boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)' }}
               >
                 <i className="bi bi-send-fill fs-5"></i>

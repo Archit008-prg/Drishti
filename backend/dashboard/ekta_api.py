@@ -75,23 +75,25 @@ def _extract_text_from_file(file_obj, filename: str) -> str:
     return ""  # unsupported type
 
 
-# ─── Upload supporting document (manager only) ────────────────────────────────
+# ─── Upload supporting document (manager & investigator) ────────────────────────────────
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser])
 def api_ekta_upload(request):
     """
-    Manager uploads a supporting document for a project.
+    User uploads a supporting document for a project.
     Extracts text, chunks and indexes into ChromaDB.
     """
-    if not request.user.is_staff:
-        return Response({"error": "Only managers can upload supporting documents."}, status=403)
-
     project_id = request.data.get("project_id")
     if not project_id:
         return Response({"error": "project_id is required."}, status=400)
 
     project = get_object_or_404(Project, id=project_id)
+    
+    # Check permission: must be staff or the assigned investigator
+    if not (request.user.is_staff or project.assigned_investigator == request.user):
+        return Response({"error": "You do not have permission to upload documents for this project."}, status=403)
+
     file_obj = request.FILES.get("file")
     if not file_obj:
         return Response({"error": "No file provided."}, status=400)
