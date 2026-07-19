@@ -1122,17 +1122,17 @@ function App() {
         
         {currentView === 'home' && (
           <>
-            {/* Main sweeping beam as drawn by user on left side */}
+            {/* Main sweeping beam at the top of the page */}
             <div className="beam-container" style={{
-              position: 'absolute', top: '5%', left: '-15%',
+              position: 'absolute', top: '-40%', left: '-10%',
               width: '120%', height: '120%',
               background: 'conic-gradient(from 200deg at 25% 55%, transparent 0deg, #4c1d95 8deg, #7c3aed 14deg, transparent 20deg, transparent 40deg, #3b0764 50deg, #5b21b6 54deg, transparent 60deg)',
-              opacity: 0.7,
+              opacity: 0.8,
             }} />
             {/* Secondary smaller beam above the footer */}
             <div className="beam-container" style={{
-              position: 'absolute', top: '50%', left: '0%',
-              width: '90%', height: '90%',
+              position: 'absolute', top: '55%', left: '10%',
+              width: '80%', height: '80%',
               background: 'conic-gradient(from 200deg at 25% 55%, transparent 0deg, #4c1d95 8deg, #7c3aed 14deg, transparent 20deg, transparent 40deg, #3b0764 50deg, #5b21b6 54deg, transparent 60deg)',
               opacity: 0.25,
             }} />
