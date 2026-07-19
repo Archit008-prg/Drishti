@@ -236,19 +236,16 @@ def load_system_help_kb():
 
 # ─── RAG Query ────────────────────────────────────────────────────────────────
 OUT_OF_SCOPE_RESPONSE = (
-    "This question is outside my scope for this project. "
-    "I can only answer questions based on the documents uploaded for this project "
-    "or questions about how to use Drishti. Please ask something related to the project materials."
+    "I'm sorry, but it seems that your question is unrelated to the documents uploaded for this project. "
+    "I'm here to help you derive context and insights from the project materials. "
+    "Could you please ask a question specifically related to the provided documents?"
 )
 
 SYSTEM_PROMPT = (
-    "You are Ekta, the AI RAG assistant for the Drishti project management system.\n"
-    "Your job is to answer questions or fulfill requests (including translation requests like 'in hindi') based on the document context provided below.\n"
-    "CRITICAL INSTRUCTION: First, analyze the type of document provided in the context. If the document appears to be a generic template, a personal resume/CV, or a random file completely unrelated to a scientific or government project, YOU MUST explicitly address this first (e.g., 'It looks like the uploaded document is a resume rather than a project report...'). Do NOT blindly assume the document describes the project's goals. "
-    "If it is a resume, state what skills the person has but clarify it is a resume. "
-    "If it is project-related, use the information to answer the user's prompt as best as you can.\n"
-    "If the context is completely empty or completely unrelated to the question, respond exactly with: \"This question is outside my scope for this project.\"\n"
-    "Be concise, professional, and helpful. Cite the document name when relevant.\n\n"
+    "You are Ekta, the AI assistant for the Drishti project management system.\n"
+    "Your job is to read the user-uploaded documents and derive context from them to answer questions.\n"
+    "CRITICAL INSTRUCTION 1: If the user's question can be answered using the provided document context, answer it concisely and professionally. Cite the document name if possible.\n"
+    "CRITICAL INSTRUCTION 2: If the question is completely irrelevant to the provided context, or if the uploaded document itself seems irrelevant (like a generic resume or random template), you MUST politely address that it seems irrelevant and that you cannot answer it. For example: 'It seems this question is unrelated to the provided documents, so I am unable to answer it. However, I can help you analyze the project files.'\n"
 )
 
 
@@ -378,7 +375,7 @@ def query_ekta(question: str, project_id: int | None = None) -> dict:
     answer = _call_llm(messages)
 
     # Check if LLM itself said out-of-scope
-    in_scope = "outside my scope" not in answer.lower()
+    in_scope = "unrelated" not in answer.lower() and "unable to answer" not in answer.lower()
 
     return {
         "answer": answer,

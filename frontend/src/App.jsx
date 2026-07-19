@@ -4002,33 +4002,64 @@ function App() {
 
           {showAssignmentsPopup && (
             <div 
-              className="position-fixed shadow-lg rounded overflow-hidden assignments-popup" 
-              style={{ bottom: '100px', right: '30px', width: '380px', maxHeight: '75vh', zIndex: 1040, backgroundColor: '#13141c', border: '1px solid rgba(255,255,255,0.1)' }}
+              className="position-fixed shadow-lg rounded-4 overflow-hidden assignments-popup" 
+              style={{ 
+                bottom: '100px', right: '30px', width: '380px', maxHeight: '75vh', zIndex: 1040, 
+                backgroundColor: 'rgba(15, 17, 26, 0.65)', 
+                backdropFilter: 'blur(24px)', 
+                WebkitBackdropFilter: 'blur(24px)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)'
+              }}
             >
               <style>{`
                 @keyframes popIn {
-                  0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+                  0% { opacity: 0; transform: scale(0.95) translateY(20px); }
                   100% { opacity: 1; transform: scale(1) translateY(0); }
                 }
                 .assignments-popup {
                   animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
                 }
+                .task-card-hover {
+                  transition: all 0.2s ease;
+                }
+                .task-card-hover:hover {
+                  transform: translateY(-2px);
+                  background-color: rgba(255,255,255,0.08) !important;
+                  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+                  border-color: rgba(139, 92, 246, 0.4) !important;
+                }
+                .custom-scroll::-webkit-scrollbar {
+                  width: 4px;
+                }
+                .custom-scroll::-webkit-scrollbar-track {
+                  background: transparent;
+                }
+                .custom-scroll::-webkit-scrollbar-thumb {
+                  background: rgba(255,255,255,0.1);
+                  border-radius: 10px;
+                }
               `}</style>
               
-              <div className="p-3 border-bottom border-secondary border-opacity-25 d-flex justify-content-between align-items-center" style={{ background: 'linear-gradient(135deg, rgba(106, 17, 203, 0.2) 0%, rgba(37, 117, 252, 0.2) 100%)' }}>
-                <h6 className="fw-bold mb-0 text-white"><i className="bi bi-card-checklist me-2 text-primary"></i>Delegated Tasks</h6>
-                <span className="badge bg-primary rounded-pill">{projects.length} Total</span>
+              <div className="p-3 border-bottom border-white border-opacity-10 d-flex justify-content-between align-items-center" style={{ background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)' }}>
+                <h6 className="fw-bold mb-0 text-white d-flex align-items-center">
+                  <div className="bg-primary bg-opacity-25 rounded p-1 me-2 d-flex align-items-center justify-content-center" style={{ width: '28px', height: '28px' }}>
+                    <i className="bi bi-card-checklist text-primary" style={{ fontSize: '14px' }}></i>
+                  </div>
+                  Delegated Tasks
+                </h6>
+                <span className="badge rounded-pill" style={{ background: 'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)', boxShadow: '0 2px 10px rgba(139, 92, 246, 0.3)' }}>{projects.length} Total</span>
               </div>
               
-              <div className="p-0" style={{ overflowY: 'auto', maxHeight: 'calc(75vh - 55px)' }}>
+              <div className="p-0 custom-scroll" style={{ overflowY: 'auto', maxHeight: 'calc(75vh - 65px)' }}>
                 {/* Small Table: Tasks per Investigator */}
-                <div className="p-3 border-bottom border-secondary border-opacity-25">
-                  <h6 className="small fw-bold text-muted mb-2 text-uppercase">Distribution Summary</h6>
-                  <table className="table table-sm table-dark table-borderless mb-0" style={{ backgroundColor: 'transparent' }}>
+                <div className="p-3 border-bottom border-white border-opacity-10" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                  <h6 className="small fw-bold text-white-50 mb-3 text-uppercase" style={{ letterSpacing: '1px', fontSize: '10px' }}>Distribution Summary</h6>
+                  <table className="table table-sm table-borderless mb-0" style={{ backgroundColor: 'transparent' }}>
                     <thead>
-                      <tr>
-                        <th className="text-white-50 small fw-normal">Investigator</th>
-                        <th className="text-end text-white-50 small fw-normal">Tasks</th>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <th className="text-white-50 fw-semibold px-0 pb-2" style={{ fontSize: '11px' }}>Investigator</th>
+                        <th className="text-end text-white-50 fw-semibold px-0 pb-2" style={{ fontSize: '11px' }}>Tasks</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -4040,8 +4071,15 @@ function App() {
                         }, {});
                         return Object.entries(counts).map(([inv, count]) => (
                           <tr key={inv}>
-                            <td className="small text-white">{inv}</td>
-                            <td className="text-end small"><span className="badge bg-secondary bg-opacity-25 text-white">{count}</span></td>
+                            <td className="text-white px-0 py-2 d-flex align-items-center" style={{ fontSize: '12px' }}>
+                              <div className="bg-white bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center me-2" style={{ width: '20px', height: '20px', fontSize: '10px' }}>
+                                {inv.charAt(0).toUpperCase()}
+                              </div>
+                              {inv}
+                            </td>
+                            <td className="text-end px-0 py-2 align-middle">
+                              <span className="badge bg-white bg-opacity-10 text-white rounded-pill px-2">{count}</span>
+                            </td>
                           </tr>
                         ));
                       })()}
@@ -4051,35 +4089,45 @@ function App() {
 
                 {/* Individual Tasks List */}
                 <div className="p-3">
-                  <h6 className="small fw-bold text-muted mb-3 text-uppercase">Recent Assignments</h6>
+                  <h6 className="small fw-bold text-white-50 mb-3 text-uppercase" style={{ letterSpacing: '1px', fontSize: '10px' }}>Recent Assignments</h6>
                   {projects.length > 0 ? projects.map(p => (
-                    <div key={p.id} className="bg-black bg-opacity-25 border border-secondary border-opacity-25 mb-3 rounded p-3 shadow-sm">
+                    <div key={p.id} className="task-card-hover bg-white bg-opacity-5 border border-white border-opacity-10 mb-3 rounded p-3" style={{ cursor: 'default' }}>
                       <div className="d-flex justify-content-between align-items-start mb-2">
-                        <span className="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25">{p.project_code}</span>
+                        <span className="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2">{p.project_code}</span>
                         <button 
-                          className="btn btn-sm btn-outline-light py-0 px-2 d-flex align-items-center gap-1" 
-                          style={{ fontSize: '11px', background: 'rgba(255,255,255,0.05)' }}
+                          className="btn btn-sm btn-outline-light py-0 px-2 d-flex align-items-center gap-1 rounded-pill transition-all" 
+                          style={{ fontSize: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+                          onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = '#fff'; }}
+                          onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = ''; }}
                           onClick={() => {
                             setShowAssignmentsPopup(false);
                             setManagerTab('projects');
                             handleEditProjectClick(p);
                           }}
                         >
-                          <i className="bi bi-pencil-square"></i>Edit
+                          <i className="bi bi-pencil-square" style={{ fontSize: '10px' }}></i> Edit
                         </button>
                       </div>
-                      <h6 className="fw-bold text-white mb-1" style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.title}</h6>
-                      <div className="small text-muted mb-2"><i className="bi bi-building me-1"></i> {p.principal_agency}</div>
+                      <h6 className="fw-bold text-white mb-1" style={{ fontSize: '13px', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.title}</h6>
+                      <div className="text-white-50 mb-3 d-flex align-items-center" style={{ fontSize: '11px' }}>
+                        <i className="bi bi-building me-1 opacity-75"></i> {p.principal_agency}
+                      </div>
                       
-                      <div className="d-flex align-items-center bg-dark bg-opacity-50 p-2 rounded">
-                        <i className="bi bi-person-badge text-primary me-2 fs-6"></i>
-                        <div className="small text-white fw-bold text-truncate">{p.assigned_investigator || p.assigned_email || 'Unassigned'}</div>
+                      <div className="d-flex align-items-center bg-black bg-opacity-25 p-2 rounded border border-white border-opacity-5">
+                        <div className="bg-primary bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-2" style={{ width: '24px', height: '24px', flexShrink: 0 }}>
+                          <i className="bi bi-person text-primary" style={{ fontSize: '12px' }}></i>
+                        </div>
+                        <div className="overflow-hidden">
+                          <div className="small text-white fw-medium text-truncate" style={{ fontSize: '11px' }}>{p.assigned_investigator || p.assigned_email || 'Unassigned'}</div>
+                        </div>
                       </div>
                     </div>
                   )) : (
-                    <div className="text-center py-4 text-muted">
-                      <i className="bi bi-folder-x fs-1 opacity-50 d-block mb-2"></i>
-                      <p className="small mb-0">No tasks assigned yet.</p>
+                    <div className="text-center py-4 text-white-50">
+                      <div className="bg-white bg-opacity-5 rounded-circle d-inline-flex p-3 mb-2 border border-white border-opacity-10">
+                        <i className="bi bi-inbox fs-4 opacity-50"></i>
+                      </div>
+                      <p className="small mb-0" style={{ fontSize: '12px' }}>No tasks assigned yet.</p>
                     </div>
                   )}
                 </div>
