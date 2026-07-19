@@ -1125,8 +1125,30 @@ function App() {
             50%  { transform: translateX(60px) rotate(10deg);  }
             100% { transform: translateX(0px)  rotate(-10deg); }
           }
+          @keyframes beamPulse {
+            0%, 100% { opacity: 0.18; transform: scaleX(1); }
+            50%       { opacity: 0.32; transform: scaleX(1.08); }
+          }
+          @keyframes beamPulse2 {
+            0%, 100% { opacity: 0.12; transform: rotate(0deg); }
+            50%       { opacity: 0.22; transform: rotate(3deg); }
+          }
+          @keyframes marqueeLeft {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          @keyframes marqueeRight {
+            0%   { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
+          }
           .beam-container {
             animation: beamSweep 20s ease-in-out infinite;
+          }
+          .deco-beam-1 {
+            animation: beamPulse 8s ease-in-out infinite;
+          }
+          .deco-beam-2 {
+            animation: beamPulse2 12s ease-in-out infinite;
           }
           .pill-btn {
             display: inline-flex; align-items: center; gap: 10px;
@@ -1164,6 +1186,23 @@ function App() {
             width: 26px; height: 26px; border-radius: 50%;
             background: #6d28d9; color: #fff; font-size: 12px;
           }
+          .marquee-track { display: flex; width: max-content; }
+          .marquee-track-left { animation: marqueeLeft 38s linear infinite; }
+          .marquee-track-right { animation: marqueeRight 42s linear infinite; }
+          .marquee-track:hover { animation-play-state: paused; }
+          .review-card {
+            flex-shrink: 0;
+            width: 320px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 24px 22px;
+            margin: 0 12px;
+            transition: border-color 0.2s;
+          }
+          .review-card:hover { border-color: rgba(167,139,250,0.35); }
+          .feat-card { transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s; }
+          .feat-card:hover { transform: translateY(-6px); box-shadow: 0 12px 40px rgba(109,40,217,0.25); }
         `}</style>
 
         {/* Animated background light-beam layer */}
@@ -1194,6 +1233,20 @@ function App() {
             position: 'absolute', inset: 0,
             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E")`,
             opacity: 0.045,
+          }} />
+          {/* ── Deco Beam 1: Bottom-left spotlight ray ── */}
+          <div className="deco-beam-1" style={{
+            position: 'absolute', bottom: '22%', left: '-5%',
+            width: '55%', height: '60%',
+            background: 'conic-gradient(from 320deg at 10% 90%, transparent 0deg, #5b21b6 6deg, #7c3aed 10deg, transparent 15deg)',
+            pointerEvents: 'none',
+          }} />
+          {/* ── Deco Beam 2: Right-side slim ray ── */}
+          <div className="deco-beam-2" style={{
+            position: 'absolute', top: '38%', right: '-8%',
+            width: '55%', height: '55%',
+            background: 'conic-gradient(from 155deg at 90% 30%, transparent 0deg, #4c1d95 5deg, #6d28d9 9deg, transparent 14deg)',
+            pointerEvents: 'none',
           }} />
         </div>
 
@@ -1387,29 +1440,79 @@ function App() {
             </div>
           </section>
 
-          {/* ── Testimonial / Quote Band ── */}
-          <section style={{ padding: '60px clamp(24px,5vw,64px)', background: 'rgba(109,40,217,0.08)', borderTop: '1px solid rgba(167,139,250,0.15)', borderBottom: '1px solid rgba(167,139,250,0.15)' }}>
-            <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: 40, justifyContent: 'center' }}>
-              {[
-                { quote: '"Drishti cut our quarterly audit preparation time from 3 weeks to 2 days. Ekta AI alone is worth the switch."', name: 'Priya Mehta', role: 'Principal Investigator, DRDO', initials: 'PM', color: '#a78bfa' },
-                { quote: '"Finally a platform that speaks the language of government R&D. Compliance, timelines, and AI — all in one place."', name: 'Arjun Kulkarni', role: 'Project Manager, BARC', initials: 'AK', color: '#34d399' },
-              ].map(({ quote, name, role, initials, color }) => (
-                <div key={name} style={{ flex: '1 1 340px', background: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: '32px 28px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <i className="bi bi-quote" style={{ fontSize: 32, color, marginBottom: 16, display: 'block', opacity: 0.7 }}></i>
-                  <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, lineHeight: 1.75, marginBottom: 24, fontStyle: 'italic' }}>{quote}</p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <div style={{ width: 42, height: 42, borderRadius: '50%', background: `${color}30`, border: `2px solid ${color}60`, display: 'flex', alignItems: 'center', justifyContent: 'center', color, fontWeight: 800, fontSize: 14 }}>{initials}</div>
-                    <div>
-                      <div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>{name}</div>
-                      <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12 }}>{role}</div>
-                    </div>
+          {/* ── Scrolling Reviews Marquee ── */}
+          <section style={{ padding: '72px 0', overflow: 'hidden', background: 'rgba(109,40,217,0.06)', borderTop: '1px solid rgba(167,139,250,0.12)', borderBottom: '1px solid rgba(167,139,250,0.12)' }}>
+            <div style={{ textAlign: 'center', marginBottom: 44, padding: '0 clamp(24px,5vw,64px)' }}>
+              <span style={{ color: '#a78bfa', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Voices from the field</span>
+              <h2 style={{ color: '#fff', fontWeight: 800, fontSize: 'clamp(20px,3vw,32px)', margin: '10px 0 0' }}>Trusted by India's Top Research Institutions</h2>
+            </div>
+            {/* Row 1 — scrolls LEFT */}
+            {(() => {
+              const row1 = [
+                { quote: 'Drishti cut our quarterly audit preparation time from 3 weeks to 2 days. Ekta AI alone is worth the switch.', name: 'Dr. Priya Mehta', org: 'DRDO', role: 'Principal Investigator', initials: 'PM', color: '#a78bfa' },
+                { quote: 'The timeline monitor gives us instant visibility across all running satellite projects. A game-changer for our lab.', name: 'V. Krishnamurthy', org: 'ISRO', role: 'Programme Director', initials: 'VK', color: '#60a5fa' },
+                { quote: 'Report submissions used to take three rounds of emails. Now it\'s one upload, one click, and the manager sees it instantly.', name: 'Anjali Bose', org: 'CMPDI', role: 'Senior Analyst', initials: 'AB', color: '#34d399' },
+                { quote: 'We manage 40+ concurrent projects across divisions. Drishti\'s role-based views mean nobody sees what they shouldn\'t.', name: 'Rajan Nair', org: 'BARC', role: 'Project Manager', initials: 'RN', color: '#fbbf24' },
+                { quote: 'Ekta AI answered my compliance question in 4 seconds — it referenced the exact clause from the document I uploaded.', name: 'Prof. Sujata Desai', org: 'IIT Bombay', role: 'Research Coordinator', initials: 'SD', color: '#f472b6' },
+              ];
+              const doubled = [...row1, ...row1];
+              return (
+                <div style={{ overflow: 'hidden', marginBottom: 16 }}>
+                  <div className="marquee-track marquee-track-left" style={{ display: 'flex' }}>
+                    {doubled.map((r, i) => (
+                      <div key={i} className="review-card">
+                        <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
+                          {[1,2,3,4,5].map(s => <i key={s} className="bi bi-star-fill" style={{ color: '#fbbf24', fontSize: 11 }}></i>)}
+                        </div>
+                        <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13.5, lineHeight: 1.72, marginBottom: 18, fontStyle: 'italic' }}>"{r.quote}"</p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${r.color}25`, border: `1.5px solid ${r.color}60`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: r.color, fontWeight: 800, fontSize: 12, flexShrink: 0 }}>{r.initials}</div>
+                          <div>
+                            <div style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>{r.name}</div>
+                            <div style={{ color: r.color, fontSize: 11, fontWeight: 600 }}>{r.org} &nbsp;·&nbsp; <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 400 }}>{r.role}</span></div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })()}
+            {/* Row 2 — scrolls RIGHT */}
+            {(() => {
+              const row2 = [
+                { quote: 'Finally a platform that speaks the language of government R&D. Compliance, timelines, and AI — all in one place.', name: 'Arjun Kulkarni', org: 'BARC', role: 'Project Manager', initials: 'AK', color: '#34d399' },
+                { quote: 'The encrypted desk feature is brilliant. Sensitive project communications stay within the platform — no WhatsApp leaks.', name: 'Lt. Col. Harish Rao', org: 'DRDO', role: 'Defence Scientist', initials: 'HR', color: '#a78bfa' },
+                { quote: 'We piloted Drishti on 5 CSIR-funded projects. Zero document mis-filing. The AI assistant alone saved 20+ hours.', name: 'Dr. Meera Lal', org: 'CSIR', role: 'Lab Director', initials: 'ML', color: '#60a5fa' },
+                { quote: 'Setting up a new project used to take a day of emails and spreadsheets. With Drishti it\'s 10 minutes, start to finish.', name: 'Kiran Patel', org: 'CMPDI', role: 'Operations Lead', initials: 'KP', color: '#fbbf24' },
+                { quote: 'Ekta\'s RAG approach means it actually understands our documents. It doesn\'t just search — it reasons.', name: 'Prof. Amita Singh', org: 'IIT Delhi', role: 'AI Research Lead', initials: 'AS', color: '#f472b6' },
+              ];
+              const doubled = [...row2, ...row2];
+              return (
+                <div style={{ overflow: 'hidden' }}>
+                  <div className="marquee-track marquee-track-right" style={{ display: 'flex' }}>
+                    {doubled.map((r, i) => (
+                      <div key={i} className="review-card">
+                        <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
+                          {[1,2,3,4,5].map(s => <i key={s} className="bi bi-star-fill" style={{ color: '#fbbf24', fontSize: 11 }}></i>)}
+                        </div>
+                        <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13.5, lineHeight: 1.72, marginBottom: 18, fontStyle: 'italic' }}>"{r.quote}"</p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${r.color}25`, border: `1.5px solid ${r.color}60`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: r.color, fontWeight: 800, fontSize: 12, flexShrink: 0 }}>{r.initials}</div>
+                          <div>
+                            <div style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>{r.name}</div>
+                            <div style={{ color: r.color, fontSize: 11, fontWeight: 600 }}>{r.org} &nbsp;·&nbsp; <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 400 }}>{r.role}</span></div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </section>
 
-          {/* ── CTA Band ── */}
+
           <section style={{ padding: '80px clamp(24px,5vw,64px)', textAlign: 'center' }}>
             <div style={{ maxWidth: 680, margin: '0 auto' }}>
               <h2 style={{ color: '#fff', fontWeight: 900, fontSize: 'clamp(26px,4vw,44px)', lineHeight: 1.15, marginBottom: 16, letterSpacing: '-0.03em' }}>
@@ -1588,21 +1691,28 @@ function App() {
 
   // ── SHARED INNER PAGE LAYOUT WRAPPER ──────────────────────────────────────
   const InnerPageShell = ({ children }) => {
-    const navBg = 'linear-gradient(180deg, #07030f 0%, #0d0420 100%)';
     return (
       <div style={{ background: 'linear-gradient(180deg, #07030f 0%, #0d0420 35%, #07030f 65%, #0d0420 100%)', minHeight: '100vh', fontFamily: 'Inter, sans-serif', color: '#fff' }}>
         {/* Navbar */}
         <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px clamp(24px, 5vw, 64px)', gap: 24, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <button onClick={() => setCurrentView('home')} style={{ background: 'none', border: 0, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <i className="bi bi-eye" style={{ color: '#fff', fontSize: 22 }}></i>
-              <span style={{ color: '#fff', fontWeight: 900, fontSize: 20, letterSpacing: '-0.02em' }}>Drishti</span>
-            </div>
-            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', paddingLeft: 30 }}>Audit & Ops Platform</span>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+            <button onClick={() => setCurrentView('home')} style={{ background: 'none', border: 0, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <i className="bi bi-eye" style={{ color: '#fff', fontSize: 22 }}></i>
+                <span style={{ color: '#fff', fontWeight: 900, fontSize: 20, letterSpacing: '-0.02em' }}>Drishti</span>
+              </div>
+              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', paddingLeft: 30 }}>Audit & Ops Platform</span>
+            </button>
+            <button onClick={() => setCurrentView('home')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: '6px 14px', cursor: 'pointer', color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#fff'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
+            >
+              <i className="bi bi-arrow-left"></i> Return to Home
+            </button>
+          </div>
           <div style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
             {[{ label: 'Features', view: 'features' }, { label: 'How It Works', view: 'how-it-works' }, { label: 'For Teams', view: 'for-teams' }, { label: 'Contact', view: 'contact' }].map(({ label, view }) => (
-              <button key={label} onClick={() => setCurrentView(view)} style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer' }} className="nav-link-item">{label}</button>
+              <button key={label} onClick={() => setCurrentView(view)} style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer', color: currentView === view ? '#fff' : 'rgba(255,255,255,0.72)', fontWeight: currentView === view ? 700 : 400 }} className="nav-link-item">{label}</button>
             ))}
             <button onClick={() => setCurrentView('auth-select')} style={{ background: 'linear-gradient(135deg,#7c3aed,#a78bfa)', color: '#fff', border: 0, borderRadius: 50, padding: '9px 22px', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Get Started</button>
           </div>
@@ -1771,27 +1881,44 @@ function App() {
           </div>
 
           {/* Simple contact form */}
-          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 20, padding: '40px 36px', border: '1px solid rgba(167,139,250,0.2)' }}>
+          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 20, padding: '40px 36px', border: '1px solid rgba(167,139,250,0.2)', transition: 'box-shadow 0.3s', boxShadow: '0 8px 32px rgba(0,0,0,0)' }}
+               onMouseEnter={e => e.currentTarget.style.boxShadow = '0 12px 48px rgba(109,40,217,0.15)'}
+               onMouseLeave={e => e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0)'}>
             <h3 style={{ color: '#fff', fontWeight: 700, marginBottom: 28 }}>Send a Message</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>
                 <label style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8 }}>Name</label>
-                <input type="text" placeholder="Your name" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '11px 14px', color: '#fff', fontSize: 14, outline: 'none' }} />
+                <input type="text" placeholder="Your name" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '11px 14px', color: '#fff', fontSize: 14, outline: 'none', transition: 'border-color 0.2s, background 0.2s' }}
+                  onFocus={e => { e.target.style.borderColor = '#a78bfa'; e.target.style.background = 'rgba(255,255,255,0.09)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.12)'; e.target.style.background = 'rgba(255,255,255,0.06)'; }}
+                />
               </div>
               <div>
                 <label style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8 }}>Email</label>
-                <input type="email" placeholder="you@org.com" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '11px 14px', color: '#fff', fontSize: 14, outline: 'none' }} />
+                <input type="email" placeholder="you@org.com" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '11px 14px', color: '#fff', fontSize: 14, outline: 'none', transition: 'border-color 0.2s, background 0.2s' }}
+                  onFocus={e => { e.target.style.borderColor = '#a78bfa'; e.target.style.background = 'rgba(255,255,255,0.09)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.12)'; e.target.style.background = 'rgba(255,255,255,0.06)'; }}
+                />
               </div>
             </div>
             <div style={{ marginBottom: 16 }}>
               <label style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8 }}>Subject</label>
-              <input type="text" placeholder="How can we help?" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '11px 14px', color: '#fff', fontSize: 14, outline: 'none' }} />
+              <input type="text" placeholder="How can we help?" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '11px 14px', color: '#fff', fontSize: 14, outline: 'none', transition: 'border-color 0.2s, background 0.2s' }}
+                onFocus={e => { e.target.style.borderColor = '#a78bfa'; e.target.style.background = 'rgba(255,255,255,0.09)'; }}
+                onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.12)'; e.target.style.background = 'rgba(255,255,255,0.06)'; }}
+              />
             </div>
             <div style={{ marginBottom: 24 }}>
               <label style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8 }}>Message</label>
-              <textarea rows={5} placeholder="Tell us more..." style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '11px 14px', color: '#fff', fontSize: 14, outline: 'none', resize: 'vertical' }} />
+              <textarea rows={5} placeholder="Tell us more..." style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '11px 14px', color: '#fff', fontSize: 14, outline: 'none', resize: 'vertical', transition: 'border-color 0.2s, background 0.2s' }}
+                onFocus={e => { e.target.style.borderColor = '#a78bfa'; e.target.style.background = 'rgba(255,255,255,0.09)'; }}
+                onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.12)'; e.target.style.background = 'rgba(255,255,255,0.06)'; }}
+              />
             </div>
-            <button style={{ background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: '#fff', border: 0, borderRadius: 50, padding: '13px 32px', fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 4px 24px rgba(124,58,237,0.4)' }}>
+            <button style={{ background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: '#fff', border: 0, borderRadius: 50, padding: '13px 32px', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s', boxShadow: '0 4px 24px rgba(124,58,237,0.4)' }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(124,58,237,0.6)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(124,58,237,0.4)'; }}
+            >
               <i className="bi bi-send me-2"></i>Send Message
             </button>
           </div>
