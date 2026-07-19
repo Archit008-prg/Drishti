@@ -3982,6 +3982,81 @@ function App() {
 
       </div>
     </div>
+    
+      {/* Manager's Assignment Quick View Offcanvas & FAB */}
+      {isStaff && (
+        <>
+          <button 
+            className="btn btn-primary rounded-circle shadow position-fixed d-flex align-items-center justify-content-center" 
+            style={{ bottom: '30px', right: '30px', width: '60px', height: '60px', zIndex: 1050, background: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)', border: 'none', transition: 'transform 0.2s' }}
+            type="button" 
+            data-bs-toggle="offcanvas" 
+            data-bs-target="#managerAssignmentsCanvas" 
+            aria-controls="managerAssignmentsCanvas"
+            title="Quick View Assignments"
+            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            <i className="bi bi-person-lines-fill fs-4 text-white"></i>
+          </button>
+
+          <div className="offcanvas offcanvas-end text-bg-dark" tabIndex="-1" id="managerAssignmentsCanvas" aria-labelledby="managerAssignmentsCanvasLabel" style={{ width: '400px', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
+            <div className="offcanvas-header border-bottom border-secondary border-opacity-25" style={{ background: 'linear-gradient(135deg, rgba(106, 17, 203, 0.2) 0%, rgba(37, 117, 252, 0.2) 100%)' }}>
+              <h5 className="offcanvas-title fw-bold" id="managerAssignmentsCanvasLabel"><i className="bi bi-card-checklist me-2 text-primary"></i>Delegated Tasks</h5>
+              <button type="button" className="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div className="offcanvas-body p-0" style={{ backgroundColor: '#13141c' }}>
+              <div className="p-3 bg-black bg-opacity-25 mb-3 text-center border-bottom border-secondary border-opacity-25">
+                <h6 className="fw-bold mb-1 text-white">Total Active Assignments: {projects.length}</h6>
+                <p className="small text-muted mb-0">Quickly review or re-assign tasks on the go.</p>
+              </div>
+              <div className="list-group list-group-flush px-3 pb-4">
+                {projects.length > 0 ? projects.map(p => (
+                  <div key={p.id} className="list-group-item bg-transparent border-secondary border-opacity-25 mb-3 rounded p-3 shadow-sm" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                      <span className="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25">{p.project_code}</span>
+                      <button 
+                        className="btn btn-sm btn-outline-light py-0 px-2 d-flex align-items-center gap-1" 
+                        style={{ fontSize: '11px', background: 'rgba(255,255,255,0.05)' }}
+                        onClick={() => {
+                          const canvasEl = document.getElementById('managerAssignmentsCanvas');
+                          if(window.bootstrap) {
+                            const bsOffcanvas = window.bootstrap.Offcanvas.getInstance(canvasEl);
+                            if(bsOffcanvas) bsOffcanvas.hide();
+                          }
+                          setManagerTab('projects');
+                          handleEditProjectClick(p);
+                        }}
+                      >
+                        <i className="bi bi-pencil-square"></i>Edit
+                      </button>
+                    </div>
+                    <h6 className="fw-bold text-white mb-1" style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.title}</h6>
+                    <div className="small text-muted mb-3"><i className="bi bi-building me-1"></i> {p.principal_agency}</div>
+                    
+                    <div className="d-flex align-items-center bg-black bg-opacity-50 p-2 rounded">
+                      <div className="bg-primary bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3" style={{ width: '32px', height: '32px', flexShrink: 0 }}>
+                        <i className="bi bi-person-badge text-primary"></i>
+                      </div>
+                      <div className="overflow-hidden">
+                        <div className="text-white-50 text-uppercase" style={{ fontSize: '9px', letterSpacing: '0.5px' }}>Assigned Investigator</div>
+                        <div className="small text-white fw-bold text-truncate">{p.assigned_investigator || p.assigned_email || 'Unassigned'}</div>
+                      </div>
+                    </div>
+                  </div>
+                )) : (
+                  <div className="text-center py-5 text-muted">
+                    <div className="bg-dark bg-opacity-25 rounded-circle d-inline-flex p-4 mb-3">
+                      <i className="bi bi-folder-x fs-1 opacity-50"></i>
+                    </div>
+                    <p className="small">No tasks assigned yet.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

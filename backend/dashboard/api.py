@@ -227,7 +227,7 @@ def api_add_project(request):
     )
 
     if assigned_email:
-        subject = f"New Project Assignment: {project.title}"
+        subject = f"New Project Assignment: {project.title} ({project.project_code})"
         message = (
             f"Hello,\n\n"
             f"You have been assigned to the project '{project.title}' ({project.project_code}).\n"
@@ -235,6 +235,45 @@ def api_add_project(request):
             f"Project Link: http://localhost:5173/project/{project.id}\n\n"
             f"Regards,\nDrishti Team"
         )
+        html_message = f"""
+        <html>
+            <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <div style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); padding: 30px 20px; text-align: center;">
+                        <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 1px;">New Task Assignment</h1>
+                        <p style="color: rgba(255, 255, 255, 0.8); margin: 5px 0 0; font-size: 14px;">Drishti Mission Portal</p>
+                    </div>
+                    <div style="padding: 30px;">
+                        <p style="font-size: 16px; margin-bottom: 20px;">Hello Investigator,</p>
+                        <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+                            You have been officially assigned to lead the technical evaluation for a new project in the Drishti platform. 
+                            Please review the project parameters and ensure all necessary documentation is prepared.
+                        </p>
+                        <div style="background-color: #f8f9fa; border-left: 4px solid #6a11cb; padding: 15px; margin-bottom: 25px;">
+                            <h3 style="margin: 0 0 10px; font-size: 16px; color: #444;">Project Summary</h3>
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                <li style="margin-bottom: 8px;"><strong>Title:</strong> {project.title}</li>
+                                <li style="margin-bottom: 8px;"><strong>Code:</strong> {project.project_code}</li>
+                                <li style="margin-bottom: 8px;"><strong>Agency:</strong> {project.principal_agency}</li>
+                                <li><strong>Deadline:</strong> {project.scheduled_completion}</li>
+                            </ul>
+                        </div>
+                        <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
+                            Your expertise is crucial for the successful completion of this milestone. 
+                            If you do not have an account yet, your access will be securely provisioned using this email address.
+                        </p>
+                        <div style="text-align: center; margin-top: 30px; margin-bottom: 20px;">
+                            <a href="http://localhost:5173" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">Access Dashboard</a>
+                        </div>
+                    </div>
+                    <div style="background-color: #f1f3f5; padding: 15px; text-align: center; font-size: 12px; color: #888;">
+                        <p style="margin: 0;">This is an automated message from the Drishti Central Command.</p>
+                        <p style="margin: 5px 0 0;">Please do not reply directly to this email.</p>
+                    </div>
+                </div>
+            </body>
+        </html>
+        """
         try:
             send_mail(
                 subject,
@@ -242,6 +281,7 @@ def api_add_project(request):
                 settings.DEFAULT_FROM_EMAIL,
                 [assigned_email],
                 fail_silently=False,
+                html_message=html_message
             )
         except Exception as e:
             print(f"Email failed: {e}")
