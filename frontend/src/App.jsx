@@ -848,6 +848,12 @@ function App() {
   const [implAgencies, setImplAgencies] = useState('');
   const [projectDocs, setProjectDocs] = useState([]);
   const [chatThreads, setChatThreads] = useState([]);
+  const [teams, setTeams] = useState([]);
+  const [activeTeam, setActiveTeam] = useState(null);
+  const [showCreateTeam, setShowCreateTeam] = useState(false);
+  const [newTeamName, setNewTeamName] = useState('');
+  const [showInviteMember, setShowInviteMember] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
   const [activeThreadUser, setActiveThreadUser] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -877,6 +883,7 @@ function App() {
         fetchInvestigators();
       }
       fetchChatConversations();
+      fetchTeams();
     }
   }, [token, isStaff]);
 
@@ -888,6 +895,7 @@ function App() {
         fetchChatMessages(activeThreadUser.id);
         if (isStaff) {
           fetchChatConversations();
+          fetchTeams();
         }
       }, 3000);
     }
@@ -1186,10 +1194,13 @@ function App() {
     setManagerTab('edit-project');
   };
 
-  const fetchChatMessages = async (userId) => {
-    if (!userId) return;
+  const fetchChatMessages = async (userId, teamId = null) => {
+    if (!userId && !teamId) return;
     try {
-      const res = await fetch(`${API_BASE}/api/chat/messages/?with_user_id=${userId}`, {
+      const url = teamId 
+        ? `${API_BASE}/api/chat/messages/?team_id=${teamId}`
+        : `${API_BASE}/api/chat/messages/?with_user_id=${userId}`;
+      const res = await fetch(url, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -1199,6 +1210,49 @@ function App() {
     } catch (err) {
       console.error('Error fetching chat messages:', err);
     }
+  };
+
+  const fetchTeams = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/teams/`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) {
+        const data = await res.json();
+        setTeams(data);
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const handleCreateTeam = async () => {
+    if (!newTeamName.trim()) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/teams/create/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ name: newTeamName })
+      });
+      if (res.ok) {
+        setNewTeamName('');
+        setShowCreateTeam(false);
+        fetchTeams();
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const handleInviteToTeam = async (teamId) => {
+    if (!inviteEmail.trim()) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/teams/${teamId}/add_member/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ email: inviteEmail })
+      });
+      if (res.ok) {
+        setInviteEmail('');
+        setShowInviteMember(false);
+        fetchTeams();
+        showToast("Invitation sent successfully!");
+      }
+    } catch (err) { console.error(err); }
   };
 
   const fetchChatConversations = async () => {
@@ -1220,27 +1274,29 @@ function App() {
 
   const handleSendLiveMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !activeThreadUser) return;
+    if (!newMessage.trim() || (!activeThreadUser && !activeTeam)) return;
 
     const textToSend = newMessage.trim();
     setNewMessage('');
 
     try {
+      const payload = { message: textToSend };
+      if (activeTeam) payload.team_id = activeTeam.id;
+      else payload.receiver_id = activeThreadUser.id;
+
       const res = await fetch(`${API_BASE}/api/chat/send/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          receiver_id: activeThreadUser.id,
-          message: textToSend
-        })
+        body: JSON.stringify(payload)
       });
       if (res.ok) {
         const msg = await res.json();
         setChatMessages((prev) => [...prev, msg]);
         fetchChatConversations();
+        fetchTeams();
       }
     } catch (err) {
       console.error('Error sending message:', err);
@@ -3445,6 +3501,37 @@ function App() {
                     <div className="row g-0" style={{ minHeight: '400px' }}>
                       {/* Left: Threads list */}
                       <div className="col-md-4 chat-thread-list" style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                        <div className="chat-active-header p-2 text-center small fw-bold border-bottom border-secondary d-flex justify-content-between align-items-center">
+                          <span>Teams / Groups</span>
+                          {isStaff && (
+                            <button className="btn btn-sm btn-outline-cyan py-0 px-1" onClick={() => setShowCreateTeam(!showCreateTeam)}>+</button>
+                          )}
+                        </div>
+                        {showCreateTeam && (
+                          <div className="p-2 border-bottom border-secondary">
+                            <input type="text" className="form-control form-control-sm bg-dark text-white border-secondary mb-1" placeholder="Team Name" value={newTeamName} onChange={e => setNewTeamName(e.target.value)} />
+                            <button className="btn btn-sm btn-cyan w-100" onClick={handleCreateTeam}>Create</button>
+                          </div>
+                        )}
+                        <div className="list-group list-group-flush mb-2">
+                          {teams.map(t => (
+                            <button
+                              key={t.id}
+                              type="button"
+                              className={`list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center text-start ${activeTeam?.id === t.id ? 'bg-primary bg-opacity-25 text-white' : 'text-muted'}`}
+                              onClick={() => {
+                                setActiveThreadUser(null);
+                                setActiveTeam(t);
+                                fetchChatMessages(null, t.id);
+                              }}
+                            >
+                              <div>
+                                <i className="bi bi-people-fill me-2 text-cyan"></i>
+                                {t.name}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
                         <div className="chat-active-header p-2 text-center small fw-bold">Active Threads</div>
                         <div className="list-group list-group-flush">
                           {chatThreads.map((thread) => (
@@ -3570,7 +3657,12 @@ function App() {
                       <button type="button" className="btn btn-sm btn-outline-light me-2" onClick={() => handleEditProjectClick(selectedProject)}>
                         <i className="bi bi-pencil-square"></i> Edit
                       </button>
-                      <button type="button" className="btn-close btn-close-white" onClick={() => setSelectedProject(null)}></button>
+                      {activeTeam && activeTeam.manager_username === authUsername && (
+                              <button className="btn btn-sm btn-outline-light ms-2" onClick={() => setShowInviteMember(!showInviteMember)}>
+                                <i className="bi bi-person-plus"></i> Invite
+                              </button>
+                            )}
+<button type="button" className="btn-close btn-close-white" onClick={() => setSelectedProject(null)}></button>
                     </div>
                   </div>
                   <div className="card-body">
@@ -4095,6 +4187,37 @@ function App() {
                     <div className="row g-0" style={{ minHeight: '400px' }}>
                       {/* Left: Available Managers threads */}
                       <div className="col-md-4 chat-thread-list" style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                        <div className="chat-active-header p-2 text-center small fw-bold border-bottom border-secondary d-flex justify-content-between align-items-center">
+                          <span>Teams / Groups</span>
+                          {isStaff && (
+                            <button className="btn btn-sm btn-outline-cyan py-0 px-1" onClick={() => setShowCreateTeam(!showCreateTeam)}>+</button>
+                          )}
+                        </div>
+                        {showCreateTeam && (
+                          <div className="p-2 border-bottom border-secondary">
+                            <input type="text" className="form-control form-control-sm bg-dark text-white border-secondary mb-1" placeholder="Team Name" value={newTeamName} onChange={e => setNewTeamName(e.target.value)} />
+                            <button className="btn btn-sm btn-cyan w-100" onClick={handleCreateTeam}>Create</button>
+                          </div>
+                        )}
+                        <div className="list-group list-group-flush mb-2">
+                          {teams.map(t => (
+                            <button
+                              key={t.id}
+                              type="button"
+                              className={`list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center text-start ${activeTeam?.id === t.id ? 'bg-primary bg-opacity-25 text-white' : 'text-muted'}`}
+                              onClick={() => {
+                                setActiveThreadUser(null);
+                                setActiveTeam(t);
+                                fetchChatMessages(null, t.id);
+                              }}
+                            >
+                              <div>
+                                <i className="bi bi-people-fill me-2 text-cyan"></i>
+                                {t.name}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
                         <div className="chat-active-header p-2 text-center small fw-bold">Active Threads</div>
                         <div className="list-group list-group-flush">
                           {chatThreads.map((m) => (
@@ -4216,7 +4339,12 @@ function App() {
                 <div className="card card-glass mb-4">
                   <div className="card-header card-glass-header d-flex justify-content-between align-items-center py-3">
                     <h5 className="mb-0 fw-bold"><i className="bi bi-info-circle"></i> Project Details</h5>
-                    <button type="button" className="btn-close btn-close-white" onClick={() => setSelectedProject(null)}></button>
+                    {activeTeam && activeTeam.manager_username === authUsername && (
+                              <button className="btn btn-sm btn-outline-light ms-2" onClick={() => setShowInviteMember(!showInviteMember)}>
+                                <i className="bi bi-person-plus"></i> Invite
+                              </button>
+                            )}
+<button type="button" className="btn-close btn-close-white" onClick={() => setSelectedProject(null)}></button>
                   </div>
                   <div className="card-body">
                     <h4 className="fw-bold">{selectedProject.title}</h4>
@@ -4388,7 +4516,12 @@ function App() {
             <div className="modal-content bg-dark text-white border-secondary">
               <div className="modal-header border-bottom border-secondary">
                 <h5 className="modal-title text-warning"><i className="bi bi-exclamation-triangle-fill me-2"></i>Confirmation Required</h5>
-                <button type="button" className="btn-close btn-close-white" onClick={() => setConfirmDialog({ show: false, message: '', onConfirm: null })}></button>
+                {activeTeam && activeTeam.manager_username === authUsername && (
+                              <button className="btn btn-sm btn-outline-light ms-2" onClick={() => setShowInviteMember(!showInviteMember)}>
+                                <i className="bi bi-person-plus"></i> Invite
+                              </button>
+                            )}
+<button type="button" className="btn-close btn-close-white" onClick={() => setConfirmDialog({ show: false, message: '', onConfirm: null })}></button>
               </div>
               <div className="modal-body">
                 <p>{confirmDialog.message}</p>
@@ -4413,7 +4546,12 @@ function App() {
             <div className="modal-content bg-dark text-white border-secondary">
               <div className="modal-header border-bottom border-secondary">
                 <h5 className="modal-title"><i className="bi bi-book me-2"></i>Project Description</h5>
-                <button type="button" className="btn-close btn-close-white" onClick={() => setComfortReadText(null)}></button>
+                {activeTeam && activeTeam.manager_username === authUsername && (
+                              <button className="btn btn-sm btn-outline-light ms-2" onClick={() => setShowInviteMember(!showInviteMember)}>
+                                <i className="bi bi-person-plus"></i> Invite
+                              </button>
+                            )}
+<button type="button" className="btn-close btn-close-white" onClick={() => setComfortReadText(null)}></button>
               </div>
               <div className="modal-body fs-5" style={{ lineHeight: '1.8' }}>
                 <p style={{ whiteSpace: 'pre-wrap' }}>{comfortReadText}</p>

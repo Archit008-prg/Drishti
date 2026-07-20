@@ -306,9 +306,20 @@ def create_report_notifications(sender, instance, created, **kwargs):
             )
 
 
+
+class Team(models.Model):
+    name = models.CharField(max_length=255)
+    manager = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='managed_teams')
+    members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='teams')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
+
 class ChatMessage(models.Model):
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_chats')
-    receiver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_chats')
+    receiver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_chats', null=True, blank=True)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='messages', null=True, blank=True)
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
@@ -319,7 +330,9 @@ class ChatMessage(models.Model):
         verbose_name_plural = "Chat Messages"
         
     def __str__(self):
-        return f"{self.sender.username} -> {self.receiver.username}: {self.message[:30]}"
+        if self.team:
+            return f"{self.sender.username} -> {self.team.name}: {self.message[:30]}"
+        return f"{self.sender.username} -> {self.receiver.username if self.receiver else 'None'}: {self.message[:30]}"
 
 
 # ─── AuditLog (internal only — not exposed in any UI) ────────────────────────
@@ -410,4 +423,4 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
 # ─── Import Ekta models so Django migration system discovers them ─────────────
 # (Models live in ekta_models.py to keep files clean, imported here for discovery)
 from dashboard.ekta_models import SupportingDocument, EktaQueryLog  # noqa: F401, E402
-
+
