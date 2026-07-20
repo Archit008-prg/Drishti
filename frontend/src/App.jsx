@@ -805,14 +805,13 @@ function App() {
   const [authUsername, setAuthUsername] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authEmail, setAuthEmail] = useState('');
-    const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '', onConfirm: null });
+  const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '', onConfirm: null });
   const confirmAction = (message, onConfirm) => {
     setConfirmDialog({ show: true, message, onConfirm });
   };
 
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const [comfortReadText, setComfortReadText] = useState(null);
-  const [comfortReadText, setComfortReadText] = useState(null); = useState({ show: false, message: '', type: 'success' });
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
     setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
