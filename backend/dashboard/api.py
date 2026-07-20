@@ -491,8 +491,17 @@ def api_create_team(request):
     name = request.data.get('name')
     if not name:
         return Response({'error': 'Name is required'}, status=400)
+        
     team = Team.objects.create(name=name, manager=request.user)
     team.members.add(request.user)
+    
+    # Process optional initial members
+    member_ids = request.data.get('member_ids', [])
+    if member_ids and isinstance(member_ids, list):
+        members = User.objects.filter(id__in=member_ids)
+        for member in members:
+            team.members.add(member)
+            
     return Response({'id': team.id, 'name': team.name})
 
 @api_view(['POST'])

@@ -852,6 +852,7 @@ function App() {
   const [activeTeam, setActiveTeam] = useState(null);
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
+  const [newTeamMembers, setNewTeamMembers] = useState([]);
   const [showInviteMember, setShowInviteMember] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [activeThreadUser, setActiveThreadUser] = useState(null);
@@ -1228,10 +1229,11 @@ function App() {
       const res = await fetch(`${API_BASE}/api/teams/create/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ name: newTeamName })
+        body: JSON.stringify({ name: newTeamName, member_ids: newTeamMembers })
       });
       if (res.ok) {
         setNewTeamName('');
+        setNewTeamMembers([]);
         setShowCreateTeam(false);
         fetchTeams();
       }
@@ -3508,9 +3510,29 @@ function App() {
                           )}
                         </div>
                         {showCreateTeam && (
-                          <div className="p-2 border-bottom border-secondary">
-                            <input type="text" className="form-control form-control-sm bg-dark text-white border-secondary mb-1" placeholder="Team Name" value={newTeamName} onChange={e => setNewTeamName(e.target.value)} />
-                            <button className="btn btn-sm btn-cyan w-100" onClick={handleCreateTeam}>Create</button>
+                          <div className="p-2 border-bottom border-secondary bg-black">
+                            <input type="text" className="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Team Name" value={newTeamName} onChange={e => setNewTeamName(e.target.value)} />
+                            <div className="mb-2" style={{ maxHeight: '100px', overflowY: 'auto' }}>
+                              <small className="text-muted d-block mb-1">Select Members:</small>
+                              {chatThreads.map(u => (
+                                <div key={u.user_id} className="form-check form-check-sm" style={{ fontSize: '12px' }}>
+                                  <input 
+                                    className="form-check-input" 
+                                    type="checkbox" 
+                                    id={`check-${u.user_id}`} 
+                                    checked={newTeamMembers.includes(u.user_id)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) setNewTeamMembers([...newTeamMembers, u.user_id]);
+                                      else setNewTeamMembers(newTeamMembers.filter(id => id !== u.user_id));
+                                    }}
+                                  />
+                                  <label className="form-check-label text-white" htmlFor={`check-${u.user_id}`}>
+                                    {u.username}
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                            <button className="btn btn-sm btn-primary w-100 fw-bold" onClick={handleCreateTeam}>Create Group</button>
                           </div>
                         )}
                         <div className="list-group list-group-flush mb-2">
@@ -3551,14 +3573,8 @@ function App() {
                               </div>
                               <div className="d-flex align-items-center">
                                 {thread.unread_count > 0 && (
-                                  <span className="badge bg-danger rounded-circle me-2">{thread.unread_count}</span>
+                                  <span className="badge bg-danger rounded-circle">{thread.unread_count}</span>
                                 )}
-                                <button type="button" className="btn btn-sm text-danger p-0 m-0 border-0 bg-transparent" title="Delete Conversation" onClick={(e) => {
-                                  e.stopPropagation();
-                                  confirmAction("Delete entire conversation with " + thread.username + "?", () => handleClearConversation(thread.user_id));
-                                }}>
-                                  <i className="bi bi-x-circle-fill"></i>
-                                </button>
                               </div>
                             </div>
                           ))}
@@ -3577,8 +3593,8 @@ function App() {
                               <span className="fw-bold"><i className="bi bi-person-fill"></i> {activeThreadUser.username}</span>
                               <div className="d-flex align-items-center gap-3">
                                 <span className="badge bg-success">Online & Encrypted</span>
-                                <button className="btn btn-sm btn-outline-danger py-0 px-2" title="Clear Conversation" onClick={() => confirmAction("Are you sure you want to delete this entire conversation? This action cannot be undone.", () => handleClearConversation(activeThreadUser.id))}>
-                                  <i className="bi bi-trash3"></i>
+                                <button className="btn btn-sm btn-danger py-0 px-2 fw-bold text-white" title="Clear Conversation" onClick={() => confirmAction("Are you sure you want to delete this entire conversation? This action cannot be undone.", () => handleClearConversation(activeThreadUser.id))}>
+                                  <i className="bi bi-trash3"></i> Delete
                                 </button>
                               </div>
                             </div>
@@ -4201,9 +4217,29 @@ function App() {
                           )}
                         </div>
                         {showCreateTeam && (
-                          <div className="p-2 border-bottom border-secondary">
-                            <input type="text" className="form-control form-control-sm bg-dark text-white border-secondary mb-1" placeholder="Team Name" value={newTeamName} onChange={e => setNewTeamName(e.target.value)} />
-                            <button className="btn btn-sm btn-cyan w-100" onClick={handleCreateTeam}>Create</button>
+                          <div className="p-2 border-bottom border-secondary bg-black">
+                            <input type="text" className="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Team Name" value={newTeamName} onChange={e => setNewTeamName(e.target.value)} />
+                            <div className="mb-2" style={{ maxHeight: '100px', overflowY: 'auto' }}>
+                              <small className="text-muted d-block mb-1">Select Members:</small>
+                              {chatThreads.map(u => (
+                                <div key={u.user_id} className="form-check form-check-sm" style={{ fontSize: '12px' }}>
+                                  <input 
+                                    className="form-check-input" 
+                                    type="checkbox" 
+                                    id={`check-${u.user_id}`} 
+                                    checked={newTeamMembers.includes(u.user_id)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) setNewTeamMembers([...newTeamMembers, u.user_id]);
+                                      else setNewTeamMembers(newTeamMembers.filter(id => id !== u.user_id));
+                                    }}
+                                  />
+                                  <label className="form-check-label text-white" htmlFor={`check-${u.user_id}`}>
+                                    {u.username}
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                            <button className="btn btn-sm btn-primary w-100 fw-bold" onClick={handleCreateTeam}>Create Group</button>
                           </div>
                         )}
                         <div className="list-group list-group-flush mb-2">
@@ -4244,14 +4280,8 @@ function App() {
                               </div>
                               <div className="d-flex align-items-center">
                                 {m.unread_count > 0 && (
-                                  <span className="badge bg-danger rounded-circle me-2">{m.unread_count}</span>
+                                  <span className="badge bg-danger rounded-circle">{m.unread_count}</span>
                                 )}
-                                <button type="button" className="btn btn-sm text-danger p-0 m-0 border-0 bg-transparent" title="Delete Conversation" onClick={(e) => {
-                                  e.stopPropagation();
-                                  confirmAction("Delete entire conversation with " + m.username + "?", () => handleClearConversation(m.user_id));
-                                }}>
-                                  <i className="bi bi-x-circle-fill"></i>
-                                </button>
                               </div>
                             </div>
                           ))}
@@ -4270,8 +4300,8 @@ function App() {
                               <span className="fw-bold"><i className="bi bi-person-fill"></i> {activeThreadUser.username}</span>
                               <div className="d-flex align-items-center gap-3">
                                 <span className="badge bg-success">Online & Encrypted</span>
-                                <button className="btn btn-sm btn-outline-danger py-0 px-2" title="Clear Conversation" onClick={() => confirmAction("Are you sure you want to delete this entire conversation? This action cannot be undone.", () => handleClearConversation(activeThreadUser.id))}>
-                                  <i className="bi bi-trash3"></i>
+                                <button className="btn btn-sm btn-danger py-0 px-2 fw-bold text-white" title="Clear Conversation" onClick={() => confirmAction("Are you sure you want to delete this entire conversation? This action cannot be undone.", () => handleClearConversation(activeThreadUser.id))}>
+                                  <i className="bi bi-trash3"></i> Delete
                                 </button>
                               </div>
                             </div>
