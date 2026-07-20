@@ -18,8 +18,12 @@ User = get_user_model()
 def api_login(request):
     username = request.data.get('username')
     password = request.data.get('password')
+    requested_is_staff = request.data.get('is_staff')
     user = authenticate(username=username, password=password)
+    
     if user is not None:
+        if requested_is_staff is not None and user.is_staff != requested_is_staff:
+            return Response({'error': 'Unauthorized role. Please login with correct account type.'}, status=403)
         from rest_framework_simplejwt.tokens import RefreshToken
         refresh = RefreshToken.for_user(user)
         token, _ = Token.objects.get_or_create(user=user)
@@ -284,17 +288,20 @@ def api_add_project(request):
             </body>
         </html>
         """
-        try:
-            send_mail(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                [assigned_email],
-                fail_silently=False,
-                html_message=html_message
-            )
-        except Exception as e:
-            print(f"Email failed: {e}")
+        def send_email_bg():
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [assigned_email],
+                    fail_silently=False,
+                    html_message=html_message
+                )
+            except Exception as e:
+                print(f"Email failed: {e}")
+        import threading
+        threading.Thread(target=send_email_bg).start()
 
     # Process uploaded documents
     docs = request.FILES.getlist('docs')
@@ -310,14 +317,23 @@ def api_add_project(request):
             # Index into Ekta RAG immediately
             try:
                 # Need to read the file again after saving, so we reset the pointer
-                saved_doc.file.seek(0)
-                text = ekta_api._extract_text_from_file(saved_doc.file, saved_doc.file.name)
-                if text.strip():
-                    # index_document(doc_id, project_id, text, doc_name)
-                    chunks = ekta_rag.index_document(saved_doc.id, project.id, text, saved_doc.file.name)
-                    saved_doc.is_indexed = True
-                    saved_doc.chunk_count = chunks
-                    saved_doc.save()
+                import threading
+                def index_background(doc_id, proj_id, doc_name):
+                    try:
+                        from dashboard.ekta_models import SupportingDocument
+                        doc_obj = SupportingDocument.objects.get(id=doc_id)
+                        doc_obj.file.seek(0)
+                        extracted_text = ekta_api._extract_text_from_file(doc_obj.file, doc_name)
+                        if extracted_text.strip():
+                            chunks_created = ekta_rag.index_document(doc_id, proj_id, extracted_text, doc_name)
+                            doc_obj.is_indexed = True
+                            doc_obj.chunk_count = chunks_created
+                            doc_obj.save()
+                    except Exception as ex:
+                        print(f"Background indexing failed: {ex}")
+                
+                t = threading.Thread(target=index_background, args=(saved_doc.id, project.id, saved_doc.file.name))
+                t.start()
             except Exception as e:
                 print(f"Error indexing doc: {e}")
 
@@ -359,6 +375,24 @@ def api_submit_report(request, project_id):
     project.report_resubmit_requested = False
     project.save()
     
+    manager_email = project.created_by.email if project.created_by and project.created_by.email else None
+    if manager_email:
+        def send_report_email():
+            try:
+                from django.core.mail import send_mail
+                from django.conf import settings
+                send_mail(
+                    f"Report Submitted: {project.title}",
+                    f"""Hello,\n\nA new report has been submitted by the investigator for project '{project.title}'.\nPlease review it on the dashboard.""",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [manager_email],
+                    fail_silently=True,
+                )
+            except:
+                pass
+        import threading
+        threading.Thread(target=send_report_email).start()
+        
     return Response({'success': True})
 
 @api_view(['POST'])
@@ -628,7 +662,27 @@ def api_delete_project(request, project_id):
     if not request.user.is_staff:
         return Response({'error': 'Unauthorized'}, status=403)
     project = get_object_or_404(Project, id=project_id)
+    assigned_email = project.assigned_email
+    title = project.title
     project.delete()
+    
+    if assigned_email:
+        def send_delete_email():
+            try:
+                from django.core.mail import send_mail
+                from django.conf import settings
+                send_mail(
+                    f"Project Cancelled: {title}",
+                    f"""Hello,\n\nThe project '{title}' you were assigned to has been deleted or cancelled by the manager.""",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [assigned_email],
+                    fail_silently=True,
+                )
+            except:
+                pass
+        import threading
+        threading.Thread(target=send_delete_email).start()
+        
     return Response({'success': True})
 
 # ─── User Profile Endpoints ───────────────────────────────────────────────────

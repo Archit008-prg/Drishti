@@ -751,6 +751,17 @@ function App() {
   const [authUsername, setAuthUsername] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authEmail, setAuthEmail] = useState('');
+    const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '', onConfirm: null });
+  const confirmAction = (message, onConfirm) => {
+    setConfirmDialog({ show: true, message, onConfirm });
+  };
+
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+  };
+
   const [authError, setAuthError] = useState('');
   const [authSuccess, setAuthSuccess] = useState('');
 
@@ -862,7 +873,7 @@ function App() {
     
     const endpoint = currentView === 'login' ? '/api/login/' : '/api/signup/';
     const body = currentView === 'login'
-      ? { username: authUsername, password: authPassword }
+      ? { username: authUsername, password: authPassword, is_staff: authRole === 'manager' }
       : { 
           username: authUsername, 
           password: authPassword, 
@@ -974,6 +985,22 @@ function App() {
     }
   };
 
+    const handleOpenAddProject = () => {
+    setProjectCode('');
+    setProjectTitle('');
+    setProjectDesc('');
+    setPrincipalAgency('');
+    setBudgetAmount('');
+    setStartDate('');
+    setScheduledCompletion('');
+    setAssignedInvestigatorId('');
+    setPiName('');
+    setPcName('');
+    setImplAgencies('');
+    setProjectDocs([]);
+    setManagerTab('add-project');
+  };
+
   const handleCreateProject = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -1010,7 +1037,7 @@ function App() {
         body: formData
       });
       if (res.ok) {
-        alert('Project created successfully!');
+        showToast('Project created successfully!', 'success');
         setManagerTab('projects');
         fetchProjects();
         // Reset form
@@ -1032,9 +1059,9 @@ function App() {
         try {
           const errData = JSON.parse(text);
           console.error("Backend JSON Error:", errData);
-          alert(`Backend Error (${res.status}): ${errData.error || JSON.stringify(errData)}`);
+          showToast(`Backend Error (${res.status}): ${errData.error || JSON.stringify(errData)}`, "danger");
         } catch (parseErr) {
-          alert(`Backend Error (${res.status}): HTML/Non-JSON response returned. See console for text.`);
+          showToast(`Backend Error (${res.status}): HTML/Non-JSON response returned. See console for text.`, "danger");
         }
       }
     } catch (err) {
@@ -1070,7 +1097,7 @@ function App() {
         body: JSON.stringify(payload)
       });
       if (res.ok) {
-        alert('Project updated successfully!');
+        showToast('Project updated successfully!', 'success');
         setManagerTab('projects');
         fetchProjects();
         fetchProjectDetail(selectedProject.id); // refresh the details sidebar
@@ -1179,7 +1206,7 @@ function App() {
   };
 
   const handleClearConversation = async (userId) => {
-    if (!window.confirm("Are you sure you want to delete this entire conversation? This action cannot be undone.")) return;
+    setActiveThreadUser(null);
     try {
       const res = await fetch(`${API_BASE}/api/chat/conversations/${userId}/delete/`, {
         method: 'DELETE',
@@ -1201,7 +1228,7 @@ function App() {
         }
       });
       if (res.ok) {
-        alert('Project deleted successfully.');
+        showToast('Project deleted successfully.', 'success');
         setSelectedProject(null);
         fetchProjects();
       } else {
@@ -1257,7 +1284,7 @@ function App() {
         body: formData
       });
       if (res.ok) {
-        alert('Report submitted successfully!');
+        showToast('Report submitted successfully!', 'success');
         setReportFile(null);
         setReportNotes('');
         fetchProjectDetail(selectedProject.id);
@@ -2477,7 +2504,7 @@ function App() {
               <button className={`sidebar-item ${managerTab === 'projects' ? 'active' : ''}`} onClick={() => setManagerTab('projects')}>
                 <i className="bi bi-grid-3x3-gap"></i> Projects Directory
               </button>
-              <button className={`sidebar-item ${managerTab === 'add-project' ? 'active' : ''}`} onClick={() => setManagerTab('add-project')}>
+              <button className={`sidebar-item ${managerTab === 'add-project' ? 'active' : ''}`} onClick={handleOpenAddProject}>
                 <i className="bi bi-plus-circle"></i> Add Project
               </button>
               <button className={`sidebar-item ${managerTab === 'reviews' ? 'active' : ''}`} onClick={() => setManagerTab('reviews')}>
@@ -2602,7 +2629,7 @@ function App() {
             <div className="row">
               
               {/* Manager Metrics Cards (hidden when using Ekta or Live Chats to maximize space) */}
-              {!['ekta', 'live-chats', 'profile'].includes(managerTab) && (
+              {!['ekta', 'live-chats', 'profile', 'add-project', 'edit-project'].includes(managerTab) && (
                 <div className="col-12 mb-4">
                   <DashboardStatCards projects={projects} isManager={true} />
                 </div>
@@ -3028,23 +3055,28 @@ function App() {
                   </div>
                   <div className="card-body">
                     <form onSubmit={managerTab === 'edit-project' ? handleUpdateProject : handleCreateProject}>
-                      <div className="row mb-3">
+                      {/* SECTION 1: Core Details */}
+                      <h6 className="text-uppercase fw-bold text-muted mb-3 mt-2 border-bottom border-secondary pb-2" style={{ letterSpacing: '1px', fontSize: '0.8rem' }}>
+                        <i className="bi bi-info-circle me-2"></i>Core Details
+                      </h6>
+                      
+                      <div className="row g-3 mb-4">
                         <div className="col-md-4">
-                          <label className="form-label small fw-bold">Project Code*</label>
+                          <label className="form-label small fw-semibold text-white-50">Project Code <span className="text-danger">*</span></label>
                           <input 
                             type="text" 
-                            className="form-control" 
+                            className="form-control bg-dark border-secondary text-white" 
                             placeholder="e.g. S&T-2026-01" 
                             value={projectCode}
                             onChange={(e) => setProjectCode(e.target.value)}
                             required 
-                            disabled={managerTab === 'edit-project'} // Cannot edit project code once created
+                            disabled={managerTab === 'edit-project'}
                           />
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label small fw-bold">Project Type*</label>
+                          <label className="form-label small fw-semibold text-white-50">Project Type <span className="text-danger">*</span></label>
                           <select 
-                            className="form-select"
+                            className="form-select bg-dark border-secondary text-white"
                             value={projectType}
                             onChange={(e) => setProjectType(e.target.value)}
                             required
@@ -3054,9 +3086,9 @@ function App() {
                           </select>
                         </div>
                         <div className="col-md-4">
-                          <label className="form-label small fw-bold">Status*</label>
+                          <label className="form-label small fw-semibold text-white-50">Status <span className="text-danger">*</span></label>
                           <select 
-                            className="form-select"
+                            className="form-select bg-dark border-secondary text-white"
                             value={projectStatus}
                             onChange={(e) => setProjectStatus(e.target.value)}
                             required
@@ -3067,48 +3099,52 @@ function App() {
                             <option value="up_next">Up Next</option>
                           </select>
                         </div>
-                      </div>
-
-                      <div className="mb-3">
-                        <label className="form-label small fw-bold">Project Title*</label>
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          placeholder="Enter complete title"
-                          value={projectTitle}
-                          onChange={(e) => setProjectTitle(e.target.value)}
-                          required 
-                        />
-                      </div>
-
-                      <div className="mb-3">
-                        <label className="form-label small fw-bold">Description</label>
-                        <textarea 
-                          className="form-control" 
-                          rows="3"
-                          placeholder="Operational details..."
-                          value={projectDesc}
-                          onChange={(e) => setProjectDesc(e.target.value)}
-                        ></textarea>
-                      </div>
-
-                      <div className="row mb-3">
-                        <div className="col-md-6">
-                          <label className="form-label small fw-bold">Principal Agency*</label>
+                        <div className="col-12">
+                          <label className="form-label small fw-semibold text-white-50">Project Title <span className="text-danger">*</span></label>
                           <input 
                             type="text" 
-                            className="form-control" 
-                            placeholder="DST, DBT..."
+                            className="form-control bg-dark border-secondary text-white form-control-lg" 
+                            placeholder="Enter the complete title of the project"
+                            value={projectTitle}
+                            onChange={(e) => setProjectTitle(e.target.value)}
+                            required 
+                            style={{ fontSize: '1rem' }}
+                          />
+                        </div>
+                        <div className="col-12">
+                          <label className="form-label small fw-semibold text-white-50">Description</label>
+                          <textarea 
+                            className="form-control bg-dark border-secondary text-white" 
+                            rows="3"
+                            placeholder="Provide operational details and objectives..."
+                            value={projectDesc}
+                            onChange={(e) => setProjectDesc(e.target.value)}
+                          ></textarea>
+                        </div>
+                      </div>
+
+                      {/* SECTION 2: Financials & Timeline */}
+                      <h6 className="text-uppercase fw-bold text-muted mb-3 mt-4 border-bottom border-secondary pb-2" style={{ letterSpacing: '1px', fontSize: '0.8rem' }}>
+                        <i className="bi bi-cash-coin me-2"></i>Financials & Timeline
+                      </h6>
+                      
+                      <div className="row g-3 mb-4">
+                        <div className="col-md-6">
+                          <label className="form-label small fw-semibold text-white-50">Principal Agency <span className="text-danger">*</span></label>
+                          <input 
+                            type="text" 
+                            className="form-control bg-dark border-secondary text-white" 
+                            placeholder="e.g. DST, DBT"
                             value={principalAgency}
                             onChange={(e) => setPrincipalAgency(e.target.value)}
                             required 
                           />
                         </div>
                         <div className="col-md-3">
-                          <label className="form-label small fw-bold">Budget Amount</label>
+                          <label className="form-label small fw-semibold text-white-50">Budget Amount</label>
                           <input 
                             type="number" 
-                            className="form-control" 
+                            className="form-control bg-dark border-secondary text-white" 
                             step="0.01" 
                             placeholder="0.00"
                             value={budgetAmount}
@@ -3116,9 +3152,9 @@ function App() {
                           />
                         </div>
                         <div className="col-md-3">
-                          <label className="form-label small fw-bold">Budget Unit</label>
+                          <label className="form-label small fw-semibold text-white-50">Budget Unit</label>
                           <select 
-                            className="form-select"
+                            className="form-select bg-dark border-secondary text-white"
                             value={budgetUnit}
                             onChange={(e) => setBudgetUnit(e.target.value)}
                           >
@@ -3128,24 +3164,21 @@ function App() {
                             <option value="crores">Crores (₹)</option>
                           </select>
                         </div>
-                      </div>
-
-                      <div className="row mb-3">
                         <div className="col-md-6">
-                          <label className="form-label small fw-bold">Start Date*</label>
+                          <label className="form-label small fw-semibold text-white-50">Start Date <span className="text-danger">*</span></label>
                           <input 
                             type="date" 
-                            className="form-control"
+                            className="form-control bg-dark border-secondary text-white"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
                             required 
                           />
                         </div>
                         <div className="col-md-6">
-                          <label className="form-label small fw-bold">Scheduled Completion Date*</label>
+                          <label className="form-label small fw-semibold text-white-50">Scheduled Completion <span className="text-danger">*</span></label>
                           <input 
                             type="date" 
-                            className="form-control"
+                            className="form-control bg-dark border-secondary text-white"
                             value={scheduledCompletion}
                             onChange={(e) => setScheduledCompletion(e.target.value)}
                             required 
@@ -3153,68 +3186,74 @@ function App() {
                         </div>
                       </div>
 
-                      <div className="row mb-3">
+                      {/* SECTION 3: Assignment & Documents */}
+                      <h6 className="text-uppercase fw-bold text-muted mb-3 mt-4 border-bottom border-secondary pb-2" style={{ letterSpacing: '1px', fontSize: '0.8rem' }}>
+                        <i className="bi bi-people-fill me-2"></i>Assignment & Documents
+                      </h6>
+                      
+                      <div className="row g-3 mb-4">
                         <div className="col-md-6">
-                          <label className="form-label small fw-bold">Principal Investigator (PI)</label>
+                          <label className="form-label small fw-semibold text-white-50">Principal Investigator (PI)</label>
                           <input 
                             type="text" 
-                            className="form-control"
+                            className="form-control bg-dark border-secondary text-white"
+                            placeholder="Name of PI"
                             value={piName}
                             onChange={(e) => setPiName(e.target.value)}
                           />
                         </div>
                         <div className="col-md-6">
-                          <label className="form-label small fw-bold">Project Coordinator</label>
+                          <label className="form-label small fw-semibold text-white-50">Project Coordinator</label>
                           <input 
                             type="text" 
-                            className="form-control"
+                            className="form-control bg-dark border-secondary text-white"
+                            placeholder="Name of Coordinator"
                             value={pcName}
                             onChange={(e) => setPcName(e.target.value)}
                           />
                         </div>
-                      </div>
-
-                      <div className="mb-3">
-                        <label className="form-label small fw-bold">Assign Investigator (Select User or Type Email)*</label>
-                        <input 
-                          type="text"
-                          className="form-control"
-                          list="investigators-list"
-                          placeholder="Select from list or type external email..."
-                          value={assignedInvestigatorId}
-                          onChange={(e) => setAssignedInvestigatorId(e.target.value)}
-                          required
-                        />
-                        <datalist id="investigators-list">
-                          {investigators.map((user) => (
-                            <option key={user.id} value={user.email || user.id}>{user.username}</option>
-                          ))}
-                        </datalist>
-                      </div>
-
-
-
-                      <div className="mb-3">
-                        <label className="form-label small fw-bold">Implementing Agencies</label>
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          placeholder="Agency A, Agency B..."
-                          value={implAgencies}
-                          onChange={(e) => setImplAgencies(e.target.value)}
-                        />
-                      </div>
-
-                      <div className="mb-3">
-                        <label className="form-label small fw-bold">Supporting Documents</label>
-                        <input 
-                          type="file" 
-                          className="form-control" 
-                          multiple
-                          onChange={(e) => setProjectDocs(e.target.files)}
-                        />
-                        <div className="form-text text-muted" style={{ fontSize: '11px' }}>
-                          Upload any relevant documents for this project. They will be processed by Ekta AI.
+                        <div className="col-12">
+                          <label className="form-label small fw-semibold text-white-50">Implementing Agencies</label>
+                          <input 
+                            type="text" 
+                            className="form-control bg-dark border-secondary text-white" 
+                            placeholder="Agency A, Agency B..."
+                            value={implAgencies}
+                            onChange={(e) => setImplAgencies(e.target.value)}
+                          />
+                        </div>
+                        <div className="col-12">
+                          <div className="p-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded mt-2">
+                            <label className="form-label small fw-bold text-primary mb-1">Assign Investigator <span className="text-danger">*</span></label>
+                            <p className="small text-muted mb-2" style={{fontSize: '0.75rem'}}>Select an existing investigator from the dropdown or type a new email address to assign the project externally.</p>
+                            <input 
+                              type="text"
+                              className="form-control bg-dark border-primary text-white"
+                              list="investigators-list"
+                              placeholder="Type email address or select user..."
+                              value={assignedInvestigatorId}
+                              onChange={(e) => setAssignedInvestigatorId(e.target.value)}
+                              required
+                            />
+                            <datalist id="investigators-list">
+                              {investigators.map((user) => (
+                                <option key={user.id} value={user.email || user.id}>{user.username}</option>
+                              ))}
+                            </datalist>
+                          </div>
+                        </div>
+                        <div className="col-12 mt-3">
+                          <label className="form-label small fw-semibold text-white-50">Supporting Documents</label>
+                          <input 
+                            type="file" 
+                            className="form-control bg-dark border-secondary text-white" 
+                            multiple
+                            onChange={(e) => setProjectDocs(e.target.files)}
+                          />
+                          <div className="form-text text-muted mt-2" style={{ fontSize: '0.75rem' }}>
+                            <i className="bi bi-shield-check me-1"></i>
+                            Uploaded documents will be instantly processed and indexed by Ekta AI in the background.
+                          </div>
                         </div>
                       </div>
 
@@ -3391,7 +3430,7 @@ function App() {
                               <span className="fw-bold"><i className="bi bi-person-fill"></i> {activeThreadUser.username}</span>
                               <div className="d-flex align-items-center gap-3">
                                 <span className="badge bg-success">Online & Encrypted</span>
-                                <button className="btn btn-sm btn-outline-danger py-0 px-2" title="Clear Conversation" onClick={() => handleClearConversation(activeThreadUser.id)}>
+                                <button className="btn btn-sm btn-outline-danger py-0 px-2" title="Clear Conversation" onClick={() => confirmAction("Are you sure you want to delete this entire conversation? This action cannot be undone.", () => handleClearConversation(activeThreadUser.id))}>
                                   <i className="bi bi-trash3"></i>
                                 </button>
                               </div>
@@ -3468,7 +3507,7 @@ function App() {
             </div>
             
             {/* Manager Sidebar (Project Detail) */}
-            {!['ekta', 'live-chats', 'profile'].includes(managerTab) && (
+            {!['ekta', 'live-chats', 'profile', 'add-project', 'edit-project'].includes(managerTab) && (
               <div className="col-lg-4" style={{ position: 'sticky', top: '20px', alignSelf: 'start' }}>
                 {selectedProject ? (
                 <div className="card card-glass mb-4">
@@ -3495,6 +3534,23 @@ function App() {
                       <li className="list-group-item ps-0"><strong>Investigator:</strong> {selectedProject.assigned_investigator || '-'}</li>
 
                     </ul>
+
+                    
+                    {selectedProject.supporting_documents && selectedProject.supporting_documents.length > 0 && (
+                      <div className="bg-dark bg-opacity-35 p-3 rounded mb-3 border border-secondary border-opacity-20">
+                        <h6 className="mb-2"><strong>Reference Documents</strong></h6>
+                        <ul className="list-group list-group-flush bg-transparent">
+                          {selectedProject.supporting_documents.map(doc => (
+                            <li key={doc.id} className="list-group-item bg-transparent text-white px-0 py-1 border-0">
+                              <i className="bi bi-file-earmark-pdf me-2 text-danger"></i>
+                              <a href={`${API_BASE}${doc.url}`} target="_blank" rel="noreferrer" className="text-decoration-none text-white-75 hover-text-white">
+                                {doc.filename}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
 
                     {selectedProject.report ? (
                       <div className="bg-dark bg-opacity-35 p-3 rounded mb-3 border border-secondary border-opacity-20">
@@ -4014,7 +4070,7 @@ function App() {
                               <span className="fw-bold"><i className="bi bi-person-fill"></i> {activeThreadUser.username}</span>
                               <div className="d-flex align-items-center gap-3">
                                 <span className="badge bg-success">Online & Encrypted</span>
-                                <button className="btn btn-sm btn-outline-danger py-0 px-2" title="Clear Conversation" onClick={() => handleClearConversation(activeThreadUser.id)}>
+                                <button className="btn btn-sm btn-outline-danger py-0 px-2" title="Clear Conversation" onClick={() => confirmAction("Are you sure you want to delete this entire conversation? This action cannot be undone.", () => handleClearConversation(activeThreadUser.id))}>
                                   <i className="bi bi-trash3"></i>
                                 </button>
                               </div>
@@ -4136,6 +4192,23 @@ function App() {
                       )}
                     </ul>
 
+                    
+                    {selectedProject.supporting_documents && selectedProject.supporting_documents.length > 0 && (
+                      <div className="bg-dark bg-opacity-35 p-3 rounded mb-3 border border-secondary border-opacity-20">
+                        <h6 className="mb-2"><strong>Reference Documents</strong></h6>
+                        <ul className="list-group list-group-flush bg-transparent">
+                          {selectedProject.supporting_documents.map(doc => (
+                            <li key={doc.id} className="list-group-item bg-transparent text-white px-0 py-1 border-0">
+                              <i className="bi bi-file-earmark-pdf me-2 text-danger"></i>
+                              <a href={`${API_BASE}${doc.url}`} target="_blank" rel="noreferrer" className="text-decoration-none text-white-75 hover-text-white">
+                                {doc.filename}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
                     {selectedProject.report ? (
                       <div className="bg-dark bg-opacity-35 p-3 rounded mb-3 border border-secondary border-opacity-20">
                         <h6 className="d-flex justify-content-between mb-2">
@@ -4238,6 +4311,45 @@ function App() {
       </div>
     </div>
     
+
+            {confirmDialog.show && (
+        <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
+      )}
+      {confirmDialog.show && (
+        <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content bg-dark text-white border-secondary">
+              <div className="modal-header border-bottom border-secondary">
+                <h5 className="modal-title text-warning"><i className="bi bi-exclamation-triangle-fill me-2"></i>Confirmation Required</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setConfirmDialog({ show: false, message: '', onConfirm: null })}></button>
+              </div>
+              <div className="modal-body">
+                <p>{confirmDialog.message}</p>
+              </div>
+              <div className="modal-footer border-top border-secondary">
+                <button type="button" className="btn btn-secondary" onClick={() => setConfirmDialog({ show: false, message: '', onConfirm: null })}>Cancel</button>
+                <button type="button" className="btn btn-danger" onClick={() => {
+                  if (confirmDialog.onConfirm) confirmDialog.onConfirm();
+                  setConfirmDialog({ show: false, message: '', onConfirm: null });
+                }}>Confirm Action</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {toast.show && (
+        <div className={`toast-container position-fixed bottom-0 end-0 p-3`} style={{ zIndex: 1100 }}>
+          <div className={`toast show align-items-center text-white bg-${toast.type} border-0`} role="alert" aria-live="assertive" aria-atomic="true">
+            <div className="d-flex">
+              <div className="toast-body">
+                {toast.message}
+              </div>
+              <button type="button" className="btn-close btn-close-white me-2 m-auto" onClick={() => setToast({ show: false, message: '', type: 'success' })}></button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Manager's Assignment Quick View Popup & FAB */}
       {isStaff && (
         <>
