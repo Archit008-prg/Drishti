@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 // ─── Smart budget formatter ──────────────────────────────────────────────────
 const formatBudget = (amount, unit) => {
@@ -256,7 +256,7 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
 
   const fetchDocs = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/ekta/documents/${selectedProject.id}/`, {
+      const res = await fetch(`${API_BASE}/api/ekta/documents/${selectedProject.id}/`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -276,7 +276,7 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
     formData.append('project_id', selectedProject.id);
 
     try {
-      const res = await fetch('http://localhost:8000/api/ekta/upload/', {
+      const res = await fetch(`${API_BASE}/api/ekta/upload/`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData
@@ -305,7 +305,7 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
   const handleDeleteDoc = async (docId) => {
     if (!window.confirm("Delete this document?")) return;
     try {
-      await fetch(`http://localhost:8000/api/ekta/documents/${docId}/delete/`, {
+      await fetch(`${API_BASE}/api/ekta/documents/${docId}/delete/`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -324,7 +324,7 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
     setIsLoading(true);
 
     try {
-      const res = await fetch('http://localhost:8000/api/ekta/query/', {
+      const res = await fetch(`${API_BASE}/api/ekta/query/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -343,6 +343,11 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
       setMessages(prev => [...prev, { sender: 'ekta', text: "Error connecting to Ekta AI.", in_scope: false }]);
     }
     setIsLoading(false);
+  };
+
+  const handleClearEkta = () => {
+    if (!window.confirm("Clear this Ekta AI chat history?")) return;
+    setMessages([{ sender: 'ekta', text: 'Hi! I am Ekta. Ask me anything about ' + (selectedProject ? 'the documents in this project.' : 'Drishti, or select a project to ask about its documents.') }]);
   };
 
   return (
@@ -397,17 +402,22 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
       {/* Right Column: Chat Interface */}
       <div className="col-lg-8">
         <div className="card card-glass h-100 d-flex flex-column border-0" style={{ boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)' }}>
-          <div className="card-header border-bottom border-white-10 py-4 px-4 d-flex align-items-center" style={{ background: 'rgba(255, 255, 255, 0.02)' }}>
-            <div className="position-relative me-4">
-              <div className="rounded-circle bg-violet-600 d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px', boxShadow: '0 0 20px rgba(139,92,246,0.5)' }}>
-                <i className="bi bi-robot text-white fs-4"></i>
+          <div className="card-header border-bottom border-white-10 py-4 px-4 d-flex justify-content-between align-items-center" style={{ background: 'rgba(255, 255, 255, 0.02)' }}>
+            <div className="d-flex align-items-center">
+              <div className="position-relative me-4">
+                <div className="rounded-circle bg-violet-600 d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px', boxShadow: '0 0 20px rgba(139,92,246,0.5)' }}>
+                  <i className="bi bi-robot text-white fs-4"></i>
+                </div>
+                <span className="position-absolute bottom-0 end-0 rounded-circle bg-success" style={{ width: '12px', height: '12px', border: '2px solid #13141c' }}></span>
               </div>
-              <span className="position-absolute bottom-0 end-0 rounded-circle bg-success" style={{ width: '12px', height: '12px', border: '2px solid #13141c' }}></span>
+              <div>
+                <h5 className="mb-1 fw-bold tracking-tight text-white">Ekta AI</h5>
+                <span className="text-white-50" style={{ fontSize: '13px', fontWeight: '500' }}>{selectedProject ? `RAG Assistant — ${selectedProject.title}` : 'System Assistant — Drishti Help'}</span>
+              </div>
             </div>
-            <div>
-              <h5 className="mb-1 fw-bold tracking-tight text-white">Ekta AI</h5>
-              <span className="text-white-50" style={{ fontSize: '13px', fontWeight: '500' }}>{selectedProject ? `RAG Assistant — ${selectedProject.title}` : 'System Assistant — Drishti Help'}</span>
-            </div>
+            <button className="btn btn-sm btn-outline-danger d-flex align-items-center gap-2 rounded-pill px-3 py-1" onClick={handleClearEkta} title="Clear Context & Chat">
+              <i className="bi bi-eraser-fill"></i> <span className="small fw-medium">Clear Chat</span>
+            </button>
           </div>
 
           <div className="card-body p-4 p-md-5 d-flex flex-column" style={{ overflowY: 'auto', minHeight: '500px', scrollBehavior: 'smooth' }}>
@@ -518,6 +528,141 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
               </button>
             </form>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Profile Management Component ─────────────────────────────────────────────
+const ProfileTab = ({ token }) => {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({ bio: '', phone: '', is_public: true, email: '' });
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [token]);
+
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/profile/`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProfile(data);
+        setFormData({ bio: data.bio || '', phone: data.phone || '', is_public: data.is_public, email: data.email || '' });
+        setAvatarPreview(data.avatar);
+      }
+    } catch (e) { console.error("Error fetching profile", e); }
+    finally { setLoading(false); }
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    const form = new FormData();
+    form.append('bio', formData.bio);
+    form.append('phone', formData.phone);
+    form.append('email', formData.email);
+    form.append('is_public', formData.is_public);
+    if (avatarFile) {
+      form.append('avatar', avatarFile);
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/profile/`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: form
+      });
+      if (res.ok) {
+        alert("Profile updated successfully!");
+        fetchProfile();
+      } else {
+        alert("Failed to update profile.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error saving profile");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
+
+  if (loading) return <div className="text-center py-5"><span className="spinner-border text-primary"></span></div>;
+
+  return (
+    <div className="container-fluid py-4" style={{ maxWidth: '800px' }}>
+      <div className="card card-glass shadow-lg border-0 rounded-4 overflow-hidden" style={{ background: 'rgba(25,25,35,0.7)', backdropFilter: 'blur(20px)' }}>
+        <div className="card-header border-bottom border-white-10 py-4 px-4 px-md-5" style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.1) 0%, rgba(236,72,153,0.05) 100%)' }}>
+          <h4 className="mb-0 fw-bold tracking-tight text-white"><i className="bi bi-person-lines-fill me-3 text-violet-400"></i>Manage Profile</h4>
+        </div>
+        <div className="card-body p-4 p-md-5">
+          <form onSubmit={handleSave}>
+            <div className="d-flex align-items-center mb-5 pb-4 border-bottom border-white-10 gap-4">
+              <div className="position-relative">
+                <div className="rounded-circle overflow-hidden shadow-sm d-flex align-items-center justify-content-center bg-dark" style={{ width: '100px', height: '100px', border: '3px solid rgba(139,92,246,0.3)' }}>
+                  {avatarPreview ? (
+                    <img src={avatarPreview} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <i className="bi bi-person-fill text-white-50" style={{ fontSize: '3rem' }}></i>
+                  )}
+                </div>
+                <label className="position-absolute bottom-0 end-0 btn btn-sm btn-primary rounded-circle shadow d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px', cursor: 'pointer' }}>
+                  <i className="bi bi-camera-fill"></i>
+                  <input type="file" className="d-none" accept="image/*" onChange={handleAvatarChange} />
+                </label>
+              </div>
+              <div>
+                <h5 className="mb-1 text-white fw-bold">{profile?.username}</h5>
+                <span className="badge bg-white-10 text-white-75 px-3 py-2 rounded-pill fw-medium">{profile?.is_staff ? 'Manager' : 'Investigator'}</span>
+              </div>
+            </div>
+
+            <div className="row g-4">
+              <div className="col-md-6">
+                <label className="form-label text-white-75 fw-medium small mb-2">Email Address</label>
+                <input type="email" className="form-control glass-input" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label text-white-75 fw-medium small mb-2">Phone Number</label>
+                <input type="text" className="form-control glass-input" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+              </div>
+              <div className="col-12">
+                <label className="form-label text-white-75 fw-medium small mb-2">Bio</label>
+                <textarea className="form-control glass-input" rows="3" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} placeholder="Tell us about yourself..."></textarea>
+              </div>
+              <div className="col-12 mt-4">
+                <div className="form-check form-switch d-flex align-items-center gap-3">
+                  <input className="form-check-input" type="checkbox" id="publicProfileSwitch" style={{ width: '40px', height: '20px', cursor: 'pointer' }} checked={formData.is_public} onChange={e => setFormData({...formData, is_public: e.target.checked})} />
+                  <label className="form-check-label text-white-75" htmlFor="publicProfileSwitch" style={{ cursor: 'pointer' }}>
+                    <span className="d-block fw-medium text-white mb-1">Public Profile</span>
+                    <span className="small">Allow other users to see your email, phone, and bio in chat. (Your avatar is always visible).</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 text-end">
+              <button type="submit" className="btn btn-primary px-5 py-2 fw-semibold rounded-3 shadow-sm" disabled={saving}>
+                {saving ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-check-circle me-2"></i>}
+                {saving ? 'Saving...' : 'Save Profile'}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -664,10 +809,8 @@ function App() {
       fetchNotifications();
       if (isStaff) {
         fetchInvestigators();
-        fetchChatConversations();
-      } else {
-        fetchAvailableManagers();
       }
+      fetchChatConversations();
     }
   }, [token, isStaff]);
 
@@ -961,20 +1104,6 @@ function App() {
     setManagerTab('edit-project');
   };
 
-  const fetchChatConversations = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/chat/conversations/`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setChatThreads(data);
-      }
-    } catch (err) {
-      console.error('Error fetching chat threads:', err);
-    }
-  };
-
   const fetchChatMessages = async (userId) => {
     if (!userId) return;
     try {
@@ -990,20 +1119,20 @@ function App() {
     }
   };
 
-  const fetchAvailableManagers = async () => {
+  const fetchChatConversations = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/chat/managers/`, {
+      const res = await fetch(`${API_BASE}/api/chat/conversations/`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
-        setAvailableManagers(data);
+        setChatThreads(data);
         if (data.length > 0 && !activeThreadUser) {
           setActiveThreadUser({ id: data[0].user_id, username: data[0].username });
         }
       }
     } catch (err) {
-      console.error('Error fetching managers:', err);
+      console.error('Error fetching chat threads:', err);
     }
   };
 
@@ -1034,6 +1163,33 @@ function App() {
     } catch (err) {
       console.error('Error sending message:', err);
     }
+  };
+
+  const handleDeleteLiveMessage = async (msgId) => {
+    if (!window.confirm("Delete this message?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/chat/messages/${msgId}/delete/`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setChatMessages(prev => prev.filter(m => m.id !== msgId));
+      }
+    } catch (e) { console.error(e); }
+  };
+
+  const handleClearConversation = async (userId) => {
+    if (!window.confirm("Are you sure you want to delete this entire conversation? This action cannot be undone.")) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/chat/conversations/${userId}/delete/`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setChatMessages([]);
+        fetchChatConversations();
+      }
+    } catch (e) { console.error(e); }
   };
 
   const handleDeleteProject = async (id) => {
@@ -2340,6 +2496,9 @@ function App() {
               <button className={`sidebar-item ${managerTab === 'ekta' ? 'active' : ''}`} onClick={() => setManagerTab('ekta')}>
                 <i className="bi bi-robot" style={{ color: '#8B5CF6', textShadow: '0 0 10px rgba(139,92,246,0.6)' }}></i> Ekta AI
               </button>
+              <button className={`sidebar-item ${managerTab === 'profile' ? 'active' : ''}`} onClick={() => setManagerTab('profile')}>
+                <i className="bi bi-person-circle"></i> Manage Profile
+              </button>
             </>
           ) : (
             <>
@@ -2369,6 +2528,9 @@ function App() {
               </button>
               <button className={`sidebar-item ${investigatorTab === 'ekta' ? 'active' : ''}`} onClick={() => setInvestigatorTab('ekta')}>
                 <i className="bi bi-robot" style={{ color: '#8B5CF6', textShadow: '0 0 10px rgba(139,92,246,0.6)' }}></i> Ekta AI
+              </button>
+              <button className={`sidebar-item ${investigatorTab === 'profile' ? 'active' : ''}`} onClick={() => setInvestigatorTab('profile')}>
+                <i className="bi bi-person-circle"></i> Manage Profile
               </button>
             </>
           )}
@@ -2440,14 +2602,14 @@ function App() {
             <div className="row">
               
               {/* Manager Metrics Cards (hidden when using Ekta or Live Chats to maximize space) */}
-              {!['ekta', 'live-chats'].includes(managerTab) && (
+              {!['ekta', 'live-chats', 'profile'].includes(managerTab) && (
                 <div className="col-12 mb-4">
                   <DashboardStatCards projects={projects} isManager={true} />
                 </div>
               )}
 
               {/* Left Hand Options Panel & List */}
-              <div className={`mb-4 ${['ekta', 'live-chats'].includes(managerTab) ? 'col-12' : 'col-lg-8'}`}>
+              <div className={`mb-4 ${['ekta', 'live-chats', 'profile'].includes(managerTab) ? 'col-12' : 'col-lg-8'}`}>
                 {managerTab === 'projects' && (
                   <>
 
@@ -3227,13 +3389,23 @@ function App() {
                             {/* Thread header */}
                             <div className="chat-active-header p-3 d-flex justify-content-between align-items-center">
                               <span className="fw-bold"><i className="bi bi-person-fill"></i> {activeThreadUser.username}</span>
-                              <span className="badge bg-success">Online & Encrypted</span>
+                              <div className="d-flex align-items-center gap-3">
+                                <span className="badge bg-success">Online & Encrypted</span>
+                                <button className="btn btn-sm btn-outline-danger py-0 px-2" title="Clear Conversation" onClick={() => handleClearConversation(activeThreadUser.id)}>
+                                  <i className="bi bi-trash3"></i>
+                                </button>
+                              </div>
                             </div>
 
                             {/* Chat history */}
                             <div className="flex-fill p-3 chat-history-pane" style={{ overflowY: 'auto' }}>
                               {chatMessages.map((msg, idx) => (
-                                <div key={idx} className={`d-flex mb-2 ${msg.sender_username === username ? 'justify-content-end' : 'justify-content-start'}`}>
+                                <div key={idx} className={`d-flex mb-2 align-items-center ${msg.sender_username === username ? 'justify-content-end' : 'justify-content-start'}`}>
+                                  {msg.sender_username === username && (
+                                    <button type="button" className="btn btn-link text-danger p-0 me-2" style={{ fontSize: '12px', border: 'none', background: 'none' }} title="Delete Message" onClick={() => handleDeleteLiveMessage(msg.id)}>
+                                      <i className="bi bi-trash"></i>
+                                    </button>
+                                  )}
                                   <div
                                     className={`p-2 rounded small ${msg.sender_username === username ? 'chat-bubble-outgoing' : 'chat-bubble-incoming'}`}
                                     style={{ maxWidth: '75%', wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
@@ -3289,10 +3461,14 @@ function App() {
                 </div>
               )}
 
+              {managerTab === 'profile' && (
+                <ProfileTab token={token} username={username} />
+              )}
+
             </div>
             
             {/* Manager Sidebar (Project Detail) */}
-            {!['ekta', 'live-chats'].includes(managerTab) && (
+            {!['ekta', 'live-chats', 'profile'].includes(managerTab) && (
               <div className="col-lg-4" style={{ position: 'sticky', top: '20px', alignSelf: 'start' }}>
                 {selectedProject ? (
                 <div className="card card-glass mb-4">
@@ -3492,14 +3668,14 @@ function App() {
           <div className="row">
             
             {/* Investigator Metrics Bar (hidden when using Ekta AI or Live Chats to maximize space) */}
-            {!['ekta', 'live-chats'].includes(investigatorTab) && (
+            {!['ekta', 'live-chats', 'profile'].includes(investigatorTab) && (
               <div className="col-12 mb-4">
                 <DashboardStatCards projects={projects} isManager={false} />
               </div>
             )}
 
             {/* Investigator Options and Task List */}
-            <div className={`mb-4 ${['ekta', 'live-chats'].includes(investigatorTab) ? 'col-12' : 'col-lg-8'}`}>
+            <div className={`mb-4 ${['ekta', 'live-chats', 'profile'].includes(investigatorTab) ? 'col-12' : 'col-lg-8'}`}>
               
               {investigatorTab === 'running' && (
                 <>
@@ -3800,9 +3976,9 @@ function App() {
                     <div className="row g-0" style={{ minHeight: '400px' }}>
                       {/* Left: Available Managers threads */}
                       <div className="col-md-4 chat-thread-list" style={{ maxHeight: '500px', overflowY: 'auto' }}>
-                        <div className="chat-active-header p-2 text-center small fw-bold">Active Managers</div>
+                        <div className="chat-active-header p-2 text-center small fw-bold">Active Threads</div>
                         <div className="list-group list-group-flush">
-                          {availableManagers.map((m) => (
+                          {chatThreads.map((m) => (
                             <button
                               key={m.user_id}
                               type="button"
@@ -3815,13 +3991,16 @@ function App() {
                               <div className="text-truncate" style={{ maxWidth: '80%' }}>
                                 <strong className="d-block text-white">{m.username}</strong>
                                 <span className="small text-muted text-truncate d-block">
-                                  Coordinator Manager
+                                  {m.latest_message || (m.is_staff ? 'Manager Account' : 'Investigator Account')}
                                 </span>
                               </div>
+                              {m.unread_count > 0 && (
+                                <span className="badge bg-danger rounded-circle">{m.unread_count}</span>
+                              )}
                             </button>
                           ))}
-                          {availableManagers.length === 0 && (
-                            <div className="list-group-item text-center py-4 text-muted small">No active managers found.</div>
+                          {chatThreads.length === 0 && (
+                            <div className="list-group-item text-center py-4 text-muted small">No active users found.</div>
                           )}
                         </div>
                       </div>
@@ -3833,13 +4012,23 @@ function App() {
                             {/* Thread header */}
                             <div className="chat-active-header p-3 d-flex justify-content-between align-items-center">
                               <span className="fw-bold"><i className="bi bi-person-fill"></i> {activeThreadUser.username}</span>
-                              <span className="badge bg-success">Online & Encrypted</span>
+                              <div className="d-flex align-items-center gap-3">
+                                <span className="badge bg-success">Online & Encrypted</span>
+                                <button className="btn btn-sm btn-outline-danger py-0 px-2" title="Clear Conversation" onClick={() => handleClearConversation(activeThreadUser.id)}>
+                                  <i className="bi bi-trash3"></i>
+                                </button>
+                              </div>
                             </div>
 
                             {/* Chat history */}
                             <div className="flex-fill p-3 chat-history-pane" style={{ overflowY: 'auto' }}>
                               {chatMessages.map((msg, idx) => (
-                                <div key={idx} className={`d-flex mb-2 ${msg.sender_username === username ? 'justify-content-end' : 'justify-content-start'}`}>
+                                <div key={idx} className={`d-flex mb-2 align-items-center ${msg.sender_username === username ? 'justify-content-end' : 'justify-content-start'}`}>
+                                  {msg.sender_username === username && (
+                                    <button type="button" className="btn btn-link text-danger p-0 me-2" style={{ fontSize: '12px', border: 'none', background: 'none' }} title="Delete Message" onClick={() => handleDeleteLiveMessage(msg.id)}>
+                                      <i className="bi bi-trash"></i>
+                                    </button>
+                                  )}
                                   <div
                                     className={`p-2 rounded small ${msg.sender_username === username ? 'chat-bubble-outgoing' : 'chat-bubble-incoming'}`}
                                     style={{ maxWidth: '75%', wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
@@ -3895,10 +4084,14 @@ function App() {
                 </div>
               )}
 
+              {investigatorTab === 'profile' && (
+                <ProfileTab token={token} />
+              )}
+
             </div>
 
             {/* Investigator Sidebar Detail Card */}
-            {!['ekta', 'live-chats'].includes(investigatorTab) && (
+            {!['ekta', 'live-chats', 'profile'].includes(investigatorTab) && (
               <div className="col-lg-4">
                 {selectedProject ? (
                 <div className="card card-glass mb-4">

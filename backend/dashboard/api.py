@@ -75,6 +75,11 @@ def api_projects_list(request):
     if request.user.is_staff:
         projects = Project.objects.all().order_by('-start_date')
     else:
+        if request.user.email:
+            unclaimed = Project.objects.filter(assigned_email__iexact=request.user.email, assigned_investigator__isnull=True)
+            for p in unclaimed:
+                p.assigned_investigator = request.user
+                p.save()
         projects = Project.objects.filter(assigned_investigator=request.user).order_by('-start_date')
         
     data = []
@@ -206,6 +211,11 @@ def api_add_project(request):
                 assigned_email = user_match.email
             else:
                 assigned_email = assignee_input
+        else:
+            user_match = User.objects.filter(username__iexact=assignee_input).first()
+            if user_match:
+                assigned_investigator = user_match
+                assigned_email = user_match.email
                 
     project = Project.objects.create(
         project_code=project_code,
@@ -477,6 +487,13 @@ def api_send_chat_message(request):
         message=message_text
     )
     
+    Notification.objects.create(
+        user=receiver,
+        title="New Chat Message",
+        message=f"You have a new message from {request.user.username}",
+        notification_type="alert"
+    )
+    
     return Response({
         'id': msg.id,
         'sender_id': msg.sender.id,
@@ -492,19 +509,10 @@ def api_send_chat_message(request):
 @permission_classes([IsAuthenticated])
 def api_get_chat_conversations(request):
     """
-    Return a list of users with whom the current user has chatted
+    Return a list of all users with whom the current user can chat
     """
     from django.db.models import Q
-    messages = ChatMessage.objects.filter(Q(sender=request.user) | Q(receiver=request.user))
-    
-    user_ids = set()
-    for m in messages:
-        if m.sender_id != request.user.id:
-            user_ids.add(m.sender_id)
-        if m.receiver_id != request.user.id:
-            user_ids.add(m.receiver_id)
-            
-    users = User.objects.filter(id__in=user_ids)
+    users = User.objects.exclude(id=request.user.id)
     
     data = []
     for u in users:
@@ -529,9 +537,9 @@ def api_get_chat_conversations(request):
 @permission_classes([IsAuthenticated])
 def api_get_managers(request):
     """
-    List all manager accounts (staff) for investigators to text
+    List all accounts for users to text
     """
-    managers = User.objects.filter(is_staff=True)
+    managers = User.objects.exclude(id=request.user.id)
     data = [{
         'user_id': m.id,
         'username': m.username,
@@ -602,6 +610,14 @@ def api_update_project(request, project_id):
             else:
                 project.assigned_investigator = None
                 project.assigned_email = assignee_input
+        else:
+            user_match = User.objects.filter(username__iexact=assignee_input).first()
+            if user_match:
+                project.assigned_investigator = user_match
+                project.assigned_email = user_match.email
+            else:
+                project.assigned_investigator = None
+                project.assigned_email = None
         
     project.save()
     return Response({'success': True})
@@ -614,3 +630,93 @@ def api_delete_project(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     project.delete()
     return Response({'success': True})
+
+# ─── User Profile Endpoints ───────────────────────────────────────────────────
+
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
+def api_profile(request):
+    try:
+        profile = request.user.profile
+    except Exception:
+        from .models import UserProfile
+        profile = UserProfile.objects.create(user=request.user)
+
+    if request.method == 'GET':
+        data = {
+            'username': request.user.username,
+            'email': request.user.email,
+            'bio': profile.bio,
+            'phone': profile.phone,
+            'is_public': profile.is_public,
+            'avatar': request.build_absolute_uri(profile.avatar.url) if profile.avatar else None,
+            'is_staff': request.user.is_staff
+        }
+        return Response(data)
+
+    elif request.method == 'PUT':
+        profile.bio = request.data.get('bio', profile.bio)
+        profile.phone = request.data.get('phone', profile.phone)
+        is_public_val = request.data.get('is_public')
+        if is_public_val is not None:
+            profile.is_public = str(is_public_val).lower() == 'true'
+        
+        if 'avatar' in request.FILES:
+            profile.avatar = request.FILES['avatar']
+        elif request.data.get('avatar') == 'null': # Allow removing avatar
+            profile.avatar = None
+            
+        profile.save()
+
+        # Update user email if provided
+        email = request.data.get('email')
+        if email is not None:
+            request.user.email = email
+            request.user.save()
+
+        return Response({'success': True, 'avatar': request.build_absolute_uri(profile.avatar.url) if profile.avatar else None})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_get_user_profile(request, user_id):
+    target_user = get_object_or_404(User, id=user_id)
+    try:
+        profile = target_user.profile
+    except Exception:
+        from .models import UserProfile
+        profile = UserProfile.objects.create(user=target_user)
+        
+    data = {
+        'username': target_user.username,
+        'email': target_user.email if profile.is_public or request.user.is_staff else None,
+        'bio': profile.bio if profile.is_public or request.user.is_staff else None,
+        'phone': profile.phone if profile.is_public or request.user.is_staff else None,
+        'avatar': request.build_absolute_uri(profile.avatar.url) if profile.avatar else None,
+        'is_public': profile.is_public
+    }
+    return Response(data)
+
+
+# ─── Chat Deletion Endpoints ──────────────────────────────────────────────────
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def api_delete_chat_message(request, message_id):
+    message = get_object_or_404(ChatMessage, id=message_id)
+    # Allow deletion if the user is the sender or staff
+    if message.sender == request.user or request.user.is_staff:
+        message.delete()
+        return Response({'success': True})
+    return Response({'error': 'Unauthorized to delete this message'}, status=403)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def api_delete_conversation(request, other_user_id):
+    # Delete all messages between request.user and other_user_id
+    from django.db.models import Q
+    deleted, _ = ChatMessage.objects.filter(
+        (Q(sender=request.user) & Q(receiver_id=other_user_id)) |
+        (Q(sender_id=other_user_id) & Q(receiver=request.user))
+    ).delete()
+    return Response({'success': True, 'deleted_count': deleted})

@@ -41,6 +41,12 @@ urlpatterns = [
     path('api/ekta/reports/<int:report_id>/index/',   ekta_api.api_ekta_index_report,    name='api_ekta_index_report'),
     path('api/ekta/query/',                           ekta_api.api_ekta_query,           name='api_ekta_query'),
     path('api/ekta/query-log/<int:project_id>/',      ekta_api.api_ekta_query_log,       name='api_ekta_query_log'),
+
+    # ─── User Profile & Advanced Chat API ──────────────────────────────────────
+    path('api/profile/', api.api_profile, name='api_profile'),
+    path('api/profile/<int:user_id>/', api.api_get_user_profile, name='api_get_user_profile'),
+    path('api/chat/messages/<int:message_id>/delete/', api.api_delete_chat_message, name='api_delete_chat_message'),
+    path('api/chat/conversations/<int:other_user_id>/delete/', api.api_delete_conversation, name='api_delete_conversation'),
 ]
 
 
