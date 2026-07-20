@@ -357,19 +357,19 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
         {/* Project Selector */}
         <div className="card card-glass p-3">
           <label className="text-white-50 small mb-2 fw-bold">CONTEXT PROJECT</label>
-          <select 
-            className="form-select glass-input text-white" 
+          <CustomDropdown 
             value={selectedProject ? selectedProject.id : ''}
-            onChange={(e) => {
-              const p = projects.find(p => p.id === parseInt(e.target.value));
+            onChange={(val) => {
+              if (!val) { onSelectProject(null); return; }
+              const p = projects.find(p => p.id === parseInt(val));
               onSelectProject(p || null);
             }}
-          >
-            <option value="" className="text-dark">-- Select Project --</option>
-            {projects.map(p => (
-              <option key={p.id} value={p.id} className="text-dark">{p.title} ({p.project_code})</option>
-            ))}
-          </select>
+            placeholder="-- Select Project --"
+            options={[
+              { value: '', label: '-- Select Project --' },
+              ...projects.map(p => ({ value: p.id, label: `${p.title} (${p.project_code})` }))
+            ]}
+          />
         </div>
 
 
@@ -724,6 +724,60 @@ const DashboardStatCards = ({ projects, isManager }) => {
   );
 };
 
+
+const CustomDropdown = ({ options, value, onChange, placeholder = "Select an option..." }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(opt => opt.value === value);
+
+  return (
+    <div className="custom-dropdown position-relative" ref={dropdownRef}>
+      <div 
+        className={`form-control bg-dark border-secondary text-white d-flex justify-content-between align-items-center ${isOpen ? 'border-primary shadow-sm' : ''}`}
+        onClick={() => setIsOpen(!isOpen)}
+        style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
+      >
+        <span className={selectedOption ? '' : 'text-white-50'}>{selectedOption ? selectedOption.label : placeholder}</span>
+        <i className="bi bi-chevron-down" style={{ transition: 'transform 0.2s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}></i>
+      </div>
+      
+      {isOpen && (
+        <div 
+          className="position-absolute w-100 mt-1 bg-dark border border-secondary rounded shadow-lg overflow-hidden" 
+          style={{ zIndex: 1050, maxHeight: '250px', overflowY: 'auto' }}
+        >
+          {options.map((opt) => (
+            <div
+              key={opt.value}
+              className={`px-3 py-2 text-white ${value === opt.value ? 'bg-primary bg-opacity-25 border-start border-primary border-3' : ''}`}
+              style={{ cursor: 'pointer', transition: 'background 0.1s' }}
+              onClick={() => {
+                onChange(opt.value);
+                setIsOpen(false);
+              }}
+              onMouseEnter={(e) => e.target.classList.add('bg-secondary', 'bg-opacity-50')}
+              onMouseLeave={(e) => e.target.classList.remove('bg-secondary', 'bg-opacity-50')}
+            >
+              {opt.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 function App() {
   // ─── Auth state — stored in sessionStorage (per-tab, auto-cleared on close)
   // This isolates Manager and Investigator tabs from each other.
@@ -757,6 +811,8 @@ function App() {
   };
 
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [comfortReadText, setComfortReadText] = useState(null);
+  const [comfortReadText, setComfortReadText] = useState(null); = useState({ show: false, message: '', type: 'success' });
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
     setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
@@ -3075,29 +3131,27 @@ function App() {
                         </div>
                         <div className="col-md-4">
                           <label className="form-label small fw-semibold text-white-50">Project Type <span className="text-danger">*</span></label>
-                          <select 
-                            className="form-select bg-dark border-secondary text-white"
+                          <CustomDropdown
                             value={projectType}
-                            onChange={(e) => setProjectType(e.target.value)}
-                            required
-                          >
-                            <option value="S&T">Science & Technology</option>
-                            <option value="R&D">Research & Development</option>
-                          </select>
+                            onChange={(val) => setProjectType(val)}
+                            options={[
+                              { value: "S&T", label: "Science & Technology" },
+                              { value: "R&D", label: "Research & Development" }
+                            ]}
+                          />
                         </div>
                         <div className="col-md-4">
                           <label className="form-label small fw-semibold text-white-50">Status <span className="text-danger">*</span></label>
-                          <select 
-                            className="form-select bg-dark border-secondary text-white"
+                          <CustomDropdown
                             value={projectStatus}
-                            onChange={(e) => setProjectStatus(e.target.value)}
-                            required
-                          >
-                            <option value="ongoing">Ongoing</option>
-                            <option value="pending">Pending</option>
-                            <option value="completed">Completed</option>
-                            <option value="up_next">Up Next</option>
-                          </select>
+                            onChange={(val) => setProjectStatus(val)}
+                            options={[
+                              { value: "ongoing", label: "Ongoing" },
+                              { value: "pending", label: "Pending" },
+                              { value: "completed", label: "Completed" },
+                              { value: "up_next", label: "Up Next" }
+                            ]}
+                          />
                         </div>
                         <div className="col-12">
                           <label className="form-label small fw-semibold text-white-50">Project Title <span className="text-danger">*</span></label>
@@ -3153,16 +3207,16 @@ function App() {
                         </div>
                         <div className="col-md-3">
                           <label className="form-label small fw-semibold text-white-50">Budget Unit</label>
-                          <select 
-                            className="form-select bg-dark border-secondary text-white"
+                          <CustomDropdown
                             value={budgetUnit}
-                            onChange={(e) => setBudgetUnit(e.target.value)}
-                          >
-                            <option value="rupees">Rupees</option>
-                            <option value="thousands">Thousands (₹)</option>
-                            <option value="lakhs">Lakhs (₹)</option>
-                            <option value="crores">Crores (₹)</option>
-                          </select>
+                            onChange={(val) => setBudgetUnit(val)}
+                            options={[
+                              { value: "rupees", label: "Rupees" },
+                              { value: "thousands", label: "Thousands (₹)" },
+                              { value: "lakhs", label: "Lakhs (₹)" },
+                              { value: "crores", label: "Crores (₹)" }
+                            ]}
+                          />
                         </div>
                         <div className="col-md-6">
                           <label className="form-label small fw-semibold text-white-50">Start Date <span className="text-danger">*</span></label>
@@ -3531,7 +3585,20 @@ function App() {
                       </li>
                       <li className="list-group-item ps-0"><strong>Timeline:</strong> {selectedProject.start_date} to {selectedProject.scheduled_completion}</li>
                       <li className="list-group-item ps-0"><strong>PI / Coordinator:</strong> {selectedProject.project_investigator || '-'} / {selectedProject.project_coordinator || '-'}</li>
-                      <li className="list-group-item ps-0"><strong>Investigator:</strong> {selectedProject.assigned_investigator || '-'}</li>
+                                            <li className="list-group-item ps-0"><strong>Investigator:</strong> {selectedProject.assigned_investigator || '-'}</li>
+                      {selectedProject.description && (
+                        <li className="list-group-item ps-0">
+                          <strong>Description:</strong>
+                          <div style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }} className="small mt-1 mb-0">
+                            {selectedProject.description}
+                          </div>
+                          {selectedProject.description.length > 150 && (
+                            <button className="btn btn-link btn-sm text-cyan p-0 mt-1" onClick={() => setComfortReadText(selectedProject.description)}>
+                              Read Full Description <i className="bi bi-arrows-fullscreen ms-1"></i>
+                            </button>
+                          )}
+                        </li>
+                      )}
 
                     </ul>
 
@@ -3661,16 +3728,16 @@ function App() {
                       <div className="card-body py-2 px-3">
                         <div className="mb-2">
                           <label className="form-label small mb-1 fw-bold text-muted">Update Project Status</label>
-                          <select 
-                            className="form-select form-select-sm"
+                          <div style={{minWidth: '150px'}}><CustomDropdown
                             value={selectedProject.status}
-                            onChange={(e) => handleUpdateProjectStatus(selectedProject.id, e.target.value)}
-                          >
-                            <option value="ongoing">Ongoing</option>
-                            <option value="completed">Completed</option>
-                            <option value="pending">Pending</option>
-                            <option value="up_next">Up Next</option>
-                          </select>
+                            onChange={(val) => handleUpdateProjectStatus(selectedProject.id, val)}
+                            options={[
+                              { value: "ongoing", label: "Ongoing" },
+                              { value: "completed", label: "Completed" },
+                              { value: "pending", label: "Pending" },
+                              { value: "up_next", label: "Up Next" }
+                            ]}
+                          /></div>
                         </div>
                         <div className="d-grid mt-3">
                           <button 
@@ -3694,20 +3761,17 @@ function App() {
                   <i className="bi bi-folder2-open fs-2 mb-2 d-block text-purple" style={{ color: 'var(--accent-purple)' }}></i>
                   <p className="mb-3">Select a project from the directory list to examine details.</p>
                   <div className="px-4">
-                    <select 
-                      className="form-select" 
-                      onChange={(e) => {
-                        if (e.target.value) fetchProjectDetail(e.target.value);
+                    <CustomDropdown
+                      placeholder="-- Or quickly select a project here --"
+                      value=""
+                      onChange={(val) => {
+                        if (val) fetchProjectDetail(val);
                       }}
-                      style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
-                    >
-                      <option value="" style={{ color: '#000' }}>-- Or quickly select a project here --</option>
-                      {projects.map(p => (
-                        <option key={p.id} value={p.id} style={{ color: '#000' }}>
-                          {p.project_code} - {p.title}
-                        </option>
-                      ))}
-                    </select>
+                      options={[
+                        { value: '', label: '-- Select a project --' },
+                        ...projects.map(p => ({ value: p.id, label: `${p.project_code} - ${p.title}` }))
+                      ]}
+                    />
                   </div>
                 </div>
               )}
@@ -4148,7 +4212,7 @@ function App() {
 
             {/* Investigator Sidebar Detail Card */}
             {!['ekta', 'live-chats', 'profile'].includes(investigatorTab) && (
-              <div className="col-lg-4">
+              <div className="col-lg-4" style={{ position: 'sticky', top: '20px', alignSelf: 'start' }}>
                 {selectedProject ? (
                 <div className="card card-glass mb-4">
                   <div className="card-header card-glass-header d-flex justify-content-between align-items-center py-3">
@@ -4169,7 +4233,14 @@ function App() {
                       {selectedProject.description && (
                         <li className="list-group-item ps-0">
                           <strong>Description:</strong>
-                          <p className="small mt-1 mb-0">{selectedProject.description}</p>
+                          <div style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }} className="small mt-1 mb-0">
+                            {selectedProject.description}
+                          </div>
+                          {selectedProject.description.length > 150 && (
+                            <button className="btn btn-link btn-sm text-cyan p-0 mt-1" onClick={() => setComfortReadText(selectedProject.description)}>
+                              Read Full Description <i className="bi bi-arrows-fullscreen ms-1"></i>
+                            </button>
+                          )}
                         </li>
                       )}
                       {selectedProject.supporting_documents && selectedProject.supporting_documents.length > 0 && (
@@ -4285,20 +4356,17 @@ function App() {
                   <i className="bi bi-card-checklist fs-2 mb-2 d-block text-purple" style={{ color: 'var(--accent-purple)' }}></i>
                   <p className="mb-3">Select any task from the category list to review metadata details or submit compliance reports.</p>
                   <div className="px-4">
-                    <select 
-                      className="form-select" 
-                      onChange={(e) => {
-                        if (e.target.value) fetchProjectDetail(e.target.value);
+                    <CustomDropdown
+                      placeholder="-- Or quickly select a task here --"
+                      value=""
+                      onChange={(val) => {
+                        if (val) fetchProjectDetail(val);
                       }}
-                      style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
-                    >
-                      <option value="" style={{ color: '#000' }}>-- Or quickly select a task here --</option>
-                      {projects.map(p => (
-                        <option key={p.id} value={p.id} style={{ color: '#000' }}>
-                          {p.project_code} - {p.title}
-                        </option>
-                      ))}
-                    </select>
+                      options={[
+                        { value: '', label: '-- Select a task --' },
+                        ...projects.map(p => ({ value: p.id, label: `${p.project_code} - ${p.title}` }))
+                      ]}
+                    />
                   </div>
                 </div>
               )}
@@ -4332,6 +4400,27 @@ function App() {
                   if (confirmDialog.onConfirm) confirmDialog.onConfirm();
                   setConfirmDialog({ show: false, message: '', onConfirm: null });
                 }}>Confirm Action</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+            {comfortReadText !== null && (
+        <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
+      )}
+      {comfortReadText !== null && (
+        <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div className="modal-content bg-dark text-white border-secondary">
+              <div className="modal-header border-bottom border-secondary">
+                <h5 className="modal-title"><i className="bi bi-book me-2"></i>Project Description</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setComfortReadText(null)}></button>
+              </div>
+              <div className="modal-body fs-5" style={{ lineHeight: '1.8' }}>
+                <p style={{ whiteSpace: 'pre-wrap' }}>{comfortReadText}</p>
+              </div>
+              <div className="modal-footer border-top border-secondary">
+                <button type="button" className="btn btn-secondary" onClick={() => setComfortReadText(null)}>Close</button>
               </div>
             </div>
           </div>
