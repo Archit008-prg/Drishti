@@ -3495,7 +3495,7 @@ function App() {
               {managerTab === 'live-chats' && (
                 <div className="card card-glass mb-4">
                   <div className="card-header card-glass-header py-3">
-                    <h5 className="mb-0 fw-bold"><i className="bi bi-chat-dots-fill"></i> Secure Chat Center (Live)</h5>
+                    <h5 className="mb-0 fw-bold"><i className="bi bi-chat-dots-fill"></i> Conversation mode</h5>
                   </div>
                   <div className="card-body p-0">
                     <div className="row g-0" style={{ minHeight: '400px' }}>
@@ -3504,7 +3504,7 @@ function App() {
                         <div className="chat-active-header p-2 text-center small fw-bold border-bottom border-secondary d-flex justify-content-between align-items-center">
                           <span>Teams / Groups</span>
                           {isStaff && (
-                            <button className="btn btn-sm btn-outline-cyan py-0 px-1" onClick={() => setShowCreateTeam(!showCreateTeam)}>+</button>
+                            <button className="btn btn-sm btn-cyan py-0 px-2 fw-bold" title="Create Group" onClick={() => setShowCreateTeam(!showCreateTeam)}><i className="bi bi-plus-lg"></i> Create Group</button>
                           )}
                         </div>
                         {showCreateTeam && (
@@ -3532,28 +3532,35 @@ function App() {
                             </button>
                           ))}
                         </div>
-                        <div className="chat-active-header p-2 text-center small fw-bold">Active Threads</div>
+                        
                         <div className="list-group list-group-flush">
                           {chatThreads.map((thread) => (
-                            <button
+                            <div
                               key={thread.user_id}
-                              type="button"
                               className={`list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center text-start ${activeThreadUser?.id === thread.user_id ? 'bg-primary bg-opacity-25 text-white' : 'text-muted'}`}
-                              onClick={() => {
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <div className="text-truncate flex-grow-1" onClick={() => {
                                 setActiveThreadUser({ id: thread.user_id, username: thread.username });
                                 fetchChatMessages(thread.user_id);
-                              }}
-                            >
-                              <div className="text-truncate" style={{ maxWidth: '80%' }}>
+                              }}>
                                 <strong className="d-block text-white">{thread.username}</strong>
                                 <span className="small text-muted text-truncate d-block">
                                   {thread.latest_message || 'Start conversation...'}
                                 </span>
                               </div>
-                              {thread.unread_count > 0 && (
-                                <span className="badge bg-danger rounded-circle">{thread.unread_count}</span>
-                              )}
-                            </button>
+                              <div className="d-flex align-items-center">
+                                {thread.unread_count > 0 && (
+                                  <span className="badge bg-danger rounded-circle me-2">{thread.unread_count}</span>
+                                )}
+                                <button type="button" className="btn btn-sm text-danger p-0 m-0 border-0 bg-transparent" title="Delete Conversation" onClick={(e) => {
+                                  e.stopPropagation();
+                                  confirmAction("Delete entire conversation with " + thread.username + "?", () => handleClearConversation(thread.user_id));
+                                }}>
+                                  <i className="bi bi-x-circle-fill"></i>
+                                </button>
+                              </div>
+                            </div>
                           ))}
                           {chatThreads.length === 0 && (
                             <div className="list-group-item text-center py-4 text-muted small">No active chats found.</div>
@@ -4181,7 +4188,7 @@ function App() {
               {investigatorTab === 'live-chats' && (
                 <div className="card card-glass mb-4">
                   <div className="card-header card-glass-header py-3">
-                    <h5 className="mb-0 fw-bold"><i className="bi bi-chat-dots-fill"></i> Secure Chat Center (Live)</h5>
+                    <h5 className="mb-0 fw-bold"><i className="bi bi-chat-dots-fill"></i> Conversation mode</h5>
                   </div>
                   <div className="card-body p-0">
                     <div className="row g-0" style={{ minHeight: '400px' }}>
@@ -4190,7 +4197,7 @@ function App() {
                         <div className="chat-active-header p-2 text-center small fw-bold border-bottom border-secondary d-flex justify-content-between align-items-center">
                           <span>Teams / Groups</span>
                           {isStaff && (
-                            <button className="btn btn-sm btn-outline-cyan py-0 px-1" onClick={() => setShowCreateTeam(!showCreateTeam)}>+</button>
+                            <button className="btn btn-sm btn-cyan py-0 px-2 fw-bold" title="Create Group" onClick={() => setShowCreateTeam(!showCreateTeam)}><i className="bi bi-plus-lg"></i> Create Group</button>
                           )}
                         </div>
                         {showCreateTeam && (
@@ -4218,28 +4225,35 @@ function App() {
                             </button>
                           ))}
                         </div>
-                        <div className="chat-active-header p-2 text-center small fw-bold">Active Threads</div>
+                        
                         <div className="list-group list-group-flush">
                           {chatThreads.map((m) => (
-                            <button
+                            <div
                               key={m.user_id}
-                              type="button"
                               className={`list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center text-start ${activeThreadUser?.id === m.user_id ? 'bg-primary bg-opacity-25 text-white' : 'text-muted'}`}
-                              onClick={() => {
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <div className="text-truncate flex-grow-1" onClick={() => {
                                 setActiveThreadUser({ id: m.user_id, username: m.username });
                                 fetchChatMessages(m.user_id);
-                              }}
-                            >
-                              <div className="text-truncate" style={{ maxWidth: '80%' }}>
+                              }}>
                                 <strong className="d-block text-white">{m.username}</strong>
                                 <span className="small text-muted text-truncate d-block">
                                   {m.latest_message || (m.is_staff ? 'Manager Account' : 'Investigator Account')}
                                 </span>
                               </div>
-                              {m.unread_count > 0 && (
-                                <span className="badge bg-danger rounded-circle">{m.unread_count}</span>
-                              )}
-                            </button>
+                              <div className="d-flex align-items-center">
+                                {m.unread_count > 0 && (
+                                  <span className="badge bg-danger rounded-circle me-2">{m.unread_count}</span>
+                                )}
+                                <button type="button" className="btn btn-sm text-danger p-0 m-0 border-0 bg-transparent" title="Delete Conversation" onClick={(e) => {
+                                  e.stopPropagation();
+                                  confirmAction("Delete entire conversation with " + m.username + "?", () => handleClearConversation(m.user_id));
+                                }}>
+                                  <i className="bi bi-x-circle-fill"></i>
+                                </button>
+                              </div>
+                            </div>
                           ))}
                           {chatThreads.length === 0 && (
                             <div className="list-group-item text-center py-4 text-muted small">No active users found.</div>
