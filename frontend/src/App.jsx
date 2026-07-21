@@ -209,8 +209,7 @@ const TimelineCanvas = ({ project, gradId = 'flowGrad4' }) => {
   );
 };
 
-const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token }) => {
-  const [chatHistories, setChatHistories] = useState({});
+const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token, chatHistories, setChatHistories }) => {
   const currentChatId = selectedProject ? selectedProject.id : 'system';
   
   const defaultMessages = useMemo(() => [{ sender: 'ekta', text: 'Hi! I am Ekta. Ask me anything about ' + (selectedProject ? 'the documents in this project.' : 'Drishti, or select a project to ask about its documents.') }], [selectedProject]);
@@ -872,6 +871,7 @@ function App() {
   const [chatMessages, setChatMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [availableManagers, setAvailableManagers] = useState([]);
+  const [ektaChatHistories, setEktaChatHistories] = useState({});
   
   // Report Submission state
   const [reportFile, setReportFile] = useState(null);
@@ -3744,6 +3744,8 @@ function App() {
                     selectedProject={selectedProject} 
                     onSelectProject={setSelectedProject} 
                     token={token} 
+                    chatHistories={ektaChatHistories}
+                    setChatHistories={setEktaChatHistories}
                   />
                 </div>
               )}
@@ -4501,6 +4503,8 @@ function App() {
                     selectedProject={selectedProject} 
                     onSelectProject={setSelectedProject} 
                     token={token} 
+                    chatHistories={ektaChatHistories}
+                    setChatHistories={setEktaChatHistories}
                   />
                 </div>
               )}
