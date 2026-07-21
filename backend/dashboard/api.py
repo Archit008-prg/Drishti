@@ -670,16 +670,16 @@ def api_get_chat_conversations(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def api_get_managers(request):
+def api_get_all_users(request):
     """
     List all accounts for users to text
     """
-    managers = User.objects.exclude(id=request.user.id)
+    users = User.objects.exclude(id=request.user.id)
     data = [{
         'user_id': m.id,
         'username': m.username,
         'email': m.email
-    } for m in managers]
+    } for m in users]
     return Response(data)
 
 @api_view(['POST', 'PUT'])

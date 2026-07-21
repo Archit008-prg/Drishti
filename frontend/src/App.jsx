@@ -848,6 +848,7 @@ function App() {
   const [implAgencies, setImplAgencies] = useState('');
   const [projectDocs, setProjectDocs] = useState([]);
   const [chatThreads, setChatThreads] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
   const [teams, setTeams] = useState([]);
   const [activeTeam, setActiveTeam] = useState(null);
   const [showCreateTeam, setShowCreateTeam] = useState(false);
@@ -885,6 +886,7 @@ function App() {
       }
       fetchChatConversations();
       fetchTeams();
+      fetchAllUsers();
     }
   }, [token, isStaff]);
 
@@ -1255,6 +1257,17 @@ function App() {
         showToast("Invitation sent successfully!");
       }
     } catch (err) { console.error(err); }
+  };
+
+  const fetchAllUsers = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/users/`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setAllUsers(await res.json());
+      }
+    } catch (e) { console.error(e); }
   };
 
   const fetchChatConversations = async () => {
@@ -3497,7 +3510,26 @@ function App() {
               {managerTab === 'live-chats' && (
                 <div className="card card-glass mb-4">
                   <div className="card-header card-glass-header py-3">
-                    <h5 className="mb-0 fw-bold"><i className="bi bi-chat-dots-fill"></i> Conversation mode</h5>
+                    <div className="d-flex justify-content-between align-items-center w-100">
+                      <h5 className="mb-0 fw-bold"><i className="bi bi-chat-dots-fill"></i> Conversation mode</h5>
+                      <div className="dropdown">
+                        <button className="btn btn-sm btn-outline-cyan dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                          <i className="bi bi-pencil-square"></i> New
+                        </button>
+                        <ul className="dropdown-menu dropdown-menu-dark shadow-sm dropdown-menu-end" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                          {allUsers.map(u => (
+                            <li key={u.user_id}>
+                              <button className="dropdown-item" onClick={() => {
+                                setActiveTeam(null);
+                                setActiveThreadUser({ id: u.user_id, username: u.username });
+                                setChatMessages([]);
+                              }}>{u.username}</button>
+                            </li>
+                          ))}
+                          {allUsers.length === 0 && <li><span className="dropdown-item text-muted">No users found</span></li>}
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                   <div className="card-body p-0">
                     <div className="row g-0" style={{ minHeight: '400px' }}>
@@ -4211,7 +4243,26 @@ function App() {
               {investigatorTab === 'live-chats' && (
                 <div className="card card-glass mb-4">
                   <div className="card-header card-glass-header py-3">
-                    <h5 className="mb-0 fw-bold"><i className="bi bi-chat-dots-fill"></i> Conversation mode</h5>
+                    <div className="d-flex justify-content-between align-items-center w-100">
+                      <h5 className="mb-0 fw-bold"><i className="bi bi-chat-dots-fill"></i> Conversation mode</h5>
+                      <div className="dropdown">
+                        <button className="btn btn-sm btn-outline-cyan dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                          <i className="bi bi-pencil-square"></i> New
+                        </button>
+                        <ul className="dropdown-menu dropdown-menu-dark shadow-sm dropdown-menu-end" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                          {allUsers.map(u => (
+                            <li key={u.user_id}>
+                              <button className="dropdown-item" onClick={() => {
+                                setActiveTeam(null);
+                                setActiveThreadUser({ id: u.user_id, username: u.username });
+                                setChatMessages([]);
+                              }}>{u.username}</button>
+                            </li>
+                          ))}
+                          {allUsers.length === 0 && <li><span className="dropdown-item text-muted">No users found</span></li>}
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                   <div className="card-body p-0">
                     <div className="row g-0" style={{ minHeight: '400px' }}>
