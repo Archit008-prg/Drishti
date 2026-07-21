@@ -808,6 +808,24 @@ function App() {
   // 'home', 'auth-select', 'login', 'signup', 'dashboard'
   const [currentView, setCurrentView] = useState(token ? 'dashboard' : 'home');
 
+  // Responsive UI state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 991);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 991);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 991;
+      setIsMobile(mobile);
+      if (mobile) {
+        setIsSidebarOpen(false);
+      } else {
+        setIsSidebarOpen(true);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const [authRole, setAuthRole] = useState('investigator'); // 'investigator' or 'manager'
   
@@ -1741,8 +1759,31 @@ function App() {
               ))}
             </div>
 
-            {/* Sign In pill — REMOVED (hero CTAs serve same purpose) */}
+            {/* Mobile Hamburger Button */}
+            <button className="d-md-none" onClick={() => setIsMobileNavOpen(true)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', padding: 0 }}>
+              <i className="bi bi-list"></i>
+            </button>
           </nav>
+
+          {/* Mobile Full-Screen Overlay Menu */}
+          {isMobileNavOpen && (
+            <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(15, 10, 25, 0.95)', backdropFilter: 'blur(20px)', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 32 }}>
+              <button onClick={() => setIsMobileNavOpen(false)} style={{ position: 'absolute', top: 24, right: 32, background: 'none', border: 'none', color: '#fff', fontSize: 32, cursor: 'pointer' }}>
+                <i className="bi bi-x-lg"></i>
+              </button>
+              {[
+                { label: 'Features', view: 'features' },
+                { label: 'How It Works', view: 'how-it-works' },
+                { label: 'For Teams', view: 'for-teams' },
+                { label: 'Contact', view: 'contact' },
+              ].map(({ label, view }) => (
+                <button key={label} onClick={() => { setCurrentView(view); setIsMobileNavOpen(false); }}
+                  style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer', color: '#fff', fontSize: 24, fontWeight: 600 }}
+                >{label}</button>
+              ))}
+              <button onClick={() => { setCurrentView('auth-select'); setIsMobileNavOpen(false); }} style={{ background: 'linear-gradient(135deg,#7c3aed,#a78bfa)', color: '#fff', border: 0, borderRadius: 50, padding: '12px 32px', fontWeight: 700, fontSize: 18, cursor: 'pointer', marginTop: 16 }}>Get Started</button>
+            </div>
+          )}
 
           {/* ── Hero Section ── */}
           <header style={{
@@ -2640,7 +2681,13 @@ function App() {
       <div className="ambient-glow-2"></div>
 
       {/* Left Sidebar Menu */}
-      <div className="sidebar-wrapper">
+      {isMobile && isSidebarOpen && (
+        <div 
+          onClick={() => setIsSidebarOpen(false)}
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1040, backdropFilter: 'blur(4px)' }}
+        />
+      )}
+      <div className={`sidebar-wrapper ${!isSidebarOpen ? 'closed' : ''}`}>
         <div className="sidebar-logo">
           <span className="h4 mb-0 fs-3 fw-bold d-flex align-items-center gap-2" style={{ cursor: 'pointer', color: 'var(--text-primary)' }} onClick={() => setCurrentView('dashboard')}>
             <i className="bi bi-eye text-purple" style={{ color: 'var(--accent-purple)' }}></i> Drishti
@@ -2719,8 +2766,8 @@ function App() {
       </div>
 
       {/* Right Work area */}
-      <div className="flex-fill d-flex flex-column" style={{ minWidth: 0, marginLeft: '250px' }}>
-        {/* Top Header — transparent, merged into page background with a subtle top-right glow */}
+      <div className="flex-fill d-flex flex-column" style={{ minWidth: 0, marginLeft: (isSidebarOpen && !isMobile) ? '250px' : '0', transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+        {/* Top Header - transparent, merged into page background with a subtle top-right glow */}
         <div
           className="d-flex justify-content-between align-items-center px-4 py-3"
           style={{
@@ -2732,9 +2779,18 @@ function App() {
             backdropFilter: 'blur(2px)',
           }}
         >
-          <div>
-            <h5 className="mb-0 fw-bold">Welcome back, {username}</h5>
-            <p className="text-muted mb-0 small">Role: {isStaff ? 'Manager Coordinator' : 'Principal Investigator'}</p>
+          <div className="d-flex align-items-center gap-3">
+            <button 
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="btn btn-link text-white p-0 d-flex align-items-center justify-content-center"
+              style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              <i className="bi bi-list fs-5"></i>
+            </button>
+            <div>
+              <h5 className="mb-0 fw-bold">Welcome back, {username}</h5>
+              <p className="text-muted mb-0 small">Role: {isStaff ? 'Manager Coordinator' : 'Principal Investigator'}</p>
+            </div>
           </div>
           
           <div className="d-flex align-items-center gap-3">

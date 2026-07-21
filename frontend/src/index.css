@@ -335,7 +335,18 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 100;
+  z-index: 1050;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-wrapper.closed {
+  transform: translateX(-100%);
+}
+
+@media (max-width: 991px) {
+  .sidebar-wrapper {
+    box-shadow: 20px 0 50px rgba(0,0,0,0.5) !important;
+  }
 }
 
 .sidebar-logo {
