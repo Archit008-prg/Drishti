@@ -326,13 +326,22 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
     setIsLoading(true);
 
     try {
+      const chatHistory = messages.slice(-6).map(m => ({
+        role: m.sender === 'user' ? 'user' : 'assistant',
+        content: m.text
+      }));
+
       const res = await fetch(`${API_BASE}/api/ekta/query/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ question: q, project_id: selectedProject ? selectedProject.id : null })
+        body: JSON.stringify({ 
+          question: q, 
+          project_id: selectedProject ? selectedProject.id : null,
+          history: chatHistory
+        })
       });
       const data = await res.json();
       setMessages(prev => [...prev, { 
@@ -2710,7 +2719,7 @@ function App() {
       </div>
 
       {/* Right Work area */}
-      <div className="flex-fill d-flex flex-column" style={{ minWidth: 0 }}>
+      <div className="flex-fill d-flex flex-column" style={{ minWidth: 0, marginLeft: '250px' }}>
         {/* Top Header — transparent, merged into page background with a subtle top-right glow */}
         <div
           className="d-flex justify-content-between align-items-center px-4 py-3"

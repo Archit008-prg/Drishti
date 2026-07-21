@@ -283,7 +283,7 @@ def _call_llm(messages: list[dict]) -> str:
     return OUT_OF_SCOPE_RESPONSE
 
 
-def query_ekta(question: str, project_id: int | None = None) -> dict:
+def query_ekta(question: str, project_id: int | None = None, history: list = None) -> dict:
     """
     Main entry point.
     1. Embed question
@@ -379,9 +379,14 @@ def query_ekta(question: str, project_id: int | None = None) -> dict:
 
     user_message = f"CONTEXT:\n{context}{project_metadata}\n\nQUESTION: {question}"
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": user_message}
+        {"role": "system", "content": SYSTEM_PROMPT}
     ]
+    
+    if history:
+        for msg in history:
+            messages.append({"role": msg.get("role", "user"), "content": msg.get("content", "")})
+            
+    messages.append({"role": "user", "content": user_message})
 
     answer = _call_llm(messages)
 

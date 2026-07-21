@@ -264,6 +264,8 @@ def api_ekta_query(request):
     question   = (request.data.get("question") or "").strip()
     project_id = request.data.get("project_id")
 
+    history    = request.data.get("history") or []
+
     if not question:
         return Response({"error": "question is required."}, status=400)
 
@@ -277,7 +279,8 @@ def api_ekta_query(request):
     try:
         result = ekta_rag.query_ekta(
             question=question,
-            project_id=int(project_id) if project_id else None
+            project_id=int(project_id) if project_id else None,
+            history=history
         )
     except Exception as e:
         logger.error(f"Ekta query error: {e}")
