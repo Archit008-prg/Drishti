@@ -265,7 +265,7 @@ def _call_llm(messages: list[dict]) -> str:
         try:
             response = client.chat_completion(
                 messages=messages,
-                model="mistralai/Mistral-7B-Instruct-v0.3",
+                model="Qwen/Qwen2.5-7B-Instruct",
                 max_tokens=512,
                 temperature=0.1
             )
