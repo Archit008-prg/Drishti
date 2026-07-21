@@ -1,42 +1,6 @@
-import re
+import sys
 
-def main():
-    app_css = r'f:\Drishti\Drishti\frontend\src\App.css'
-    with open(app_css, 'a', encoding='utf-8') as f:
-        f.write('''
-/* WhatsApp Chat Redesign Styles */
-.wa-list-item:hover {
-  background-color: #202c33 !important;
-}
-.wa-active-item {
-  background-color: #2a3942 !important;
-}
-.wa-bubble:hover .delete-msg-btn {
-  opacity: 1 !important;
-}
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.2);
-  border-radius: 10px;
-}
-''')
-
-    app_jsx = r'f:\Drishti\Drishti\frontend\src\App.jsx'
-    with open(app_jsx, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    # 1. Add chatSearch state
-    state_anchor = "const [allUsers, setAllUsers] = useState([]);"
-    if "const [chatSearch, setChatSearch] = useState('');" not in content:
-        content = content.replace(state_anchor, state_anchor + "\n  const [chatSearch, setChatSearch] = useState('');")
-
-    # The WhatsApp Layout Template
-    wa_layout = '''              {<REPLACE_TAB> === 'live-chats' && (
+wa_layout = '''              {<REPLACE_TAB> === 'live-chats' && (
                 <div className="card card-glass mb-4 shadow-lg border-0" style={{ overflow: 'hidden', height: '80vh' }}>
                   <div className="d-flex h-100">
                     
@@ -246,53 +210,37 @@ def main():
                 </div>
               )}'''
 
-    # Split lines to find exact bounds
-    lines = content.splitlines(True)
-    m_start = -1
-    m_end = -1
-    i_start = -1
-    i_end = -1
+with open('f:\\Drishti\\Drishti\\frontend\\src\\App.jsx', 'r', encoding='utf-8') as f:
+    lines = f.readlines()
 
-    for i, line in enumerate(lines):
-        if "managerTab === 'live-chats'" in line and m_start == -1:
-            m_start = i
-        if "managerTab === 'ekta'" in line and m_end == -1:
-            m_end = i
-        if "investigatorTab === 'live-chats'" in line and i_start == -1:
-            i_start = i
-        if "investigatorTab === 'ekta'" in line and i_end == -1:
-            i_end = i
+m_start = -1
+m_end = -1
+i_start = -1
+i_end = -1
 
-    # Replace Investigator block first (since it's lower)
-    if i_start != -1 and i_end != -1:
-        new_lines = lines[:i_start] + [wa_layout.replace('<REPLACE_TAB>', 'investigatorTab') + '\n'] + lines[i_end:]
-        lines = new_lines
+for i, line in enumerate(lines):
+    if "{managerTab === 'live-chats' && (" in line:
+        m_start = i
+    if "{managerTab === 'ekta' && (" in line:
+        m_end = i
+    if "{investigatorTab === 'live-chats' && (" in line:
+        i_start = i
+    if "{investigatorTab === 'ekta' && (" in line:
+        i_end = i
 
-    # Replace Manager block
-    if m_start != -1 and m_end != -1:
-        new_lines = lines[:m_start] + [wa_layout.replace('<REPLACE_TAB>', 'managerTab') + '\n'] + lines[m_end:]
-        lines = new_lines
+print(f"M_START: {m_start}, M_END: {m_end}")
+print(f"I_START: {i_start}, I_END: {i_end}")
 
-    with open(app_jsx, 'w', encoding='utf-8') as f:
-        f.writelines(lines)
+if m_start == -1 or m_end == -1 or i_start == -1 or i_end == -1:
+    print("Could not find bounds.")
+    sys.exit(1)
 
-    # 3. Add auto-scroll logic to useEffect
-    with open(app_jsx, 'r', encoding='utf-8') as f:
-        content = f.read()
+# Do investigator first because it's further down
+new_lines = lines[:i_start] + [wa_layout.replace('<REPLACE_TAB>', 'investigatorTab') + '\n'] + lines[i_end:]
+lines = new_lines
 
-    scroll_effect = '''  useEffect(() => {
-    const pane = document.querySelector('.chat-history-pane');
-    if (pane) {
-      pane.scrollTop = pane.scrollHeight;
-    }
-  }, [chatMessages]);
+new_lines = lines[:m_start] + [wa_layout.replace('<REPLACE_TAB>', 'managerTab') + '\n'] + lines[m_end:]
+lines = new_lines
 
-  '''
-    if "const pane = document.querySelector('.chat-history-pane');" not in content:
-        content = content.replace("const handleSendLiveMessage", scroll_effect + "const handleSendLiveMessage")
-
-    with open(app_jsx, 'w', encoding='utf-8') as f:
-        f.write(content)
-
-if __name__ == '__main__':
-    main()
+with open('f:\\Drishti\\Drishti\\frontend\\src\\App.jsx', 'w', encoding='utf-8') as f:
+    f.writelines(lines)
