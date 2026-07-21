@@ -3676,15 +3676,15 @@ function App() {
                                     borderTopRightRadius: isMe ? '0px' : '7.5px',
                                     borderTopLeftRadius: isMe ? '7.5px' : '0px',
                                     maxWidth: '75%',
-                                    position: 'relative',
-                                    paddingBottom: '20px'
+                                    position: 'relative'
                                   }}>
                                     {activeTeam && !isMe && <div className="small fw-bold mb-1" style={{ color: '#53bdeb', fontSize: '0.8rem' }}>{msg.sender_username}</div>}
-                                    <div style={{ fontSize: '0.95rem', wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>{msg.message}</div>
-                                    
-                                    <div className="d-flex align-items-center position-absolute bottom-0 end-0 mb-1 me-2 gap-1" style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)' }}>
-                                      <span>{new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                                      {isMe && <i className={`bi bi-check2-all ${msg.is_read ? 'text-info' : ''}`} style={{ fontSize: '0.9rem' }}></i>}
+                                    <div className="d-flex flex-wrap align-items-end gap-2">
+                                      <div style={{ fontSize: '0.95rem', wordWrap: 'break-word', whiteSpace: 'pre-wrap', flex: '1 1 auto' }}>{msg.message}</div>
+                                      <div className="d-flex align-items-center gap-1 ms-auto" style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)' }}>
+                                        <span style={{ whiteSpace: 'nowrap' }}>{new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                        {isMe && <i className={`bi bi-check2-all ${msg.is_read ? 'text-info' : ''}`} style={{ fontSize: '0.9rem' }}></i>}
+                                      </div>
                                     </div>
 
                                     {isMe && (
@@ -4433,15 +4433,15 @@ function App() {
                                     borderTopRightRadius: isMe ? '0px' : '7.5px',
                                     borderTopLeftRadius: isMe ? '7.5px' : '0px',
                                     maxWidth: '75%',
-                                    position: 'relative',
-                                    paddingBottom: '20px'
+                                    position: 'relative'
                                   }}>
                                     {activeTeam && !isMe && <div className="small fw-bold mb-1" style={{ color: '#53bdeb', fontSize: '0.8rem' }}>{msg.sender_username}</div>}
-                                    <div style={{ fontSize: '0.95rem', wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}>{msg.message}</div>
-                                    
-                                    <div className="d-flex align-items-center position-absolute bottom-0 end-0 mb-1 me-2 gap-1" style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)' }}>
-                                      <span>{new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                                      {isMe && <i className={`bi bi-check2-all ${msg.is_read ? 'text-info' : ''}`} style={{ fontSize: '0.9rem' }}></i>}
+                                    <div className="d-flex flex-wrap align-items-end gap-2">
+                                      <div style={{ fontSize: '0.95rem', wordWrap: 'break-word', whiteSpace: 'pre-wrap', flex: '1 1 auto' }}>{msg.message}</div>
+                                      <div className="d-flex align-items-center gap-1 ms-auto" style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)' }}>
+                                        <span style={{ whiteSpace: 'nowrap' }}>{new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                        {isMe && <i className={`bi bi-check2-all ${msg.is_read ? 'text-info' : ''}`} style={{ fontSize: '0.9rem' }}></i>}
+                                      </div>
                                     </div>
 
                                     {isMe && (
