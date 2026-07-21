@@ -486,8 +486,7 @@ def api_get_teams(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def api_create_team(request):
-    if not request.user.is_staff:
-        return Response({'error': 'Only managers can create teams'}, status=403)
+    # Allow both managers and investigators to create teams
     name = request.data.get('name')
     if not name:
         return Response({'error': 'Name is required'}, status=400)

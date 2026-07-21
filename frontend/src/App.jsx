@@ -3506,7 +3506,7 @@ function App() {
                         <div className="chat-active-header p-2 text-center small fw-bold border-bottom border-secondary d-flex justify-content-between align-items-center">
                           <span>Teams / Groups</span>
                           {isStaff && (
-                            <button className="btn btn-sm btn-cyan py-0 px-2 fw-bold" title="Create Group" onClick={() => setShowCreateTeam(!showCreateTeam)}><i className="bi bi-plus-lg"></i> Create Group</button>
+                            <button className="btn btn-sm btn-outline-light py-0 px-2 fw-bold" title="Create Group" onClick={() => setShowCreateTeam(!showCreateTeam)}><i className="bi bi-plus-lg"></i> Create Group</button>
                           )}
                         </div>
                         {showCreateTeam && (
@@ -3532,7 +3532,7 @@ function App() {
                                 </div>
                               ))}
                             </div>
-                            <button className="btn btn-sm btn-primary w-100 fw-bold" onClick={handleCreateTeam}>Create Group</button>
+                            <button className="btn btn-sm btn-light w-100 fw-bold" onClick={handleCreateTeam}>Create Group</button>
                           </div>
                         )}
                         <div className="list-group list-group-flush mb-2">
@@ -3573,8 +3573,14 @@ function App() {
                               </div>
                               <div className="d-flex align-items-center">
                                 {thread.unread_count > 0 && (
-                                  <span className="badge bg-danger rounded-circle">{thread.unread_count}</span>
+                                  <span className="badge bg-danger rounded-circle me-2">{thread.unread_count}</span>
                                 )}
+                                <button type="button" className="btn btn-sm text-secondary p-0 m-0 border-0 bg-transparent" title="Delete Conversation" onClick={(e) => {
+                                  e.stopPropagation();
+                                  confirmAction("Delete entire conversation with " + thread.username + "?", () => handleClearConversation(thread.user_id));
+                                }}>
+                                  <i className="bi bi-trash"></i>
+                                </button>
                               </div>
                             </div>
                           ))}
@@ -4213,7 +4219,7 @@ function App() {
                         <div className="chat-active-header p-2 text-center small fw-bold border-bottom border-secondary d-flex justify-content-between align-items-center">
                           <span>Teams / Groups</span>
                           {isStaff && (
-                            <button className="btn btn-sm btn-cyan py-0 px-2 fw-bold" title="Create Group" onClick={() => setShowCreateTeam(!showCreateTeam)}><i className="bi bi-plus-lg"></i> Create Group</button>
+                            <button className="btn btn-sm btn-outline-light py-0 px-2 fw-bold" title="Create Group" onClick={() => setShowCreateTeam(!showCreateTeam)}><i className="bi bi-plus-lg"></i> Create Group</button>
                           )}
                         </div>
                         {showCreateTeam && (
@@ -4239,7 +4245,7 @@ function App() {
                                 </div>
                               ))}
                             </div>
-                            <button className="btn btn-sm btn-primary w-100 fw-bold" onClick={handleCreateTeam}>Create Group</button>
+                            <button className="btn btn-sm btn-light w-100 fw-bold" onClick={handleCreateTeam}>Create Group</button>
                           </div>
                         )}
                         <div className="list-group list-group-flush mb-2">
@@ -4280,8 +4286,14 @@ function App() {
                               </div>
                               <div className="d-flex align-items-center">
                                 {m.unread_count > 0 && (
-                                  <span className="badge bg-danger rounded-circle">{m.unread_count}</span>
+                                  <span className="badge bg-danger rounded-circle me-2">{m.unread_count}</span>
                                 )}
+                                <button type="button" className="btn btn-sm text-secondary p-0 m-0 border-0 bg-transparent" title="Delete Conversation" onClick={(e) => {
+                                  e.stopPropagation();
+                                  confirmAction("Delete entire conversation with " + m.username + "?", () => handleClearConversation(m.user_id));
+                                }}>
+                                  <i className="bi bi-trash"></i>
+                                </button>
                               </div>
                             </div>
                           ))}
@@ -4424,7 +4436,7 @@ function App() {
                                 href={`${API_BASE}${doc.url}`} 
                                 target="_blank" 
                                 rel="noreferrer" 
-                                className="btn btn-sm btn-cyan-glow"
+                                className="btn btn-sm btn-light-glow"
                               >
                                 <i className="bi bi-file-earmark-arrow-down"></i> {doc.filename}
                               </a>
