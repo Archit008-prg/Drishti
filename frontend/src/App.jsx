@@ -1595,7 +1595,7 @@ function App() {
               <i className="bi bi-arrow-left"></i> Return to Home
             </button>
           </div>
-          <div style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
+          <div className="d-none d-md-flex align-items-center" style={{ gap: 28 }}>
             {[{ label: 'Features', view: 'features' }, { label: 'How It Works', view: 'how-it-works' }, { label: 'For Teams', view: 'for-teams' }, { label: 'Contact', view: 'contact' }].map(({ label, view }) => (
               <button key={label} onClick={() => setCurrentView(view)} style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer', color: currentView === view ? '#fff' : 'rgba(255,255,255,0.72)', fontWeight: currentView === view ? 700 : 400 }} className="nav-link-item">{label}</button>
             ))}
@@ -1727,7 +1727,7 @@ function App() {
             </div>
 
             {/* Center nav links */}
-            <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
+            <div className="d-none d-md-flex align-items-center" style={{ gap: 32 }}>
               {[
                 { label: 'Features', view: 'features' },
                 { label: 'How It Works', view: 'how-it-works' },
