@@ -283,7 +283,7 @@ def _call_llm(messages: list[dict]) -> str:
     return OUT_OF_SCOPE_RESPONSE
 
 
-def query_ekta(question: str, project_id: int | None = None, history: list = None) -> dict:
+def query_ekta(question: str, project_id=None, history=None) -> dict:
     """
     Main entry point.
     1. Embed question
