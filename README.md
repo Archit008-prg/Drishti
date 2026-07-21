@@ -1,75 +1,100 @@
-# 🌟 Drishti: A Next-Gen Project Management & AI System
+# 👁️ Drishti — Enterprise Operations, Audit & Compliance Platform
 
-Welcome to **Drishti**! This is a high-end, centralized platform built to streamline project monitoring, intelligent AI-driven insights, and secure collaboration between Project Managers and Investigators. 
+**Drishti** is an enterprise-grade, centralized operations monitoring, audit management, and AI intelligence platform built to streamline complex multi-project lifecycles, compliance audits, and real-time collaboration between Executive Managers (Coordinators) and Principal Investigators across large-scale organizations.
 
-We completely overhauled the interface to feature a modern **Glassmorphism UI** and separated the architecture into a powerful decoupled full-stack application.
-
----
-
-## ✨ What's New?
-
-- 🎨 **Glassmorphism Aesthetic**: A sleek, dark-themed UI featuring frosted glass components, dynamic gradients, and smooth micro-animations. 
-- 🤖 **Ekta AI (RAG Assistant)**: A highly intelligent, context-aware AI assistant built with HuggingFace (Mistral) and ChromaDB. Ekta can read project documents (PDF, DOCX) and answer precise questions, explain project rejections, and even converse natively in Indian languages (like Hindi and Tamil).
-- 💬 **Live Chat & Teams**: Secure, real-time messaging between Managers and Investigators, complete with team grouping functionality.
-- ☁️ **AWS EC2 Ready**: fully decoupled and optimized for deployment on AWS Ubuntu instances!
+Engineered to operate seamlessly across high-concurrency enterprise environments, Drishti combines robust role-based governance with cutting-edge Retrieval-Augmented Generation (RAG) to transform static project documentation into actionable operational intelligence.
 
 ---
 
-## 🏗️ The Tech Stack
+## 🌟 Key Capabilities & Core Value
 
-We moved away from legacy setups and adopted a robust, modern decoupled stack:
+### 🧠 Autonomous AI-Powered RAG Engine (Ekta AI)
+What sets Drishti apart from traditional project management platforms is **Ekta AI**, an integrated context-aware intelligence core. 
+- **Context-Grounded RAG**: Ekta ingests project proposals, technical blueprints, and compliance documents (PDFs/DOCX) into an embedded vector database (ChromaDB), delivering zero-hallucination answers backed strictly by uploaded project evidence.
+- **Explainable Rejection & Audit Analysis**: When a compliance report is flagged or rejected, Ekta analyzes manager audit feedback against project guidelines, explaining exact deficiency areas and offering guidance for resubmission.
+- **Native Multilingual Support**: Capable of understanding and responding in native Indian languages (such as Hindi, Kannada, Bengali, Telugu, Tamil, and English) matching the exact script and language of the inquirer.
 
-- **Frontend**: React + Vite + TailwindCSS (for lightning-fast builds and stunning UI components)
-- **Backend**: Python + Django REST Framework (for secure, scalable API architecture)
-- **AI/ML Layer**: ChromaDB (Vector Database) + HuggingFace Inference API + SentenceTransformers
-- **Database**: SQLite (built-in, easy to migrate)
-- **Deployment**: AWS EC2 (Ubuntu Linux)
+### 📋 Enterprise Project Lifecycle & Audit Management
+- **4-Stage Lifecycle Canvas**: Real-time visual tracking through key operational stages—*Task Initiated*, *Report Submitted*, *Under Review*, and *Final Decision*.
+- **Smart Unit Financial Tracking**: Dynamic budget visualization supporting enterprise-scale financial units (Crores `Cr`, Lakhs `L`, Thousands `K`, and Rupees `₹`).
+- **Comprehensive Document Auditing**: Centralized portal for investigators to submit formal project reports and for managers to conduct rigorous line-item reviews, approvals, or structured resubmission requests.
+
+### ⚡ High-Throughput & Scale Ready (500+ Concurrent Tasks)
+- Built on a decoupled, asynchronous micro-architecture designed to support **500+ concurrent project workflows**, live workspace interactions, and real-time status syncing across multiple enterprise divisions without performance bottlenecks.
+
+### 🔔 Instant Multi-Channel Alerts & Email Notifications
+- **Automated Email Notifications**: Powered by a background notification engine that triggers instant email alerts for critical operational events—task assignments, report submissions, audit reviews, and manager decisions.
+- **Live Alerts Feed**: In-app real-time notification hub keeping team members immediately informed of workspace actions.
+
+### 💬 Secure Live Messaging & Team Management
+- Integrated real-time messaging system allowing instant, project-scoped collaboration between Managers and Investigators, complete with team grouping functionality and workspace event auditing.
+
+### 🛡️ Enterprise Security & Data Governance
+- **JWT & Role-Based Access Control (RBAC)**: Secure authentication token architecture enforcing strict boundary isolation between Manager (Staff) and Investigator permissions.
+- **Isolated Session Handling**: Tab-level session isolation ensuring multi-role sessions never bleed or contaminate workspace state.
+- **Secure File Storage**: Sandboxed document storage with strict file-type verification (PDF compliance validation).
 
 ---
 
-## 🚀 How to Run Locally
+## 🏗️ Architecture & Technology Stack
 
-Because Drishti is a decoupled app, you need to run the backend and frontend separately. 
+Drishti utilizes a decoupled, cloud-ready architecture:
 
-### 1. Start the Backend (Django)
-Open a terminal and navigate to the `backend` folder:
+- **Core Application Backend**: Python 3, Django, Django REST Framework (DRF)
+- **Frontend Presentation Layer**: React, Vite, Vanilla CSS
+- **AI & RAG Intelligence**: ChromaDB (Vector Search), HuggingFace Inference API, SentenceTransformers (`all-MiniLM-L6-v2`)
+- **Authentication & Security**: SimpleJWT, Django RBAC, Session Management
+- **Cloud Deployment**: Deployed and operational on **AWS EC2 (Ubuntu Linux)** infrastructure
+
+---
+
+## 🚀 Getting Started (Local Development Setup)
+
+To run Drishti locally on your machine, launch the backend and frontend services in separate terminal sessions.
+
+### Prerequisites
+- Python 3.9+
+- Node.js 18+ and `npm`
+- Git
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Archit008-prg/Drishti.git
+cd Drishti
+```
+
+### 2. Launch Backend API Server (Django)
 ```bash
 cd backend
+
+# Create and activate virtual environment
 python -m venv venv
-source venv/bin/activate      # On Windows: venv\Scripts\activate
+source venv/bin/activate       # On Windows: venv\Scripts\activate
+
+# Install dependencies and setup database
 pip install -r requirements.txt
 python manage.py migrate
+
+# Start the backend server
 python manage.py runserver
 ```
-*The backend API will run on `http://localhost:8000`*
+*The Django REST API will run at `http://localhost:8000`*
 
-### 2. Start the Frontend (React/Vite)
-Open a **new** terminal and navigate to the `frontend` folder:
+### 3. Launch Frontend Web App (React)
+Open a new terminal window:
 ```bash
-cd frontend
+cd Drishti/frontend
+
+# Install dependencies and start development server
 npm install
 npm run dev
 ```
-*The gorgeous frontend will pop up at `http://localhost:5173`*
+*The web interface will launch at `http://localhost:5173`*
 
 ---
 
-## ☁️ How to Deploy to AWS EC2 (Production)
+## 🔮 Strategic Roadmap & Future Vision
 
-Deploying to AWS means setting up your own bare-metal server. Here is the exact playbook to get Drishti live:
-
-1. **Spin up an EC2 Instance**: Launch an Ubuntu server and open Ports `80` (HTTP) and `22` (SSH) in your Security Group.
-2. **SSH into the Server**: Connect from your local terminal using your `.pem` key.
-3. **Install Dependencies**: 
-   `sudo apt update && sudo apt install python3-venv nodejs npm -y`
-4. **Clone the Repo**: 
-   `git clone https://github.com/Archit008-prg/Drishti.git`
-5. **Run the Backend (Background)**:
-   Navigate to the backend, install `requirements.txt`, apply migrations, and use `nohup` to keep it alive:
-   `nohup python3 manage.py runserver 0.0.0.0:8000 &`
-6. **Run the Frontend (Background)**:
-   Navigate to the frontend, install npm packages, link it to your AWS Public IP, and start it on port 80:
-   `echo "VITE_API_BASE_URL=http://<YOUR_AWS_IP>:8000" > .env.production`
-   `sudo nohup npm run dev -- --host 0.0.0.0 --port 80 &`
-
-That's it! Your site will be live at your public IP address.
+- 🤖 **Automated AI Report Verification & Reconciliation**: Machine-learning algorithms to auto-verify submitted investigator reports against manager baseline specifications prior to human review.
+- ⚡ **Dynamic Workload Allocation & Team Optimization**: AI-driven task rebalancing based on real-time investigator capacity, project urgency, and historical completion metrics.
+- 📈 **Predictive Risk & Compliance Scoring**: Proactive detection of potential budget overruns, timeline slippages, and audit non-compliance risks before milestone deadlines.
