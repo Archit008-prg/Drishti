@@ -16,3 +16,24 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(155, 77, 255, 0.5);
 }
+
+/* WhatsApp Chat Redesign Styles */
+.wa-list-item:hover {
+  background-color: #202c33 !important;
+}
+.wa-active-item {
+  background-color: #2a3942 !important;
+}
+.wa-bubble:hover .delete-msg-btn {
+  opacity: 1 !important;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+}
