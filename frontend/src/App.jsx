@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -212,7 +212,8 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
   const [chatHistories, setChatHistories] = useState({});
   const currentChatId = selectedProject ? selectedProject.id : 'system';
   
-  const messages = chatHistories[currentChatId] || [{ sender: 'ekta', text: 'Hi! I am Ekta. Ask me anything about ' + (selectedProject ? 'the documents in this project.' : 'Drishti, or select a project to ask about its documents.') }];
+  const defaultMessages = useMemo(() => [{ sender: 'ekta', text: 'Hi! I am Ekta. Ask me anything about ' + (selectedProject ? 'the documents in this project.' : 'Drishti, or select a project to ask about its documents.') }], [selectedProject]);
+  const messages = chatHistories[currentChatId] || defaultMessages;
 
   const setMessages = (updater) => {
     setChatHistories(prev => {
@@ -355,7 +356,7 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
       {/* Left Column (Manager: Upload Docs, Investigator: Doc List) */}
       <div className="col-lg-4 mb-4 mb-lg-0 d-flex flex-column gap-3">
         {/* Project Selector */}
-        <div className="card card-glass p-3">
+        <div className="card card-glass mb-4 p-3 border-0 shadow" style={{ position: 'relative', zIndex: 100 }}>
           <label className="text-white-50 small mb-2 fw-bold">CONTEXT PROJECT</label>
           <CustomDropdown 
             value={selectedProject ? selectedProject.id : ''}
@@ -385,7 +386,7 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
                     <div>
                       <span className="d-block text-white small text-truncate" style={{ maxWidth: '180px' }}>{d.filename}</span>
                       <span className="text-white-50" style={{ fontSize: '10px' }}>
-                        {d.is_indexed ? <span className="text-success">✓ Indexed ({d.chunk_count} chunks)</span> : <span className="text-warning">✗ Not Indexed</span>}
+                        {d.is_indexed ? <span className="text-info">✓ Indexed ({d.chunk_count} chunks)</span> : <span className="text-warning">✗ Not Indexed</span>}
                       </span>
                     </div>
                     {isStaff && (
@@ -408,7 +409,7 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token })
                 <div className="rounded-circle bg-violet-600 d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px', boxShadow: '0 0 20px rgba(139,92,246,0.5)' }}>
                   <i className="bi bi-robot text-white fs-4"></i>
                 </div>
-                <span className="position-absolute bottom-0 end-0 rounded-circle bg-success" style={{ width: '12px', height: '12px', border: '2px solid #13141c' }}></span>
+                <span className="position-absolute bottom-0 end-0 rounded-circle bg-primary" style={{ width: '12px', height: '12px', border: '2px solid #13141c' }}></span>
               </div>
               <div>
                 <h5 className="mb-1 fw-bold tracking-tight text-white">Ekta AI</h5>
@@ -3044,7 +3045,7 @@ function App() {
                               timelineProjects.map((p, idx) => {
                                 // Color coding by status
                                 let colorClass = 'timeline-capsule-purple';
-                                if (p.status === 'completed') colorClass = 'bg-success text-white';
+                                if (p.status === 'completed') colorClass = 'bg-primary text-white';
                                 else if (p.status === 'pending' || p.status === 'up_next') colorClass = 'bg-warning text-dark';
                                 else if (idx % 3 === 0) colorClass = 'timeline-capsule-purple';
                                 else if (idx % 3 === 1) colorClass = 'timeline-capsule-blue';
@@ -3523,11 +3524,11 @@ function App() {
                   <div className="d-flex h-100">
                     
                     {/* LEFT SIDEBAR */}
-                    <div className="d-flex flex-column border-end border-secondary" style={{ width: '350px', background: '#111b21', zIndex: 5 }}>
+                    <div className="d-flex flex-column border-end border-secondary" style={{ width: '350px', background: 'transparent', zIndex: 5 }}>
                       
                       {/* Sidebar Header */}
-                      <div className="p-3 d-flex justify-content-between align-items-center" style={{ background: '#202c33' }}>
-                        <h5 className="mb-0 text-white fw-bold"><i className="bi bi-chat-dots-fill text-success me-2"></i>Chats</h5>
+                      <div className="p-3 d-flex justify-content-between align-items-center" style={{ background: 'rgba(255, 255, 255, 0.03)' }}>
+                        <h5 className="mb-0 text-white fw-bold"><i className="bi bi-chat-dots-fill text-info me-2"></i>Chats</h5>
                         <div className="d-flex gap-2">
                           {isStaff && (
                             <button className="btn btn-sm btn-outline-secondary text-white border-0" title="Create Group" onClick={() => setShowCreateTeam(!showCreateTeam)}>
@@ -3555,7 +3556,7 @@ function App() {
                       </div>
 
                       {/* Search Bar */}
-                      <div className="p-2" style={{ background: '#111b21' }}>
+                      <div className="p-2" style={{ background: 'transparent' }}>
                         <div className="input-group input-group-sm">
                           <span className="input-group-text bg-dark border-0 text-muted"><i className="bi bi-search"></i></span>
                           <input type="text" className="form-control bg-dark border-0 text-white shadow-none" placeholder="Search or start new chat" value={chatSearch} onChange={e => setChatSearch(e.target.value)} />
@@ -3564,7 +3565,7 @@ function App() {
 
                       {/* Create Team Form (Toggleable) */}
                       {showCreateTeam && isStaff && (
-                        <div className="p-3 border-bottom border-secondary" style={{ background: '#202c33' }}>
+                        <div className="p-3 border-bottom border-secondary" style={{ background: 'rgba(255, 255, 255, 0.03)' }}>
                           <input type="text" className="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Team Name" value={newTeamName} onChange={e => setNewTeamName(e.target.value)} />
                           <label className="text-white small mb-1">Select Members:</label>
                           <div className="mb-2 custom-scrollbar" style={{ maxHeight: '100px', overflowY: 'auto' }}>
@@ -3592,7 +3593,7 @@ function App() {
                             setActiveTeam(t);
                             fetchChatMessages(null, t.id);
                           }}>
-                            <div className="wa-avatar bg-success text-white fw-bold d-flex align-items-center justify-content-center me-3" style={{ width: '45px', height: '45px', borderRadius: '50%', fontSize: '1.2rem' }}>
+                            <div className="wa-avatar bg-primary text-white fw-bold d-flex align-items-center justify-content-center me-3" style={{ width: '45px', height: '45px', borderRadius: '50%', fontSize: '1.2rem' }}>
                               <i className="bi bi-people-fill"></i>
                             </div>
                             <div className="flex-grow-1 text-truncate">
@@ -3622,7 +3623,7 @@ function App() {
                               </div>
                               <div className="d-flex justify-content-between align-items-center">
                                 <span className="text-muted small text-truncate flex-grow-1 me-2">{thread.latest_message || 'Start conversation...'}</span>
-                                {thread.unread_count > 0 && <span className="badge rounded-pill" style={{ background: '#00a884' }}>{thread.unread_count}</span>}
+                                {thread.unread_count > 0 && <span className="badge rounded-pill" style={{ background: '#8b5cf6' }}>{thread.unread_count}</span>}
                               </div>
                             </div>
                           </div>
@@ -3634,14 +3635,14 @@ function App() {
                     </div>
 
                     {/* RIGHT MAIN CHAT */}
-                    <div className="flex-grow-1 d-flex flex-column position-relative wa-bg-pattern" style={{ background: '#0b141a' }}>
+                    <div className="flex-grow-1 d-flex flex-column position-relative wa-bg-pattern" style={{ background: 'rgba(0, 0, 0, 0.2)' }}>
                       
                       {activeThreadUser || activeTeam ? (
                         <>
                           {/* Chat Header */}
-                          <div className="p-2 d-flex justify-content-between align-items-center shadow-sm" style={{ background: '#202c33', zIndex: 10 }}>
+                          <div className="p-2 d-flex justify-content-between align-items-center shadow-sm" style={{ background: 'rgba(255, 255, 255, 0.03)', zIndex: 10 }}>
                             <div className="d-flex align-items-center">
-                              <div className={`wa-avatar text-white fw-bold d-flex align-items-center justify-content-center me-3 text-uppercase ${activeTeam ? 'bg-success' : 'bg-secondary'}`} style={{ width: '40px', height: '40px', borderRadius: '50%', fontSize: '1rem' }}>
+                              <div className={`wa-avatar text-white fw-bold d-flex align-items-center justify-content-center me-3 text-uppercase ${activeTeam ? 'bg-primary' : 'bg-secondary'}`} style={{ width: '40px', height: '40px', borderRadius: '50%', fontSize: '1rem' }}>
                                 {activeTeam ? <i className="bi bi-people-fill"></i> : activeThreadUser.username.charAt(0)}
                               </div>
                               <div>
@@ -3664,21 +3665,21 @@ function App() {
                           </div>
 
                           {/* Chat Body */}
-                          <div className="flex-grow-1 p-4 overflow-auto custom-scrollbar chat-history-pane d-flex flex-column gap-2" style={{ backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")', backgroundRepeat: 'repeat', opacity: 0.8 }}>
+                          <div className="flex-grow-1 p-4 overflow-auto custom-scrollbar chat-history-pane d-flex flex-column gap-2" style={{ backgroundImage: 'none', backgroundRepeat: 'repeat', opacity: 0.8 }}>
                             {chatMessages.map((msg, idx) => {
                               const isMe = msg.sender_username === username;
                               return (
                                 <div key={idx} className={`d-flex ${isMe ? 'justify-content-end' : 'justify-content-start'}`}>
                                   <div className="px-3 py-2 shadow-sm wa-bubble" style={{ 
-                                    background: isMe ? '#005c4b' : '#202c33', 
-                                    color: '#e9edef',
+                                    background: isMe ? 'rgba(139, 92, 246, 0.25)' : 'rgba(255, 255, 255, 0.05)', 
+                                    color: '#fff',
                                     borderRadius: '7.5px',
                                     borderTopRightRadius: isMe ? '0px' : '7.5px',
                                     borderTopLeftRadius: isMe ? '7.5px' : '0px',
                                     maxWidth: '75%',
                                     position: 'relative'
                                   }}>
-                                    {activeTeam && !isMe && <div className="small fw-bold mb-1" style={{ color: '#53bdeb', fontSize: '0.8rem' }}>{msg.sender_username}</div>}
+                                    {activeTeam && !isMe && <div className="small fw-bold mb-1" style={{ color: '#a78bfa', fontSize: '0.8rem' }}>{msg.sender_username}</div>}
                                     <div className="d-flex flex-wrap align-items-end gap-2">
                                       <div style={{ fontSize: '0.95rem', wordWrap: 'break-word', whiteSpace: 'pre-wrap', flex: '1 1 auto' }}>{msg.message}</div>
                                       <div className="d-flex align-items-center gap-1 ms-auto" style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)' }}>
@@ -3698,24 +3699,24 @@ function App() {
                             })}
                             {chatMessages.length === 0 && (
                               <div className="d-flex justify-content-center mt-3">
-                                <div className="badge rounded-pill fw-normal" style={{ background: '#182229', color: '#8696a0' }}>Today</div>
+                                <div className="badge rounded-pill fw-normal" style={{ background: 'rgba(255, 255, 255, 0.1)', color: '#adb5bd' }}>Today</div>
                               </div>
                             )}
                           </div>
 
                           {/* Chat Input */}
-                          <form className="p-3 d-flex align-items-center gap-3 w-100" style={{ background: '#202c33' }} onSubmit={handleSendLiveMessage}>
+                          <form className="p-3 d-flex align-items-center gap-3 w-100" style={{ background: 'rgba(255, 255, 255, 0.03)' }} onSubmit={handleSendLiveMessage}>
                             
                             
-                            <input type="text" className="form-control rounded-pill border-0 text-white shadow-none px-3 py-2 flex-grow-1" style={{ background: '#2a3942' }} placeholder="Type a message" value={newMessage} onChange={e => setNewMessage(e.target.value)} />
+                            <input type="text" className="form-control rounded-pill border-0 text-white shadow-none px-3 py-2 flex-grow-1" style={{ background: 'rgba(255, 255, 255, 0.05)' }} placeholder="Type a message" value={newMessage} onChange={e => setNewMessage(e.target.value)} />
                             {newMessage.trim() && (
-                              <button type="submit" className="btn btn-link text-success p-0 fs-4"><i className="bi bi-send-fill"></i></button>
+                              <button type="submit" className="btn btn-link text-info p-0 fs-4"><i className="bi bi-send-fill"></i></button>
                             )}
                           </form>
                         </>
                       ) : (
-                        <div className="d-flex flex-column align-items-center justify-content-center h-100 text-center" style={{ color: '#8696a0' }}>
-                          <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="wa" style={{ width: '80px', opacity: 0.2, filter: 'grayscale(100%)', marginBottom: '20px' }} />
+                        <div className="d-flex flex-column align-items-center justify-content-center h-100 text-center" style={{ color: '#adb5bd' }}>
+                          <i className="bi bi-chat-dots" style={{ fontSize: '4rem', opacity: 0.2, marginBottom: '15px' }}></i>
                           <h4 className="fw-light">Drishti Web</h4>
                           <p className="small">Select a conversation or start a new chat<br/>to begin exchanging encrypted messages.</p>
                         </div>
@@ -4185,7 +4186,7 @@ function App() {
               {investigatorTab === 'past' && (
                 <div className="row g-4 mb-4">
                   <div className="col-12">
-                    <h4 className="fw-bold mb-1"><i className="bi bi-trophy-fill text-success me-2"></i> Achieved Milestones</h4>
+                    <h4 className="fw-bold mb-1"><i className="bi bi-trophy-fill text-info me-2"></i> Achieved Milestones</h4>
                     <p className="text-muted small">Successfully completed projects and final reports.</p>
                   </div>
                   {pastTasks.length > 0 ? pastTasks.map(p => (
@@ -4196,12 +4197,12 @@ function App() {
                         onClick={() => fetchProjectDetail(p.id)}
                       >
                         <div className="position-absolute" style={{ top: '-15px', right: '-15px', opacity: 0.05, transform: 'rotate(15deg)' }}>
-                          <i className="bi bi-award-fill text-success" style={{ fontSize: '120px' }}></i>
+                          <i className="bi bi-award-fill text-info" style={{ fontSize: '120px' }}></i>
                         </div>
                         <div className="card-body position-relative z-index-1 d-flex flex-column">
                           <div className="mb-auto">
                             <div className="d-flex justify-content-between mb-2">
-                              <span className="text-success small fw-bold"><i className="bi bi-check-circle-fill me-1"></i> Completed</span>
+                              <span className="text-info small fw-bold"><i className="bi bi-check-circle-fill me-1"></i> Completed</span>
                               <span className="badge bg-dark border border-secondary text-light">{p.project_code}</span>
                             </div>
                             <h5 className="fw-bold text-white mb-3">{p.title}</h5>
@@ -4214,11 +4215,11 @@ function App() {
                             </div>
                             <div className="d-flex justify-content-between mb-2 small">
                               <span className="text-muted"><i className="bi bi-file-earmark-check me-1"></i> Report:</span>
-                              <span className={p.report_status === 'approved' ? 'text-success fw-bold' : 'text-warning fw-bold'}>{p.report_status}</span>
+                              <span className={p.report_status === 'approved' ? 'text-info fw-bold' : 'text-warning fw-bold'}>{p.report_status}</span>
                             </div>
                             <div className="d-flex justify-content-between small pt-2 border-top border-secondary border-opacity-25">
                               <span className="text-muted">Budget Utilized:</span>
-                              <span className="fw-bold text-success">₹{p.budget_amount} {p.budget_unit}</span>
+                              <span className="fw-bold text-info">₹{p.budget_amount} {p.budget_unit}</span>
                             </div>
                           </div>
                         </div>
@@ -4280,11 +4281,11 @@ function App() {
                   <div className="d-flex h-100">
                     
                     {/* LEFT SIDEBAR */}
-                    <div className="d-flex flex-column border-end border-secondary" style={{ width: '350px', background: '#111b21', zIndex: 5 }}>
+                    <div className="d-flex flex-column border-end border-secondary" style={{ width: '350px', background: 'transparent', zIndex: 5 }}>
                       
                       {/* Sidebar Header */}
-                      <div className="p-3 d-flex justify-content-between align-items-center" style={{ background: '#202c33' }}>
-                        <h5 className="mb-0 text-white fw-bold"><i className="bi bi-chat-dots-fill text-success me-2"></i>Chats</h5>
+                      <div className="p-3 d-flex justify-content-between align-items-center" style={{ background: 'rgba(255, 255, 255, 0.03)' }}>
+                        <h5 className="mb-0 text-white fw-bold"><i className="bi bi-chat-dots-fill text-info me-2"></i>Chats</h5>
                         <div className="d-flex gap-2">
                           {isStaff && (
                             <button className="btn btn-sm btn-outline-secondary text-white border-0" title="Create Group" onClick={() => setShowCreateTeam(!showCreateTeam)}>
@@ -4312,7 +4313,7 @@ function App() {
                       </div>
 
                       {/* Search Bar */}
-                      <div className="p-2" style={{ background: '#111b21' }}>
+                      <div className="p-2" style={{ background: 'transparent' }}>
                         <div className="input-group input-group-sm">
                           <span className="input-group-text bg-dark border-0 text-muted"><i className="bi bi-search"></i></span>
                           <input type="text" className="form-control bg-dark border-0 text-white shadow-none" placeholder="Search or start new chat" value={chatSearch} onChange={e => setChatSearch(e.target.value)} />
@@ -4321,7 +4322,7 @@ function App() {
 
                       {/* Create Team Form (Toggleable) */}
                       {showCreateTeam && isStaff && (
-                        <div className="p-3 border-bottom border-secondary" style={{ background: '#202c33' }}>
+                        <div className="p-3 border-bottom border-secondary" style={{ background: 'rgba(255, 255, 255, 0.03)' }}>
                           <input type="text" className="form-control form-control-sm bg-dark text-white border-secondary mb-2" placeholder="Team Name" value={newTeamName} onChange={e => setNewTeamName(e.target.value)} />
                           <label className="text-white small mb-1">Select Members:</label>
                           <div className="mb-2 custom-scrollbar" style={{ maxHeight: '100px', overflowY: 'auto' }}>
@@ -4349,7 +4350,7 @@ function App() {
                             setActiveTeam(t);
                             fetchChatMessages(null, t.id);
                           }}>
-                            <div className="wa-avatar bg-success text-white fw-bold d-flex align-items-center justify-content-center me-3" style={{ width: '45px', height: '45px', borderRadius: '50%', fontSize: '1.2rem' }}>
+                            <div className="wa-avatar bg-primary text-white fw-bold d-flex align-items-center justify-content-center me-3" style={{ width: '45px', height: '45px', borderRadius: '50%', fontSize: '1.2rem' }}>
                               <i className="bi bi-people-fill"></i>
                             </div>
                             <div className="flex-grow-1 text-truncate">
@@ -4379,7 +4380,7 @@ function App() {
                               </div>
                               <div className="d-flex justify-content-between align-items-center">
                                 <span className="text-muted small text-truncate flex-grow-1 me-2">{thread.latest_message || 'Start conversation...'}</span>
-                                {thread.unread_count > 0 && <span className="badge rounded-pill" style={{ background: '#00a884' }}>{thread.unread_count}</span>}
+                                {thread.unread_count > 0 && <span className="badge rounded-pill" style={{ background: '#8b5cf6' }}>{thread.unread_count}</span>}
                               </div>
                             </div>
                           </div>
@@ -4391,14 +4392,14 @@ function App() {
                     </div>
 
                     {/* RIGHT MAIN CHAT */}
-                    <div className="flex-grow-1 d-flex flex-column position-relative wa-bg-pattern" style={{ background: '#0b141a' }}>
+                    <div className="flex-grow-1 d-flex flex-column position-relative wa-bg-pattern" style={{ background: 'rgba(0, 0, 0, 0.2)' }}>
                       
                       {activeThreadUser || activeTeam ? (
                         <>
                           {/* Chat Header */}
-                          <div className="p-2 d-flex justify-content-between align-items-center shadow-sm" style={{ background: '#202c33', zIndex: 10 }}>
+                          <div className="p-2 d-flex justify-content-between align-items-center shadow-sm" style={{ background: 'rgba(255, 255, 255, 0.03)', zIndex: 10 }}>
                             <div className="d-flex align-items-center">
-                              <div className={`wa-avatar text-white fw-bold d-flex align-items-center justify-content-center me-3 text-uppercase ${activeTeam ? 'bg-success' : 'bg-secondary'}`} style={{ width: '40px', height: '40px', borderRadius: '50%', fontSize: '1rem' }}>
+                              <div className={`wa-avatar text-white fw-bold d-flex align-items-center justify-content-center me-3 text-uppercase ${activeTeam ? 'bg-primary' : 'bg-secondary'}`} style={{ width: '40px', height: '40px', borderRadius: '50%', fontSize: '1rem' }}>
                                 {activeTeam ? <i className="bi bi-people-fill"></i> : activeThreadUser.username.charAt(0)}
                               </div>
                               <div>
@@ -4421,21 +4422,21 @@ function App() {
                           </div>
 
                           {/* Chat Body */}
-                          <div className="flex-grow-1 p-4 overflow-auto custom-scrollbar chat-history-pane d-flex flex-column gap-2" style={{ backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")', backgroundRepeat: 'repeat', opacity: 0.8 }}>
+                          <div className="flex-grow-1 p-4 overflow-auto custom-scrollbar chat-history-pane d-flex flex-column gap-2" style={{ backgroundImage: 'none', backgroundRepeat: 'repeat', opacity: 0.8 }}>
                             {chatMessages.map((msg, idx) => {
                               const isMe = msg.sender_username === username;
                               return (
                                 <div key={idx} className={`d-flex ${isMe ? 'justify-content-end' : 'justify-content-start'}`}>
                                   <div className="px-3 py-2 shadow-sm wa-bubble" style={{ 
-                                    background: isMe ? '#005c4b' : '#202c33', 
-                                    color: '#e9edef',
+                                    background: isMe ? 'rgba(139, 92, 246, 0.25)' : 'rgba(255, 255, 255, 0.05)', 
+                                    color: '#fff',
                                     borderRadius: '7.5px',
                                     borderTopRightRadius: isMe ? '0px' : '7.5px',
                                     borderTopLeftRadius: isMe ? '7.5px' : '0px',
                                     maxWidth: '75%',
                                     position: 'relative'
                                   }}>
-                                    {activeTeam && !isMe && <div className="small fw-bold mb-1" style={{ color: '#53bdeb', fontSize: '0.8rem' }}>{msg.sender_username}</div>}
+                                    {activeTeam && !isMe && <div className="small fw-bold mb-1" style={{ color: '#a78bfa', fontSize: '0.8rem' }}>{msg.sender_username}</div>}
                                     <div className="d-flex flex-wrap align-items-end gap-2">
                                       <div style={{ fontSize: '0.95rem', wordWrap: 'break-word', whiteSpace: 'pre-wrap', flex: '1 1 auto' }}>{msg.message}</div>
                                       <div className="d-flex align-items-center gap-1 ms-auto" style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)' }}>
@@ -4455,24 +4456,24 @@ function App() {
                             })}
                             {chatMessages.length === 0 && (
                               <div className="d-flex justify-content-center mt-3">
-                                <div className="badge rounded-pill fw-normal" style={{ background: '#182229', color: '#8696a0' }}>Today</div>
+                                <div className="badge rounded-pill fw-normal" style={{ background: 'rgba(255, 255, 255, 0.1)', color: '#adb5bd' }}>Today</div>
                               </div>
                             )}
                           </div>
 
                           {/* Chat Input */}
-                          <form className="p-3 d-flex align-items-center gap-3 w-100" style={{ background: '#202c33' }} onSubmit={handleSendLiveMessage}>
+                          <form className="p-3 d-flex align-items-center gap-3 w-100" style={{ background: 'rgba(255, 255, 255, 0.03)' }} onSubmit={handleSendLiveMessage}>
                             
                             
-                            <input type="text" className="form-control rounded-pill border-0 text-white shadow-none px-3 py-2 flex-grow-1" style={{ background: '#2a3942' }} placeholder="Type a message" value={newMessage} onChange={e => setNewMessage(e.target.value)} />
+                            <input type="text" className="form-control rounded-pill border-0 text-white shadow-none px-3 py-2 flex-grow-1" style={{ background: 'rgba(255, 255, 255, 0.05)' }} placeholder="Type a message" value={newMessage} onChange={e => setNewMessage(e.target.value)} />
                             {newMessage.trim() && (
-                              <button type="submit" className="btn btn-link text-success p-0 fs-4"><i className="bi bi-send-fill"></i></button>
+                              <button type="submit" className="btn btn-link text-info p-0 fs-4"><i className="bi bi-send-fill"></i></button>
                             )}
                           </form>
                         </>
                       ) : (
-                        <div className="d-flex flex-column align-items-center justify-content-center h-100 text-center" style={{ color: '#8696a0' }}>
-                          <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="wa" style={{ width: '80px', opacity: 0.2, filter: 'grayscale(100%)', marginBottom: '20px' }} />
+                        <div className="d-flex flex-column align-items-center justify-content-center h-100 text-center" style={{ color: '#adb5bd' }}>
+                          <i className="bi bi-chat-dots" style={{ fontSize: '4rem', opacity: 0.2, marginBottom: '15px' }}></i>
                           <h4 className="fw-light">Drishti Web</h4>
                           <p className="small">Select a conversation or start a new chat<br/>to begin exchanging encrypted messages.</p>
                         </div>

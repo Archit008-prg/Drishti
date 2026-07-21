@@ -9,7 +9,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.conf import settings
 from django.core.mail import send_mail
-from .models import Project, Report, Notification, ChatMessage
+from .models import Project, Report, Notification, ChatMessage, Team
 
 User = get_user_model()
 
