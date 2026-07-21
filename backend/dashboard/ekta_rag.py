@@ -253,10 +253,10 @@ OUT_OF_SCOPE_RESPONSE = (
 
 SYSTEM_PROMPT = (
     "You are Ekta, a helpful, intelligent Project Management AI Assistant for the Drishti system.\n"
-    "Your job is to answer the user's questions based on the provided project documents.\n\n"
+    "Your job is to answer the user's questions based on the provided project documents and metadata.\n\n"
     "Important Rules:\n"
-    "1. Always use the provided documents to answer the user's questions.\n"
-    "2. If the user asks a general question like 'what is this project', 'explain the file', or 'what is written here', DO NOT refuse. Give them a comprehensive summary of the provided text.\n"
+    "1. Always use the provided context to answer the user's questions.\n"
+    "2. If the user asks a general question like 'what is this project', 'explain the file', or 'what is written here', DO NOT refuse. Give them a comprehensive summary of the provided text and Project Description.\n"
     "3. If the user asks something completely unrelated to any documents (like sports or politics), politely decline.\n"
     "4. CRITICAL LANGUAGE RULE: You MUST reply in the EXACT SAME LANGUAGE and SCRIPT as the user's QUESTION! If the user asks in English, you MUST reply in English. If the user asks in Hindi, reply in Hindi. Never switch languages on your own, regardless of the language of the provided documents.\n"
     "5. Do not prefix your answers with robotic disclaimers. Just answer naturally and directly."
@@ -369,15 +369,17 @@ def query_ekta(question: str, project_id=None, history=None) -> dict:
             proj = Project.objects.get(id=project_id)
             latest_report = proj.project_reports.first()
             status_text = f"Project Status: {proj.get_status_display()}\n"
+            if proj.description:
+                status_text += f"Project Description (Manager's Instructions): {proj.description}\n"
             if latest_report:
                 status_text += f"Report Status: {latest_report.get_status_display()}\n"
                 if latest_report.status in ['rejected', 'resubmit_requested'] and latest_report.admin_comment:
                     status_text += f"Manager Rejection Comment: {latest_report.admin_comment}\n"
-            project_metadata = f"\n\n[PROJECT METADATA]\n{status_text}\n(If the user asks why their report was rejected, explain based on the manager's comment. If no comment is given, analyze the report and manager's provided documents to hypothesize why it might have been rejected and help them improve.)\n"
+            project_metadata = f"\n\n[PROJECT METADATA]\n{status_text}\n(If the user asks about the project in general, summarize the Project Description above. If they ask why their report was rejected, explain based on the manager's comment.)\n"
         except Exception as e:
             logger.warning(f"Could not load project metadata for Ekta: {e}")
 
-    user_message = f"CONTEXT:\n{context}{project_metadata}\n\nQUESTION: {question}"
+    user_message = f"CONTEXT:\n{context}{project_metadata}\n\nQUESTION: {question}\n\n[CRITICAL: Reply in the EXACT same language as the QUESTION above. For example, if the QUESTION is in English, you MUST write your response in English.]"
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT}
     ]
