@@ -1227,7 +1227,10 @@ function App() {
   };
 
   const handleCreateTeam = async () => {
-    if (!newTeamName.trim()) return;
+    if (!newTeamName.trim()) {
+      alert('Please enter a Team Name before confirming.');
+      return;
+    }
     try {
       const res = await fetch(`${API_BASE}/api/teams/create/`, {
         method: 'POST',
@@ -3702,13 +3705,11 @@ function App() {
 
                           {/* Chat Input */}
                           <form className="p-3 d-flex align-items-center gap-3 w-100" style={{ background: '#202c33' }} onSubmit={handleSendLiveMessage}>
-                            <button type="button" className="btn btn-link text-muted p-0 fs-4 text-decoration-none"><i className="bi bi-emoji-smile"></i></button>
-                            <button type="button" className="btn btn-link text-muted p-0 fs-4 text-decoration-none"><i className="bi bi-paperclip"></i></button>
+                            
+                            
                             <input type="text" className="form-control rounded-pill border-0 text-white shadow-none px-3 py-2 flex-grow-1" style={{ background: '#2a3942' }} placeholder="Type a message" value={newMessage} onChange={e => setNewMessage(e.target.value)} />
-                            {newMessage.trim() ? (
+                            {newMessage.trim() && (
                               <button type="submit" className="btn btn-link text-success p-0 fs-4"><i className="bi bi-send-fill"></i></button>
-                            ) : (
-                              <button type="button" className="btn btn-link text-muted p-0 fs-4"><i className="bi bi-mic"></i></button>
                             )}
                           </form>
                         </>
@@ -4461,13 +4462,11 @@ function App() {
 
                           {/* Chat Input */}
                           <form className="p-3 d-flex align-items-center gap-3 w-100" style={{ background: '#202c33' }} onSubmit={handleSendLiveMessage}>
-                            <button type="button" className="btn btn-link text-muted p-0 fs-4 text-decoration-none"><i className="bi bi-emoji-smile"></i></button>
-                            <button type="button" className="btn btn-link text-muted p-0 fs-4 text-decoration-none"><i className="bi bi-paperclip"></i></button>
+                            
+                            
                             <input type="text" className="form-control rounded-pill border-0 text-white shadow-none px-3 py-2 flex-grow-1" style={{ background: '#2a3942' }} placeholder="Type a message" value={newMessage} onChange={e => setNewMessage(e.target.value)} />
-                            {newMessage.trim() ? (
+                            {newMessage.trim() && (
                               <button type="submit" className="btn btn-link text-success p-0 fs-4"><i className="bi bi-send-fill"></i></button>
-                            ) : (
-                              <button type="button" className="btn btn-link text-muted p-0 fs-4"><i className="bi bi-mic"></i></button>
                             )}
                           </form>
                         </>

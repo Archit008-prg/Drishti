@@ -542,6 +542,7 @@ def api_add_team_member(request, team_id):
     
     return Response({'error': 'Username or valid email required'}, status=400)
 
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_get_chat_messages(request):
     """
