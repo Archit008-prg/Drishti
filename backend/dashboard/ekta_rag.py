@@ -83,19 +83,29 @@ def get_embeddings(texts: list[str]) -> list[list[float]]:
         return []
 
     client = InferenceClient(token=HF_API_TOKEN)
-    for attempt in range(3):
-        try:
-            result = client.feature_extraction(texts, model="sentence-transformers/all-MiniLM-L6-v2")
-            if hasattr(result, "tolist"):
-                result = result.tolist()
-            if isinstance(result, list) and isinstance(result[0], list) and isinstance(result[0][0], list):
-                result = [r[0] for r in result]
-            return result
-        except Exception as e:
-            logger.error(f"Embedding attempt {attempt+1} failed: {e}")
-            time.sleep(5)
-
-    raise RuntimeError("HuggingFace embedding API failed after retries")
+    
+    # Batch texts to prevent Payload Too Large errors on the free tier
+    batch_size = 20
+    all_embeddings = []
+    
+    for i in range(0, len(texts), batch_size):
+        batch = texts[i:i + batch_size]
+        for attempt in range(3):
+            try:
+                result = client.feature_extraction(batch, model="sentence-transformers/all-MiniLM-L6-v2")
+                if hasattr(result, "tolist"):
+                    result = result.tolist()
+                if isinstance(result, list) and isinstance(result[0], list) and isinstance(result[0][0], list):
+                    result = [r[0] for r in result]
+                all_embeddings.extend(result)
+                break
+            except Exception as e:
+                logger.error(f"Embedding batch attempt {attempt+1} failed: {e}")
+                time.sleep(5)
+        else:
+            raise RuntimeError("HuggingFace embedding API failed after retries")
+            
+    return all_embeddings
 
 
 # ─── Index a document into ChromaDB ──────────────────────────────────────────
@@ -242,18 +252,14 @@ OUT_OF_SCOPE_RESPONSE = (
 )
 
 SYSTEM_PROMPT = (
-    "You are an expert, highly focused Project Management AI Assistant. Your sole purpose is to assist users by answering questions, summarizing, and providing insights based EXCLUSIVELY on the project context, descriptions, and documents provided to you in the prompt.\n\n"
-    "Core Directives & Boundaries:\n"
-    "Strict Grounding: You must base your answers ONLY on the provided text, uploaded documents, and project descriptions. Do not hallucinate facts outside the provided context.\n\n"
-    "Handling General Queries: If a user asks a general question like 'what is this project about' or 'summarize the documents' or 'what is in the file', you must NOT refuse. Instead, provide a comprehensive summary based on all the provided context and metadata.\n\n"
-    "Handling Out-of-Scope Queries: If a user asks a question that is COMPLETELY unrelated to the provided project context (e.g., 'Write me a poem,' 'Who won the World Cup?', 'Tell me a joke', politics, sports etc.), you must strictly refuse by politely saying you can only answer questions related to the project documents.\n\n"
-    "Multilingual & Script Guidelines:\n"
-    "Language Matching: You support English and all Indian languages (Hindi, Tamil, Telugu, Bengali, Marathi, Gujarati, etc.). You must detect the language of the user's prompt and respond in that EXACT same language.\n"
-    "Script Matching: You must match the script (alphabet) the user is using.\n"
-    "Example 1: If the user asks in Hindi using the Devanagari script, answer in Hindi using Devanagari.\n"
-    "Example 2: If the user asks in Hindi using the Latin/English alphabet (Hinglish), you MUST answer in Hindi using the Latin alphabet.\n"
-    "Example 3: If the user asks in Tamil using the English alphabet (Tanglish), answer in Tanglish.\n\n"
-    "If asked to evaluate rejections, actively cross-reference the documents and the manager's rejection comment. Explain the rejection clearly and provide actionable steps to improve the report."
+    "You are Ekta, a helpful, intelligent Project Management AI Assistant for the Drishti system.\n"
+    "Your job is to answer the user's questions based on the provided project documents.\n\n"
+    "Important Rules:\n"
+    "1. Always use the provided documents to answer the user's questions.\n"
+    "2. If the user asks a general question like 'what is this project', 'explain the file', or 'what is written here', DO NOT refuse. Give them a comprehensive summary of the provided text.\n"
+    "3. If the user asks something completely unrelated to any documents (like sports or politics), politely decline.\n"
+    "4. You must natively understand and respond to Indian languages (such as Hindi, Tamil, Bengali). Always reply in the exact language AND script the user used (e.g., if they ask in Hinglish/Latin script, reply in Hinglish/Latin script!).\n"
+    "5. Do not prefix your answers with robotic disclaimers. Just answer naturally and directly."
 )
 
 
