@@ -33,7 +33,7 @@ urlpatterns = [
     path('api/teams/', api.api_get_teams, name='api_get_teams'),
     path('api/teams/create/', api.api_create_team, name='api_create_team'),
     path('api/teams/<int:team_id>/add_member/', api.api_add_team_member, name='api_add_team_member'),
-    path('api/chat/managers/', api.api_get_managers, name='api_get_managers'),
+    path('api/users/', api.api_get_all_users, name='api_get_all_users'),
     path('api/projects/<int:project_id>/update/', api.api_update_project, name='api_update_project'),
     path('api/projects/<int:project_id>/delete/', api.api_delete_project, name='api_delete_project'),
 
