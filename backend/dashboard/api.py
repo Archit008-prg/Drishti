@@ -647,10 +647,14 @@ def api_get_chat_conversations(request):
     
     data = []
     for u in users:
-        unread_count = ChatMessage.objects.filter(sender=u, receiver=request.user, is_read=False).count()
         latest_msg = ChatMessage.objects.filter(
             (Q(sender=request.user) & Q(receiver=u)) | (Q(sender=u) & Q(receiver=request.user))
         ).order_by('-timestamp').first()
+        
+        if not latest_msg:
+            continue
+
+        unread_count = ChatMessage.objects.filter(sender=u, receiver=request.user, is_read=False).count()
         
         data.append({
             'user_id': u.id,

@@ -3561,11 +3561,12 @@ function App() {
                               key={thread.user_id}
                               className={`list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center text-start ${activeThreadUser?.id === thread.user_id ? 'bg-primary bg-opacity-25 text-white' : 'text-muted'}`}
                               style={{ cursor: 'pointer' }}
-                            >
-                              <div className="text-truncate flex-grow-1" onClick={() => {
+                              onClick={() => {
                                 setActiveThreadUser({ id: thread.user_id, username: thread.username });
                                 fetchChatMessages(thread.user_id);
-                              }}>
+                              }}
+                            >
+                              <div className="text-truncate flex-grow-1">
                                 <strong className="d-block text-white">{thread.username}</strong>
                                 <span className="small text-muted text-truncate d-block">
                                   {thread.latest_message || 'Start conversation...'}
@@ -3577,7 +3578,7 @@ function App() {
                                 )}
                                 <button type="button" className="btn btn-sm text-secondary p-0 m-0 border-0 bg-transparent" title="Delete Conversation" onClick={(e) => {
                                   e.stopPropagation();
-                                  confirmAction("Delete entire conversation with " + thread.username + "?", () => handleClearConversation(thread.user_id));
+                                  if (window.confirm("Delete entire conversation with " + thread.username + "?")) handleClearConversation(thread.user_id);
                                 }}>
                                   <i className="bi bi-trash"></i>
                                 </button>
@@ -3599,7 +3600,7 @@ function App() {
                               <span className="fw-bold"><i className="bi bi-person-fill"></i> {activeThreadUser.username}</span>
                               <div className="d-flex align-items-center gap-3">
                                 <span className="badge bg-success">Online & Encrypted</span>
-                                <button className="btn btn-sm btn-danger py-0 px-2 fw-bold text-white" title="Clear Conversation" onClick={() => confirmAction("Are you sure you want to delete this entire conversation? This action cannot be undone.", () => handleClearConversation(activeThreadUser.id))}>
+                                <button className="btn btn-sm btn-danger py-0 px-2 fw-bold text-white" title="Clear Conversation" onClick={() => { if (window.confirm("Are you sure you want to delete this entire conversation? This action cannot be undone.")) handleClearConversation(activeThreadUser.id); }}>
                                   <i className="bi bi-trash3"></i> Delete
                                 </button>
                               </div>
@@ -4274,11 +4275,12 @@ function App() {
                               key={m.user_id}
                               className={`list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center text-start ${activeThreadUser?.id === m.user_id ? 'bg-primary bg-opacity-25 text-white' : 'text-muted'}`}
                               style={{ cursor: 'pointer' }}
-                            >
-                              <div className="text-truncate flex-grow-1" onClick={() => {
+                              onClick={() => {
                                 setActiveThreadUser({ id: m.user_id, username: m.username });
                                 fetchChatMessages(m.user_id);
-                              }}>
+                              }}
+                            >
+                              <div className="text-truncate flex-grow-1">
                                 <strong className="d-block text-white">{m.username}</strong>
                                 <span className="small text-muted text-truncate d-block">
                                   {m.latest_message || (m.is_staff ? 'Manager Account' : 'Investigator Account')}
@@ -4290,7 +4292,7 @@ function App() {
                                 )}
                                 <button type="button" className="btn btn-sm text-secondary p-0 m-0 border-0 bg-transparent" title="Delete Conversation" onClick={(e) => {
                                   e.stopPropagation();
-                                  confirmAction("Delete entire conversation with " + m.username + "?", () => handleClearConversation(m.user_id));
+                                  if (window.confirm("Delete entire conversation with " + m.username + "?")) handleClearConversation(m.user_id);
                                 }}>
                                   <i className="bi bi-trash"></i>
                                 </button>
@@ -4312,7 +4314,7 @@ function App() {
                               <span className="fw-bold"><i className="bi bi-person-fill"></i> {activeThreadUser.username}</span>
                               <div className="d-flex align-items-center gap-3">
                                 <span className="badge bg-success">Online & Encrypted</span>
-                                <button className="btn btn-sm btn-danger py-0 px-2 fw-bold text-white" title="Clear Conversation" onClick={() => confirmAction("Are you sure you want to delete this entire conversation? This action cannot be undone.", () => handleClearConversation(activeThreadUser.id))}>
+                                <button className="btn btn-sm btn-danger py-0 px-2 fw-bold text-white" title="Clear Conversation" onClick={() => { if (window.confirm("Are you sure you want to delete this entire conversation? This action cannot be undone.")) handleClearConversation(activeThreadUser.id); }}>
                                   <i className="bi bi-trash3"></i> Delete
                                 </button>
                               </div>
