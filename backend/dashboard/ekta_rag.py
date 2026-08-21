@@ -22,9 +22,17 @@ from chromadb.config import Settings
 
 logger = logging.getLogger(__name__)
 
-# ─── Config ───────────────────────────────────────────────────────────────────
-HF_API_TOKEN = os.environ.get("HF_API_TOKEN", "")
-HF_HEADERS   = {"Authorization": f"Bearer {HF_API_TOKEN}"}
+def get_hf_token() -> str:
+    token = os.environ.get("HF_API_TOKEN", "")
+    if not token:
+        try:
+            from dotenv import load_dotenv
+            env_path = Path(__file__).resolve().parent.parent.parent / ".env"
+            load_dotenv(env_path)
+            token = os.environ.get("HF_API_TOKEN", "")
+        except Exception:
+            pass
+    return token
 
 EMBED_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2"
 LLM_URL   = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3"
@@ -82,7 +90,8 @@ def get_embeddings(texts: list[str]) -> list[list[float]]:
     if not texts:
         return []
 
-    client = InferenceClient(token=HF_API_TOKEN)
+    token = get_hf_token()
+    client = InferenceClient(token=token)
     
     # Batch texts to prevent Payload Too Large errors on the free tier
     batch_size = 20
@@ -264,21 +273,30 @@ SYSTEM_PROMPT = (
 
 
 def _call_llm(messages: list[dict]) -> str:
-    """Call Llama-3.1-8B-Instruct via HuggingFace InferenceClient."""
-    client = InferenceClient(token=HF_API_TOKEN)
+    """Call supported chat model via HuggingFace InferenceClient with automatic fallback."""
+    token = get_hf_token()
+    client = InferenceClient(token=token)
+    candidate_models = [
+        "meta-llama/Llama-3.3-70B-Instruct",
+        "Qwen/Qwen2.5-72B-Instruct",
+        "Qwen/Qwen2.5-Coder-32B-Instruct"
+    ]
     
-    for attempt in range(3):
-        try:
-            response = client.chat_completion(
-                messages=messages,
-                model="Qwen/Qwen2.5-7B-Instruct",
-                max_tokens=512,
-                temperature=0.1
-            )
-            return response.choices[0].message.content.strip()
-        except Exception as e:
-            logger.error(f"LLM call attempt {attempt+1} failed: {e}")
-            time.sleep(5)
+    for model_name in candidate_models:
+        for attempt in range(2):
+            try:
+                response = client.chat_completion(
+                    messages=messages,
+                    model=model_name,
+                    max_tokens=512,
+                    temperature=0.1
+                )
+                content = response.choices[0].message.content
+                if content and content.strip():
+                    return content.strip()
+            except Exception as e:
+                logger.error(f"LLM model '{model_name}' attempt {attempt+1} failed: {e}")
+                time.sleep(2)
 
     return OUT_OF_SCOPE_RESPONSE
 
