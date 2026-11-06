@@ -6,6 +6,11 @@ import sys
 
 def main():
     """Run administrative tasks."""
+    # Ensure Drishti virtualenv packages take priority over system Python packages
+    venv_site = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'myenv', 'Lib', 'site-packages'))
+    if os.path.exists(venv_site) and venv_site not in sys.path:
+        sys.path.insert(0, venv_site)
+
     os.environ["ANONYMIZED_TELEMETRY"] = "False"
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Drishti.settings')
     try:

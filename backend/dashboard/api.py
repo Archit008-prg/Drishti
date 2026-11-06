@@ -136,11 +136,15 @@ def api_project_detail(request, project_id):
         }
         
     docs_data = []
-    for d in project.supporting_documents.all():
+    from pathlib import Path
+    for d in project.supporting_documents.all().order_by('-uploaded_at'):
+        clean_name = d.filename or (Path(d.file.name).name if d.file else 'Document')
         docs_data.append({
             'id': d.id,
-            'filename': d.file.name.split('/')[-1],
-            'url': d.file.url
+            'filename': clean_name,
+            'url': d.file.url if d.file else '',
+            'is_indexed': d.is_indexed,
+            'chunk_count': d.chunk_count,
         })
         
     data = {
@@ -308,11 +312,15 @@ def api_add_project(request):
     if docs:
         from dashboard.ekta_models import SupportingDocument
         from dashboard import ekta_api, ekta_rag
+        from pathlib import Path
         for doc in docs:
+            ext = Path(doc.name).suffix.lower().lstrip(".")
             saved_doc = SupportingDocument.objects.create(
                 project=project,
                 uploaded_by=request.user,
-                file=doc
+                file=doc,
+                filename=doc.name,
+                file_type=ext
             )
             # Index into Ekta RAG immediately
             try:

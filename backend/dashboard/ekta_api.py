@@ -214,8 +214,8 @@ def api_ekta_documents(request, project_id):
     docs = SupportingDocument.objects.filter(project=project).order_by("-uploaded_at")
     data = [{
         "id": d.id,
-        "filename": d.filename,
-        "file_type": d.file_type,
+        "filename": d.filename or (Path(d.file.name).name if d.file else "Document"),
+        "file_type": d.file_type or (Path(d.file.name).suffix.lower().lstrip(".") if d.file else "file"),
         "uploaded_by": d.uploaded_by.username if d.uploaded_by else "Unknown",
         "uploaded_at": d.uploaded_at.isoformat(),
         "is_indexed": d.is_indexed,
@@ -277,10 +277,14 @@ def api_ekta_query(request):
         project = get_object_or_404(Project, id=project_id, assigned_investigator=request.user)
 
     try:
+        user_role = "Manager (Project Coordinator)" if request.user.is_staff else "Principal Investigator (PI)"
+        username = request.user.username
         result = ekta_rag.query_ekta(
             question=question,
             project_id=int(project_id) if project_id else None,
-            history=history
+            history=history,
+            user_role=user_role,
+            username=username
         )
     except Exception as e:
         logger.error(f"Ekta query error: {e}")
