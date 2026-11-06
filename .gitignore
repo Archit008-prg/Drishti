@@ -1,37 +1,92 @@
+# ==========================================
+# Drishti Platform - Git Ignore Rules
+# ==========================================
+
 # Virtual environments
 myenv/
 venv/
 .venv/
 env/
 ENV/
+env.bak/
+venv.bak/
 
-# Python caching
+# Python cache & build artifacts
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Django local database & logs
-db.sqlite3
-*.log
-
-# Node.js
-node_modules/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
 dist/
-dist-ssr/
-*.local
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# OS files
-.DS_Store
-Thumbs.db
+# Testing & coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+nosetests.xml
+coverage.xml
 
-# Environment variables — NEVER commit these
+# Django database & runtime logs
+db.sqlite3
+db.sqlite3-journal
+*.log
+*.pot
+
+# Environment variables & Private Keys — NEVER commit these
 .env
 .env.*
 !.env.example
+*.pem
+*.key
+*.cert
+*.crt
 
 # ChromaDB local vector store
 chromadb_store/
 
-# Local run scripts
+# Node & Frontend dependencies/builds
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# Operating System artifacts
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Local helper scripts & temporary scratchpads
 start.ps1
+scratch/
