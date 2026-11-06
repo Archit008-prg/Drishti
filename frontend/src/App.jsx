@@ -209,6 +209,178 @@ const TimelineCanvas = ({ project, gradId = 'flowGrad4' }) => {
   );
 };
 
+const FormattedAiMessage = ({ text, isUser }) => {
+  if (isUser) {
+    return (
+      <div style={{ lineHeight: '1.6', fontSize: '14px', fontWeight: '400', letterSpacing: '0.2px' }}>
+        {text}
+      </div>
+    );
+  }
+
+  // Parse inline markdown: **bold**, `code`, *italic*
+  const renderInline = (str, keyPrefix = 'inline') => {
+    if (!str) return null;
+    const parts = [];
+    const regex = /(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g;
+    let match;
+    let lastIdx = 0;
+    let count = 0;
+
+    while ((match = regex.exec(str)) !== null) {
+      if (match.index > lastIdx) {
+        parts.push(str.substring(lastIdx, match.index));
+      }
+      const token = match[0];
+      const partKey = `${keyPrefix}-${count++}`;
+      if (token.startsWith('**') && token.endsWith('**')) {
+        parts.push(
+          <strong key={partKey} className="text-white fw-bold" style={{ color: '#f8fafc' }}>
+            {token.slice(2, -2)}
+          </strong>
+        );
+      } else if (token.startsWith('`') && token.endsWith('`')) {
+        parts.push(
+          <code
+            key={partKey}
+            className="px-2 py-0.5 rounded text-violet-300 font-monospace mx-1"
+            style={{
+              fontSize: '12px',
+              backgroundColor: 'rgba(0,0,0,0.45)',
+              border: '1px solid rgba(139,92,246,0.3)',
+            }}
+          >
+            {token.slice(1, -1)}
+          </code>
+        );
+      } else if (token.startsWith('*') && token.endsWith('*')) {
+        parts.push(
+          <em key={partKey} className="text-white-75">
+            {token.slice(1, -1)}
+          </em>
+        );
+      }
+      lastIdx = regex.lastIndex;
+    }
+    if (lastIdx < str.length) {
+      parts.push(str.substring(lastIdx));
+    }
+    return parts.length > 0 ? parts : str;
+  };
+
+  const lines = (text || '').split('\n');
+  const elements = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i];
+    const line = rawLine.trim();
+
+    if (!line) {
+      elements.push(<div key={`sp-${i}`} style={{ height: '8px' }} />);
+      continue;
+    }
+
+    // Check for Section Headers (emojis or markdown headings)
+    const isHeader = /^(👤|📄|📋|💰|📅|⚠️|💡|📌|###|##)/.test(line);
+    if (isHeader) {
+      let badgeBg = 'rgba(139, 92, 246, 0.15)';
+      let badgeBorder = 'rgba(139, 92, 246, 0.35)';
+      let textColor = '#c4b5fd';
+
+      if (line.includes('💰')) {
+        badgeBg = 'rgba(16, 185, 129, 0.15)';
+        badgeBorder = 'rgba(16, 185, 129, 0.35)';
+        textColor = '#6ee7b7';
+      } else if (line.includes('📅')) {
+        badgeBg = 'rgba(6, 182, 212, 0.15)';
+        badgeBorder = 'rgba(6, 182, 212, 0.35)';
+        textColor = '#67e8f9';
+      } else if (line.includes('⚠️')) {
+        badgeBg = 'rgba(245, 158, 11, 0.18)';
+        badgeBorder = 'rgba(245, 158, 11, 0.4)';
+        textColor = '#fcd34d';
+      }
+
+      elements.push(
+        <div
+          key={`hdr-${i}`}
+          className="d-flex align-items-center gap-2 px-3 py-2 rounded-3 my-2 shadow-sm"
+          style={{
+            background: badgeBg,
+            border: `1px solid ${badgeBorder}`,
+            color: textColor,
+            fontSize: '13.5px',
+            fontWeight: '600',
+            letterSpacing: '0.2px',
+          }}
+        >
+          {renderInline(line, `hdr-${i}`)}
+        </div>
+      );
+      continue;
+    }
+
+    // Check for Bullet points
+    if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*')) {
+      const bulletContent = line.replace(/^[•\-\*]\s*/, '');
+      elements.push(
+        <div key={`bl-${i}`} className="d-flex align-items-start gap-2 mb-2 ps-1">
+          <span
+            className="d-inline-block rounded-circle bg-violet-400 mt-2 flex-shrink-0"
+            style={{
+              width: '6px',
+              height: '6px',
+              boxShadow: '0 0 6px rgba(167, 139, 250, 0.8)',
+            }}
+          />
+          <div style={{ lineHeight: '1.65', fontSize: '13.5px', color: '#e2e8f0' }}>
+            {renderInline(bulletContent, `bl-${i}`)}
+          </div>
+        </div>
+      );
+      continue;
+    }
+
+    // Check for Numbered lists (e.g. 1. or 2.)
+    const numMatch = line.match(/^(\d+)\.\s*(.*)/);
+    if (numMatch) {
+      const num = numMatch[1];
+      const itemContent = numMatch[2];
+      elements.push(
+        <div key={`num-${i}`} className="d-flex align-items-start gap-2 mb-2 ps-3">
+          <span
+            className="badge rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-1"
+            style={{
+              width: '20px',
+              height: '20px',
+              fontSize: '11px',
+              fontWeight: '700',
+              background: 'rgba(139, 92, 246, 0.25)',
+              color: '#c4b5fd',
+              border: '1px solid rgba(139, 92, 246, 0.45)',
+            }}
+          >
+            {num}
+          </span>
+          <div style={{ lineHeight: '1.65', fontSize: '13.5px', color: '#e2e8f0' }}>
+            {renderInline(itemContent, `num-${i}`)}
+          </div>
+        </div>
+      );
+      continue;
+    }
+
+    // Normal paragraph
+    elements.push(
+      <p key={`p-${i}`} className="mb-2" style={{ lineHeight: '1.65', fontSize: '13.5px', color: '#e2e8f0' }}>
+        {renderInline(line, `p-${i}`)}
+      </p>
+    );
+  }
+
+  return <div className="formatted-ai-content">{elements}</div>;
+};
+
 const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token, chatHistories, setChatHistories }) => {
   const currentChatId = selectedProject ? selectedProject.id : 'system';
   
@@ -342,15 +514,22 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token, c
           history: chatHistory
         })
       });
-      const data = await res.json();
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        data = { error: `Server error (HTTP ${res.status})` };
+      }
+
+      const replyText = data.answer || data.error || (res.ok ? "No answer was returned." : "Server error contacting Ekta AI.");
       setMessages(prev => [...prev, { 
         sender: 'ekta', 
-        text: data.answer, 
-        in_scope: data.in_scope, 
-        sources: data.sources 
+        text: replyText, 
+        in_scope: data.in_scope !== undefined ? data.in_scope : true, 
+        sources: data.sources || [] 
       }]);
     } catch (e) {
-      setMessages(prev => [...prev, { sender: 'ekta', text: "Error connecting to Ekta AI.", in_scope: false }]);
+      setMessages(prev => [...prev, { sender: 'ekta', text: "Error connecting to Ekta AI. Please ensure the backend is running.", in_scope: false }]);
     }
     setIsLoading(false);
   };
@@ -455,17 +634,19 @@ const EktaTab = ({ isStaff, projects, selectedProject, onSelectProject, token, c
                     boxShadow: m.sender === 'user' ? '0 8px 25px rgba(99, 102, 241, 0.4)' : '0 8px 25px rgba(0,0,0,0.2)',
                   }}
                 >
-                  <p className="mb-0" style={{ whiteSpace: 'pre-wrap', lineHeight: '1.7', fontSize: '14.5px', letterSpacing: '0.3px', fontWeight: '400', fontFamily: 'Inter, system-ui, sans-serif' }}>{m.text}</p>
+                  <FormattedAiMessage text={m.text} isUser={m.sender === 'user'} />
                   
                   {m.sender === 'ekta' && m.in_scope === false && (
-                    <div className="mt-3 pt-3 border-top" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-                      <span className="badge bg-warning text-dark px-2 py-1 shadow-sm" style={{ fontSize: '11px', fontWeight: '600', borderRadius: '6px' }}><i className="bi bi-exclamation-triangle-fill me-1"></i> Out of scope</span>
+                    <div className="mt-3 pt-2 d-flex align-items-center gap-2">
+                      <span className="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 px-2.5 py-1.5 d-flex align-items-center gap-1.5 shadow-sm" style={{ fontSize: '11px', fontWeight: '600', borderRadius: '8px' }}>
+                        <i className="bi bi-shield-x"></i> Out of scope query
+                      </span>
                     </div>
                   )}
                   {m.sender === 'ekta' && m.sources && m.sources.length > 0 && (
-                    <div className="mt-3 pt-3 border-top" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                    <div className="mt-3 pt-2 border-top border-white-10">
                       <span className="text-white-50 d-flex align-items-center gap-2" style={{ fontSize: '11.5px', lineHeight: '1.4' }}>
-                        <i className="bi bi-file-earmark-text text-violet-400"></i>
+                        <i className="bi bi-file-earmark-check text-violet-400"></i>
                         <span>Sources: <span className="text-white-75 fw-semibold">{m.sources.join(', ')}</span></span>
                       </span>
                     </div>
@@ -983,7 +1164,23 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
-      const data = await res.json();
+
+      // ── FIX: Parse JSON safely. If Django returns an HTML error page
+      // (e.g. 500, CSRF failure), res.json() would throw and get caught
+      // as a fake "Connection error". We now surface the real HTTP status.
+      let data = {};
+      try {
+        data = await res.json();
+      } catch {
+        // Response body was not valid JSON (e.g. Django HTML error page)
+        if (res.status === 503) {
+          setAuthError('Django backend is offline — start it with: python manage.py runserver');
+        } else {
+          setAuthError(`Server error (HTTP ${res.status}). Check the Django terminal for details.`);
+        }
+        return;
+      }
+
       if (res.ok) {
         if (currentView === 'login') {
           saveAuth(data.jwt_access, data.username, data.is_staff);
@@ -995,10 +1192,11 @@ function App() {
         setAuthPassword('');
         setAuthEmail('');
       } else {
-        setAuthError(data.error || 'Authentication failed');
+        setAuthError(data.error || `Authentication failed (HTTP ${res.status})`);
       }
     } catch (err) {
-      setAuthError('Connection error to server');
+      // Only a true network failure (server not running, DNS error, etc.)
+      setAuthError('Django backend is offline — start it with: python manage.py runserver (port 8000).');
     }
   };
 
@@ -1819,7 +2017,7 @@ function App() {
             {/* CTA Button — single "Get Started" */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 36 }}>
               <button
-                onClick={() => setCurrentView('auth-select')}
+                onClick={() => { setAuthUsername(''); setAuthPassword(''); setAuthEmail(''); setAuthError(''); setAuthSuccess(''); setCurrentView('auth-select'); }}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 12,
                   background: 'linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%)',
@@ -2459,7 +2657,7 @@ function App() {
                 }}
                 onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
                 onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-                onClick={() => { setAuthRole('manager'); setCurrentView('login'); }}
+                onClick={() => { setAuthRole('manager'); setAuthUsername(''); setAuthPassword(''); setAuthEmail(''); setAuthError(''); setAuthSuccess(''); setCurrentView('login'); }}
               >
                 Sign In as Manager
               </button>
@@ -2486,7 +2684,7 @@ function App() {
                 }}
                 onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
                 onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-                onClick={() => { setAuthRole('investigator'); setCurrentView('login'); }}
+                onClick={() => { setAuthRole('investigator'); setAuthUsername(''); setAuthPassword(''); setAuthEmail(''); setAuthError(''); setAuthSuccess(''); setCurrentView('login'); }}
               >
                 Sign In as Investigator
               </button>
@@ -2517,7 +2715,7 @@ function App() {
         <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 440 }}>
           {/* Back button */}
           <button
-            onClick={() => setCurrentView('auth-select')}
+            onClick={() => { setAuthUsername(''); setAuthPassword(''); setAuthEmail(''); setAuthError(''); setAuthSuccess(''); setCurrentView('auth-select'); }}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)',
@@ -2657,17 +2855,24 @@ function App() {
         headers: { 'Authorization': `Bearer ${token}` },
         body: fd
       });
+      let data = {};
+      try { data = await res.json(); } catch {}
       if (res.ok) {
         setRefUploadFile(null);
-        alert("Reference document successfully uploaded and indexed for Ekta AI!");
+        showToast("Reference document successfully uploaded and indexed for Ekta AI!", "success");
+        if (selectedProject?.id) {
+          await fetchProjectDetail(selectedProject.id);
+        }
+        fetchProjects();
       } else {
-        alert("Upload failed.");
+        alert(data.error || data.warning || "Upload failed. Allowed: .pdf, .txt, .md, .docx, images");
       }
     } catch (err) {
       console.error(err);
-      alert("Error uploading file.");
+      alert("Error connecting to server while uploading file.");
+    } finally {
+      setRefUploading(false);
     }
-    setRefUploading(false);
   };
 
   // 4. MAIN APPLICATION DASHBOARDS (AFTER AUTH)
@@ -3862,13 +4067,19 @@ function App() {
                     
                     {selectedProject.supporting_documents && selectedProject.supporting_documents.length > 0 && (
                       <div className="bg-dark bg-opacity-35 p-3 rounded mb-3 border border-secondary border-opacity-20">
-                        <h6 className="mb-2"><strong>Reference Documents</strong></h6>
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <h6 className="mb-0 fw-bold"><i className="bi bi-file-earmark-text text-violet-400 me-2"></i>Reference Documents</h6>
+                          <span className="badge bg-violet-900 text-violet-300 border border-violet-700" style={{ fontSize: '10px' }}>{selectedProject.supporting_documents.length}</span>
+                        </div>
                         <ul className="list-group list-group-flush bg-transparent">
                           {selectedProject.supporting_documents.map(doc => (
-                            <li key={doc.id} className="list-group-item bg-transparent text-white px-0 py-1 border-0">
-                              <i className="bi bi-file-earmark-pdf me-2 text-danger"></i>
-                              <a href={`${API_BASE}${doc.url}`} target="_blank" rel="noreferrer" className="text-decoration-none text-white-75 hover-text-white">
-                                {doc.filename}
+                            <li key={doc.id} className="list-group-item bg-transparent text-white px-0 py-2 border-bottom border-white-10 d-flex justify-content-between align-items-center">
+                              <div className="d-flex align-items-center gap-2 text-truncate me-2" style={{ maxWidth: '75%' }}>
+                                <i className="bi bi-file-earmark-pdf text-danger fs-6 flex-shrink-0"></i>
+                                <span className="small text-truncate" title={doc.filename}>{doc.filename}</span>
+                              </div>
+                              <a href={`${API_BASE}${doc.url}`} target="_blank" rel="noreferrer" className="btn btn-sm btn-glass py-1 px-2 rounded-pill d-flex align-items-center gap-1" style={{ fontSize: '11px' }}>
+                                <i className="bi bi-box-arrow-up-right"></i> View
                               </a>
                             </li>
                           ))}
@@ -4609,36 +4820,24 @@ function App() {
                           )}
                         </li>
                       )}
-                      {selectedProject.supporting_documents && selectedProject.supporting_documents.length > 0 && (
-                        <li className="list-group-item ps-0">
-                          <strong>Supporting Documents:</strong>
-                          <div className="mt-2 d-flex flex-wrap gap-2">
-                            {selectedProject.supporting_documents.map(doc => (
-                              <a 
-                                key={doc.id}
-                                href={`${API_BASE}${doc.url}`} 
-                                target="_blank" 
-                                rel="noreferrer" 
-                                className="btn btn-sm btn-light-glow"
-                              >
-                                <i className="bi bi-file-earmark-arrow-down"></i> {doc.filename}
-                              </a>
-                            ))}
-                          </div>
-                        </li>
-                      )}
                     </ul>
 
                     
                     {selectedProject.supporting_documents && selectedProject.supporting_documents.length > 0 && (
                       <div className="bg-dark bg-opacity-35 p-3 rounded mb-3 border border-secondary border-opacity-20">
-                        <h6 className="mb-2"><strong>Reference Documents</strong></h6>
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <h6 className="mb-0 fw-bold"><i className="bi bi-file-earmark-text text-violet-400 me-2"></i>Reference Documents</h6>
+                          <span className="badge bg-violet-900 text-violet-300 border border-violet-700" style={{ fontSize: '10px' }}>{selectedProject.supporting_documents.length}</span>
+                        </div>
                         <ul className="list-group list-group-flush bg-transparent">
                           {selectedProject.supporting_documents.map(doc => (
-                            <li key={doc.id} className="list-group-item bg-transparent text-white px-0 py-1 border-0">
-                              <i className="bi bi-file-earmark-pdf me-2 text-danger"></i>
-                              <a href={`${API_BASE}${doc.url}`} target="_blank" rel="noreferrer" className="text-decoration-none text-white-75 hover-text-white">
-                                {doc.filename}
+                            <li key={doc.id} className="list-group-item bg-transparent text-white px-0 py-2 border-bottom border-white-10 d-flex justify-content-between align-items-center">
+                              <div className="d-flex align-items-center gap-2 text-truncate me-2" style={{ maxWidth: '75%' }}>
+                                <i className="bi bi-file-earmark-pdf text-danger fs-6 flex-shrink-0"></i>
+                                <span className="small text-truncate" title={doc.filename}>{doc.filename}</span>
+                              </div>
+                              <a href={`${API_BASE}${doc.url}`} target="_blank" rel="noreferrer" className="btn btn-sm btn-glass py-1 px-2 rounded-pill d-flex align-items-center gap-1" style={{ fontSize: '11px' }}>
+                                <i className="bi bi-box-arrow-up-right"></i> View
                               </a>
                             </li>
                           ))}

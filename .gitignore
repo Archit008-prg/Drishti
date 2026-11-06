@@ -32,3 +32,6 @@ Thumbs.db
 
 # ChromaDB local vector store
 chromadb_store/
+
+# Local run scripts
+start.ps1
